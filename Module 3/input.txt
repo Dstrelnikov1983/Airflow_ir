@@ -1,0 +1,1 @@
+Apache Hadoop is a framework for distributed storage and processing. HDFS provides reliable storage for large datasets. MapReduce enables parallel processing of big data. Hadoop ecosystem includes Hive, Pig, HBase, and Spark. Data replication ensures fault tolerance in Hadoop. 
