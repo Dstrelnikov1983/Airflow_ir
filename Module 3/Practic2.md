@@ -1,3 +1,6 @@
+https://yandex.cloud/ru/docs/cli/quickstart#yandex-account_1
+yc compute ssh --id epda1u4ici4psoi1o6mu
+
 ### **Загрузка данных в кластер**
 
 #### **Способ 1: Через Object Storage (рекомендуется)**
@@ -55,7 +58,7 @@ hive> CREATE TABLE sales (
       ROW FORMAT DELIMITED
       FIELDS TERMINATED BY ','
       STORED AS TEXTFILE
-      LOCATION 's3a://my-dataproc-bucket/data/sales/';
+      LOCATION 's3a://dagstore/input';
 
 hive> SELECT product, SUM(amount) 
       FROM sales 
