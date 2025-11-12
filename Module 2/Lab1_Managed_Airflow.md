@@ -383,3 +383,4 @@ create_file = S3CreateObjectOperator(
 - [Apache Airflow провайдеры](https://airflow.apache.org/docs/apache-airflow-providers/)
 - [Yandex Cloud CLI](https://cloud.yandex.ru/docs/cli/)
 - [Тарифы Managed Airflow](https://cloud.yandex.ru/prices#managed-airflow)
+

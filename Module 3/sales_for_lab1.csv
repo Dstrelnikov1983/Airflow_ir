@@ -1,0 +1,26 @@
+order_id,customer_id,product,category,price,quantity,sale_date,region,payment_method 
+1001,C001,Laptop,Electronics,1299.99,1,2024-01-15,North,Credit Card 
+1002,C002,Office Chair,Furniture,349.99,2,2024-01-15,South,PayPal 
+1003,C003,Smartphone,Electronics,899.99,1,2024-01-16,East,Credit Card 
+1004,C001,Monitor,Electronics,449.99,2,2024-01-16,North,Credit Card 
+1005,C004,Desk,Furniture,599.99,1,2024-01-17,West,Bank Transfer 
+1006,C005,Keyboard,Electronics,129.99,3,2024-01-17,North,PayPal 
+1007,C002,Mouse,Electronics,49.99,2,2024-01-18,South,Credit Card 
+1008,C006,Bookshelf,Furniture,299.99,1,2024-01-18,East,Cash 
+1009,C003,Tablet,Electronics,599.99,1,2024-01-19,East,Credit Card 
+1010,C007,Conference Table,Furniture,1499.99,1,2024-01-19,West,Bank Transfer 
+1011,C008,Webcam,Electronics,149.99,2,2024-01-20,North,PayPal 
+1012,C004,Printer,Electronics,399.99,1,2024-01-20,West,Credit Card 
+1013,C009,Standing Desk,Furniture,799.99,1,2024-01-21,South,Credit Card 
+1014,C005,Headphones,Electronics,199.99,3,2024-01-21,North,PayPal 
+1015,C010,Smart Watch,Electronics,299.99,2,2024-01-22,East,Credit Card 
+1016,C006,Filing Cabinet,Furniture,249.99,2,2024-01-22,East,Bank Transfer 
+1017,C011,Monitor Arm,Electronics,89.99,4,2024-01-23,West,PayPal 
+1018,C001,Ergonomic Chair,Furniture,449.99,1,2024-01-23,North,Credit Card 
+1019,C012,USB Hub,Electronics,39.99,5,2024-01-24,South,Cash 
+1020,C007,Whiteboard,Furniture,199.99,2,2024-01-24,West,Credit Card 
+1021,C013,External SSD,Electronics,179.99,2,2024-01-25,North,PayPal 
+1022,C008,Desk Lamp,Furniture,79.99,3,2024-01-25,North,Credit Card 
+1023,C014,Gaming Mouse,Electronics,89.99,1,2024-01-26,East,PayPal 
+1024,C009,Cable Management,Electronics,29.99,6,2024-01-26,South,Cash 
+1025,C015,Storage Cabinet,Furniture,349.99,1,2024-01-27,West,Bank Transfer
