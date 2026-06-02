@@ -1,0 +1,978 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Модуль 02: Устройство DAG | Аналитическая платформа РЖД</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; --r-main-font-size: 28px; }
+.reveal { font-size: 24px; }
+.reveal h1 { color: #4472C4; font-size: 1.8em; }
+.reveal h2 { color: #4472C4; font-size: 1.3em; }
+.reveal h3 { color: #4472C4; font-size: 1.1em; }
+.reveal ul, .reveal ol { font-size: 0.88em; line-height: 1.5; }
+.reveal p { font-size: 0.88em; line-height: 1.5; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green { color: #70AD47; font-weight: bold; }
+.discuss { background:#fff8e7; border-left:5px solid #ED7D31; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.82em; line-height:1.4; border-radius:0 6px 6px 0; }
+.case-box { background:#eef4fb; border-left:5px solid #4472C4; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.8em; line-height:1.4; border-radius:0 6px 6px 0; }
+.task-box { background:#eafaf1; border-left:5px solid #70AD47; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.8em; line-height:1.4; border-radius:0 6px 6px 0; }
+.quiz-btn { background:#4472C4; color:#fff; border:none; padding:7px 15px; margin:4px; cursor:pointer; border-radius:4px; font-size:0.72em; transition:background 0.2s; }
+.quiz-btn:hover { background:#2d5699; }
+.quiz-btn.correct { background:#70AD47; }
+.quiz-btn.wrong { background:#e74c3c; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.arch-box { border:2px solid #4472C4; border-radius:6px; padding:10px; margin:4px; background:#f0f4fb; font-size:0.78em; line-height:1.4; }
+.reveal pre { font-size: 0.48em; width:100%; box-shadow:none; margin: 8px 0; }
+.reveal pre code { max-height: 380px; }
+.reveal code { background:#f6f8fa; padding:2px 4px; border-radius:3px; font-size:0.88em; }
+.reveal table { font-size: 0.78em; }
+.reveal table th { background: #4472C4; color: #fff; }
+.reveal table tr:nth-child(even) { background: #f0f4fb; }
+.tag { display:inline-block; background:#4472C4; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.68em; margin:2px; }
+.badge-ok { display:inline-block; background:#70AD47; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.badge-warn { display:inline-block; background:#ED7D31; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.badge-err { display:inline-block; background:#e74c3c; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.metric { background:#4472C4; color:#fff; padding:12px; border-radius:8px; text-align:center; }
+.metric .val { font-size:1.8em; font-weight:bold; color:#ED7D31; display:block; }
+.rzd-header { background: linear-gradient(135deg, #4472C4 0%, #2d5699 100%); color: #fff; padding: 8px 18px; border-radius: 6px; font-size: 0.78em; margin-bottom: 10px; }
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+     !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 1: Титульный
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <div style="margin-top:30px;">
+    <div style="display:inline-block;background:#4472C4;color:#fff;padding:6px 18px;border-radius:20px;font-size:0.7em;letter-spacing:1px;">МОДУЛЬ 02</div>
+  </div>
+  <h1 style="margin-top:18px;">Устройство DAG</h1>
+  <hr style="border:none;border-top:2px solid #ED7D31;width:200px;margin:14px auto;">
+  <div class="three-col" style="margin-top:18px;">
+    <div class="arch-box" style="text-align:center;">
+      <div style="font-size:1.5em;">🚂</div>
+      </div>
+    <div class="arch-box" style="text-align:center;">
+      <div style="font-size:1.5em;">📡</div>
+      <strong>Телеметрия букс</strong><br>
+      <small>Температурный контроль</small>
+    </div>
+    <div class="arch-box" style="text-align:center;">
+      <div style="font-size:1.5em;">🗄️</div>
+      <strong>rzd_analytics</strong><br>
+      <small>PostgreSQL / Яндекс Облако</small>
+    </div>
+  </div>
+  <aside class="notes">Добро пожаловать в модуль 02. Сегодня мы разберём устройство DAG — основного строительного блока Airflow. Всё на реальном примере из жизни ТЧЭ-15.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 2: Повестка модуля
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Повестка модуля (1.5 ч.)</h2>
+  <div class="two-col">
+    <div>
+      <h3>Теория</h3>
+      <ol style="font-size:0.82em;">
+        <li>Анатомия DAG-файла Python</li>
+        <li>Атрибуты DAG и <code>default_args</code></li>
+        <li><code>with DAG</code> vs <code>@dag</code></li>
+        <li>Операторы: Bash / Python / Empty</li>
+        <li>Состояния задач</li>
+        <li>DAG Run vs Task Instance</li>
+        <li>Graph / Grid View в UI</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Практика ТЧЭ-15</h3>
+      <div class="arch-box">
+        <strong>Первый рабочий DAG</strong>
+        <ol style="font-size:0.9em;margin-top:6px;">
+          <li>Чтение CSV телеметрии букс</li>
+          <li>Валидация температур (&gt; 80°C)</li>
+          <li>Запись в <code>rzd_analytics</code></li>
+        </ol>
+      </div>
+      <div style="margin-top:10px;font-size:0.78em;">
+        <span class="tag">Электровозы ВЛ80С</span>
+        <span class="tag">ЭП2К</span>
+        <span class="tag">2ТЭ116</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Сегодняшний модуль разбит на теорию и практику. После каждого блока — обсуждение. В конце — лабораторная работа.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 3: Анатомия DAG-файла Python
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Анатомия DAG-файла Python</h2>
+  <div class="two-col">
+    <div>
+      <p>Типичный DAG-файл состоит из <span class="hi-orange">пяти блоков</span>:</p>
+      <ol style="font-size:0.82em;">
+        <li><strong>Импорты</strong> — Airflow, операторы, stdlib</li>
+        <li><strong>Константы</strong> — пути, параметры</li>
+        <li><strong>default_args</strong> — умолчания задач</li>
+        <li><strong>Python-функции</strong> — логика задач</li>
+        <li><strong>Объявление DAG</strong> — задачи + зависимости</li>
+      </ol>
+      <p style="margin-top:10px;font-size:0.8em;">
+        Файл хранится в директории <code>dags/</code>.<br>
+        Планировщик сканирует её каждые <span class="hi-orange">30 секунд</span>.
+      </p>
+    </div>
+    <div>
+      <pre><code class="language-python">
+# 1. Импорты
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+
+# 2. Константы
+CSV_PATH = "/opt/airflow/data/buxa.csv"
+
+# 3. default_args
+default_args = {
+    "owner": "rzd-tche15",
+    "retries": 2,
+}
+
+# 4. Функции задач
+def read_data(**context):
+    import pandas as pd
+    df = pd.read_csv(CSV_PATH)
+    return len(df)
+
+# 5. Объявление DAG
+with DAG("buxa_monitor", ...):
+    t1 = PythonOperator(
+        task_id="read_data",
+        python_callable=read_data,
+    )
+      </code></pre>
+    </div>
+  </div>
+  <aside class="notes">Покажите студентам, что каждый из пяти блоков имеет чёткую ответственность. Смешивать их не рекомендуется — это усложняет тестирование.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 4: Атрибуты DAG
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Атрибуты DAG</h2>
+  <table>
+    <thead>
+      <tr><th>Атрибут</th><th>Тип</th><th>Описание</th><th>Пример РЖД</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>dag_id</code></td><td>str</td><td>Уникальное имя DAG</td><td><code>"buxa_temp_monitor"</code></td></tr>
+      <tr><td><code>schedule</code></td><td>str/None</td><td>Расписание (cron или preset)</td><td><code>"0 * * * *"</code> — ежечасно</td></tr>
+      <tr><td><code>start_date</code></td><td>datetime</td><td>С какой даты создавать Run</td><td><code>datetime(2024, 3, 1)</code></td></tr>
+      <tr><td><code>catchup</code></td><td>bool</td><td>Создавать ли Run за прошлые периоды</td><td><code>False</code> — для телеметрии реального времени</td></tr>
+      <tr><td><code>max_active_runs</code></td><td>int</td><td>Макс. параллельных DAG Run</td><td><code>1</code> — важно при работе с файлами</td></tr>
+      <tr><td><code>tags</code></td><td>list</td><td>Метки для фильтрации в UI</td><td><code>["rzd", "safety", "tche15"]</code></td></tr>
+      <tr><td><code>description</code></td><td>str</td><td>Описание в UI</td><td><code>"Контроль температуры букс ТЧЭ-15"</code></td></tr>
+      <tr><td><code>doc_md</code></td><td>str</td><td>Документация Markdown в UI</td><td>Инструкция дежурного инженера</td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">Обратите внимание: catchup=False критичен для потоковых данных. Если оставить True и потом активировать DAG через месяц — получите шторм запусков.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 5: with DAG vs @dag
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Синтаксис: <code>with DAG</code> vs <code>@dag</code></h2>
+  <div class="two-col">
+    <div>
+      <h3>Классический: <code>with DAG</code></h3>
+      <pre><code class="language-python">
+from airflow import DAG
+from datetime import datetime
+
+with DAG(
+    dag_id="buxa_monitor_v1",
+    schedule="0 * * * *",
+    start_date=datetime(2024, 3, 1),
+    catchup=False,
+    tags=["rzd", "safety"],
+) as dag:
+
+    # задачи объявляются здесь
+    ...
+      </code></pre>
+      <p style="font-size:0.78em;margin-top:6px;">
+        <span class="badge-ok">Явный</span>
+        Удобен при работе с несколькими DAG в одном файле.
+      </p>
+    </div>
+    <div>
+      <h3>Декоратор: <code>@dag</code></h3>
+      <pre><code class="language-python">
+from airflow.decorators import dag, task
+from datetime import datetime
+
+@dag(
+    schedule="0 * * * *",
+    start_date=datetime(2024, 3, 1),
+    catchup=False,
+    tags=["rzd", "safety"],
+)
+def buxa_monitor_v2():
+    """Мониторинг температуры букс ТЧЭ-15."""
+
+    @task
+    def read_telemetry():
+        import pandas as pd
+        return pd.read_csv("/data/buxa.csv")
+
+    read_telemetry()
+
+buxa_monitor_v2()
+      </code></pre>
+      <p style="font-size:0.78em;margin-top:6px;">
+        <span class="badge-ok">Современный</span>
+        TaskFlow API — меньше кода, нативные XCom через return.
+      </p>
+    </div>
+  </div>
+  <p style="font-size:0.78em;margin-top:6px;">
+    <span class="hi-orange">Рекомендация:</span> в этом курсе используем <code>with DAG</code> — легче читать при обучении. В production оба варианта валидны.
+  </p>
+  <aside class="notes">TaskFlow API (декоратор) появился в Airflow 2.0. Он удобнее для новых DAG, но with DAG более прозрачен при обучении.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 6: default_args
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2><code>default_args</code> — умолчания для всех задач DAG</h2>
+  <div class="two-col">
+    <div>
+      <pre><code class="language-python">
+default_args = {
+    # Кто отвечает за DAG
+    "owner": "rzd-analytics",
+
+    # Повторы при падении задачи
+    "retries": 3,
+    "retry_delay": timedelta(minutes=10),
+
+    # Email-уведомления
+    "email_on_failure": True,
+    "email": ["duty_engineer@rzd.ru"],
+    "email_on_retry": False,
+
+    # Таймаут выполнения задачи
+    "execution_timeout": timedelta(minutes=30),
+
+    # Не ждать успеха предыдущего Run
+    "depends_on_past": False,
+}
+      </code></pre>
+    </div>
+    <div>
+      <h3>Как работает наследование</h3>
+      <div class="arch-box">
+        <strong>default_args</strong> — базовые значения для всех задач DAG.<br><br>
+        Задача может <span class="hi-orange">переопределить</span> любой параметр:
+        <pre style="font-size:0.85em;margin-top:6px;"><code class="language-python">
+# Задача не нуждается в повторах
+BashOperator(
+    task_id="log_summary",
+    bash_command="echo done",
+    retries=0,  # переопределяем
+)
+        </code></pre>
+      </div>
+      <div style="margin-top:10px;font-size:0.8em;">
+        <span class="badge-warn">Важно</span>
+        Параметры DAG (<code>schedule</code>, <code>catchup</code>) — <em>не</em> из <code>default_args</code>.
+        <code>default_args</code> — только для задач.
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Частая ошибка студентов — пытаться положить schedule или start_date в default_args. Эти параметры передаются напрямую в DAG().</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 7: Операторы
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Операторы: BashOperator / PythonOperator / EmptyOperator</h2>
+  <div class="three-col">
+    <div class="arch-box">
+      <h3 style="color:#4472C4;font-size:1em;">BashOperator</h3>
+      <p style="font-size:0.82em;">Выполняет bash-команду. Поддерживает Jinja-шаблоны.</p>
+      <pre><code class="language-python">
+BashOperator(
+  task_id="check_csv",
+  bash_command=(
+    "wc -l /data/"
+    "sensor_readings.csv"
+    " && echo 'OK {{ ds }}'"
+  ),
+)
+      </code></pre>
+      <p style="font-size:0.75em;">Использование в РЖД: проверка файлов, запуск скриптов выгрузки, архивирование логов.</p>
+    </div>
+    <div class="arch-box">
+      <h3 style="color:#4472C4;font-size:1em;">PythonOperator</h3>
+      <p style="font-size:0.82em;">Вызывает Python-функцию. Передаёт <code>context</code> через <code>**kwargs</code>.</p>
+      <pre><code class="language-python">
+PythonOperator(
+  task_id="validate_temp",
+  python_callable=check_buxa,
+  op_kwargs={
+    "threshold": 80,
+  },
+)
+      </code></pre>
+      <p style="font-size:0.75em;">Использование в РЖД: валидация телеметрии, расчёт KPI, обращение к PostgreSQL.</p>
+    </div>
+    <div class="arch-box">
+      <h3 style="color:#4472C4;font-size:1em;">EmptyOperator</h3>
+      <p style="font-size:0.82em;">Ничего не делает. Используется как точка входа/выхода или развилка.</p>
+      <pre><code class="language-python">
+from airflow.operators.empty \
+  import EmptyOperator
+
+pipeline_start = EmptyOperator(
+  task_id="pipeline_start",
+)
+pipeline_end = EmptyOperator(
+  task_id="pipeline_end",
+)
+      </code></pre>
+      <p style="font-size:0.75em;">Структурирует граф DAG, упрощает визуализацию в UI.</p>
+    </div>
+  </div>
+  <aside class="notes">Спросите студентов: какой оператор они бы выбрали для загрузки CSV в PostgreSQL? Для отправки уведомления? Для архивирования файла?</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 8: Состояния задач
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Состояния задач (Task States)</h2>
+  <div class="two-col" style="align-items:start;">
+    <div>
+      <table>
+        <thead>
+          <tr><th>Статус</th><th>Цвет в UI</th><th>Описание</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>none</code></td><td>⬜ Белый</td><td>Не запланирована</td></tr>
+          <tr><td><code>scheduled</code></td><td>🟡 Светло-серый</td><td>Запланирована планировщиком</td></tr>
+          <tr><td><code>queued</code></td><td>🟠 Оранжевый</td><td>В очереди исполнителя</td></tr>
+          <tr><td><code>running</code></td><td>🟢 Зелёный (мигающий)</td><td>Выполняется прямо сейчас</td></tr>
+          <tr><td><code>success</code></td><td>🟩 Зелёный</td><td>Завершена успешно</td></tr>
+          <tr><td><code>failed</code></td><td>🔴 Красный</td><td>Завершена с ошибкой</td></tr>
+          <tr><td><code>up_for_retry</code></td><td>🟡 Жёлтый</td><td>Ожидает повтора</td></tr>
+          <tr><td><code>skipped</code></td><td>🩷 Розовый</td><td>Пропущена (BranchOperator)</td></tr>
+          <tr><td><code>upstream_failed</code></td><td>🟠 Оранжево-красный</td><td>Upstream упал</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Жизненный цикл в ТЧЭ-15</h3>
+      <div class="arch-box" style="font-size:0.8em;">
+        <strong>Сценарий: перегрев буксы локомотива ВЛ80С-1024</strong><br><br>
+        <code>read_telemetry</code>: <span class="badge-ok">success</span><br>
+        ↓<br>
+        <code>validate_temp</code>: <span class="badge-err">failed</span> (80°C превышен)<br>
+        ↓ (ожидает)<br>
+        <code>insert_db</code>: <span class="badge-warn">upstream_failed</span><br>
+        ↓ (не запустилась)<br>
+        <code>log_summary</code>: <span class="badge-warn">upstream_failed</span>
+      </div>
+      <p style="font-size:0.78em;margin-top:8px;">
+        Задача с <code>trigger_rule="all_done"</code> запустится <em>всегда</em> — независимо от статуса upstream-задач.
+      </p>
+    </div>
+  </div>
+  <aside class="notes">Покажите в реальном UI как выглядят статусы. upstream_failed — один из самых важных для понимания каскадного эффекта.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 9: DAG Run vs Task Instance
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>DAG Run vs Task Instance</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <h3 style="color:#4472C4;margin:0 0 6px;">DAG Run</h3>
+        <ul style="font-size:0.82em;">
+          <li>Конкретный запуск <em>всего DAG</em></li>
+          <li>Имеет <strong>run_id</strong>: <code>scheduled__2024-03-01T00:00:00</code></li>
+          <li>Имеет <strong>execution_date</strong> (logical date)</li>
+          <li>Состояние: <code>running / success / failed</code></li>
+          <li>Создаётся по расписанию <em>или</em> вручную</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="margin-top:10px;">
+        <h3 style="color:#ED7D31;margin:0 0 6px;">Task Instance</h3>
+        <ul style="font-size:0.82em;">
+          <li>Конкретный запуск <em>одной задачи</em> в рамках DAG Run</li>
+          <li>Идентифицируется: <code>dag_id + task_id + run_id</code></li>
+          <li>Хранит: лог, время запуска, XCom, статус</li>
+          <li>Можно перезапустить в изоляции (Clear)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Аналогия для ТЧЭ-15</h3>
+      <div class="arch-box" style="font-size:0.82em;">
+        <table style="font-size:1em;">
+          <thead><tr><th>Понятие Airflow</th><th>Аналог в депо</th></tr></thead>
+          <tbody>
+            <tr><td>DAG</td><td>Технологическая карта ТО-2</td></tr>
+            <tr><td>DAG Run</td><td>Конкретное ТО-2 локомотива 15 марта</td></tr>
+            <tr><td>Task</td><td>Пункт карты: "проверить буксы"</td></tr>
+            <tr><td>Task Instance</td><td>Выполнение пункта слесарем Ивановым 15 марта</td></tr>
+            <tr><td>Лог</td><td>Запись в журнале с подписью</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:0.78em;margin-top:8px;">
+        <span class="hi-orange">Ключевой момент:</span> Grid View в UI — это сетка Task Instance × DAG Run.
+        Каждая ячейка — отдельный Task Instance со своим логом.
+      </p>
+    </div>
+  </div>
+  <aside class="notes">Аналогия с ТО-2 обычно хорошо заходит для аудитории РЖД. Попросите студентов придумать свою аналогию.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 10: Graph View и Grid View в UI
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Graph View и Grid View в Airflow UI</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <h3 style="color:#4472C4;margin:0 0 8px;">Graph View</h3>
+        <ul style="font-size:0.82em;">
+          <li>Показывает <strong>топологию</strong> одного DAG Run</li>
+          <li>Каждый узел = задача, цвет = статус</li>
+          <li>Стрелки = зависимости</li>
+          <li>Клик по задаче → лог, детали, Clear/Mark</li>
+          <li>Полезно при <span class="hi-orange">диагностике</span> конкретного запуска</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="margin-top:10px;">
+        <h3 style="color:#ED7D31;margin:0 0 8px;">Grid View</h3>
+        <ul style="font-size:0.82em;">
+          <li>Столбцы = DAG Run (время ↑)</li>
+          <li>Строки = задачи DAG</li>
+          <li>Ячейка = Task Instance</li>
+          <li>Показывает <strong>историю</strong> всех запусков</li>
+          <li>Полезно для анализа <span class="hi-orange">тренда</span>: какая задача часто падает?</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Действия над Task Instance</h3>
+      <table style="font-size:0.8em;">
+        <thead><tr><th>Действие</th><th>Когда применять</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Clear</strong></td><td>Перезапустить задачу и все downstream</td></tr>
+          <tr><td><strong>Mark Success</strong></td><td>Принудительно пометить успешной (обход ошибки)</td></tr>
+          <tr><td><strong>Mark Failed</strong></td><td>Принудительно остановить задачу</td></tr>
+          <tr><td><strong>Log</strong></td><td>Просмотр stdout/stderr задачи</td></tr>
+          <tr><td><strong>XCom</strong></td><td>Значения, переданные между задачами</td></tr>
+        </tbody>
+      </table>
+      <div class="arch-box" style="margin-top:10px;font-size:0.78em;">
+        <span class="hi-orange">Практика ТЧЭ-15:</span> дежурный инженер ночной смены через Grid View видит, что за последние 8 DAG Run задача <code>validate_buxa_temp</code> 3 раза завершалась с <code>warning</code> по локомотиву ВЛ80С-1024.
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Покажите Grid View в реальном Airflow. Дайте студентам несколько минут поисследовать UI самостоятельно.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 11: Применение в РЖД/ТЧЭ-15
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Применение в ТЧЭ-15 — Первый рабочий DAG</h2>
+  <div class="rzd-header">
+    Западно-Сибирская дирекция тяги &nbsp;|&nbsp; Депо Новосибирск-Главный &nbsp;|&nbsp; Буксовый контроль
+  </div>
+  <div class="two-col">
+    <div>
+      <h3>Бизнес-задача</h3>
+      <p style="font-size:0.82em;">
+        Каждый час с бортовых датчиков локомотивов поступает CSV-файл с показаниями тепловизоров букс.
+        Перегрев буксы (&gt;80°C) — <span class="hi-orange">критический сигнал</span>: риск схода с рельсов.
+      </p>
+      <div class="arch-box" style="font-size:0.8em;margin-top:8px;">
+        <strong>Парк ТЧЭ-15:</strong><br>
+        ВЛ80С (12 ед.), ЭП2К (6 ед.), ЭП1М (4 ед.),<br>
+        2ТЭ116 (8 ед.), 2ТЭ25КМ (3 ед.), ЧМЭ3 (5 ед.),<br>
+        ЭС2Г "Ласточка" (4 ед.), ЭД4М (6 ед.)
+      </div>
+    </div>
+    <div>
+      <h3>Пайплайн DAG</h3>
+      <div style="font-size:0.82em;text-align:center;">
+        <div class="arch-box" style="margin-bottom:6px;">
+          📄 <strong>sensor_readings.csv</strong><br>
+          <small>loco_id, timestamp, buxa_temp_c, ...</small>
+        </div>
+        <div>↓ <code>read_telemetry</code></div>
+        <div class="arch-box" style="margin:6px 0;">
+          🔍 <strong>Валидация</strong><br>
+          <small>buxa_temp_c &gt; 80°C → WARNING</small>
+        </div>
+        <div>↓ <code>check_buxa_temp</code></div>
+        <div class="arch-box">
+          🗄️ <strong>rzd_analytics.sensor_readings</strong><br>
+          <small>PostgreSQL / Яндекс Облако</small>
+        </div>
+        <div>↓ <code>log_summary</code></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Подчеркните: этот DAG — первый шаг к полной АСУ ТП. На следующих модулях мы добавим PostgresOperator, алерты и dashboard.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 12: Код DAG buxa_temp_monitor
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>DAG: <code>buxa_temp_monitor</code> — полный код</h2>
+  <pre><code class="language-python">
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
+from datetime import datetime, timedelta
+import pandas as pd
+import logging
+
+default_args = {
+    "owner": "rzd-analytics",
+    "retries": 3,
+    "retry_delay": timedelta(minutes=10),
+    "email_on_failure": True,
+    "email": ["duty_engineer@rzd.ru"],
+}
+
+with DAG(
+    "buxa_temp_monitor",
+    schedule="0 * * * *",
+    start_date=datetime(2024, 3, 1),
+    catchup=False,
+    default_args=default_args,
+    tags=["rzd", "safety"],
+) as dag:
+
+    def check_buxa_temperature(**context):
+        df = pd.read_csv("/data/sensor_readings.csv")
+        critical = df[
+            (df["sensor_type"] == "buxa_temp_c") &
+            (df["value"] > 80)
+        ]
+        if len(critical) > 0:
+            logging.warning(f"CRITICAL: {len(critical)} buxa overheating!")
+        return len(critical)
+
+    t1 = PythonOperator(
+        task_id="read_telemetry",
+        python_callable=lambda: pd.read_csv("/data/sensor_readings.csv"),
+    )
+    t2 = PythonOperator(
+        task_id="check_buxa_temp",
+        python_callable=check_buxa_temperature,
+    )
+    t3 = BashOperator(
+        task_id="log_summary",
+        bash_command="echo 'Buxa check complete at {{ ds }}'",
+    )
+    t1 >> t2 >> t3
+  </code></pre>
+  <aside class="notes">Разберите каждую часть кода. Обратите внимание на default_args, email-уведомление и Jinja-шаблон {{ ds }} в BashOperator.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 13: Вопрос для обсуждения — целостность данных
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Обсудите в группе (5 мин):</strong><br><br>
+    Что произойдёт с данными телеметрии ТЧЭ-15, если задача <code>insert_db</code> упадёт
+    <em>после</em> того, как задача <code>validate_buxa_temp</code> уже успешно выполнилась?<br><br>
+    <ul>
+      <li>Какой статус получит Task Instance <code>insert_db</code>?</li>
+      <li>Что произойдёт с задачей <code>log_summary</code>?</li>
+      <li>Как обеспечить, чтобы при повторном запуске данные не задвоились?</li>
+      <li>Что такое <strong>идемпотентность</strong> пайплайна и почему она важна для ТЧЭ-15?</li>
+    </ul>
+  </div>
+  <div class="two-col" style="margin-top:14px;">
+    <div class="arch-box" style="font-size:0.8em;">
+      <strong>Подсказка 1:</strong> посмотрите на статус <code>upstream_failed</code>
+      в описании состояний задач.
+    </div>
+    <div class="arch-box" style="font-size:0.8em;">
+      <strong>Подсказка 2:</strong> SQL-оператор <code>ON CONFLICT ... DO NOTHING</code>
+      или <code>DELETE + INSERT</code> по ключу.
+    </div>
+  </div>
+  <aside class="notes">Это ключевой вопрос для понимания надёжности пайплайнов. Дайте группам 5 минут, затем разберите вместе.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 14: Кейс — ночная смена
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Кейс: Ночная смена ТЧЭ-15</h2>
+  <div class="case-box">
+    <strong>Ситуация:</strong><br>
+    23:40, ночная смена. Дежурный инженер получает email-уведомление: DAG <code>buxa_temp_monitor</code>
+    завис на задаче <code>insert_db</code>. Через 30 минут — timeout (статус <code>failed</code>).<br><br>
+    Задачи <code>read_telemetry</code> и <code>check_buxa_temp</code> успешно завершились,
+    данные о перегреве буксы локомотива ВЛ80С-1024 <strong>не попали в базу</strong>.
+  </div>
+  <h3 style="margin-top:14px;">Задание для группы — диагностика:</h3>
+  <div class="task-box">
+    <ol style="font-size:0.88em;">
+      <li>Где в Airflow UI найти информацию о падении? (Graph View или Grid View)</li>
+      <li>Как просмотреть лог задачи <code>insert_db</code>? Что искать в логе?</li>
+      <li>Какие задачи можно безопасно перезапустить через <strong>Clear</strong>?</li>
+      <li>Нужно ли перезапускать <code>read_telemetry</code>? Почему?</li>
+      <li>Что делать, если PostgreSQL был недоступен из-за плановых работ?</li>
+    </ol>
+  </div>
+  <aside class="notes">Пусть группы разыграют ситуацию: один — дежурный инженер, другой — руководитель депо. Как отчитаться о инциденте?</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 15: Вопрос для обсуждения — архитектура DAG
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Дискуссия (7 мин):</strong><br><br>
+    В парке ТЧЭ-15 — <strong>48 локомотивов</strong> разных серий.
+    Вам нужно организовать почасовую обработку телеметрии букс для каждого.<br><br>
+    Сравните два подхода:
+    <div class="two-col" style="margin-top:10px;">
+      <div style="background:#fff;padding:8px;border-radius:4px;">
+        <strong>Подход А:</strong> Один большой DAG<br>
+        <code>buxa_monitor_all</code><br>
+        — обрабатывает все 48 локомотивов последовательно
+      </div>
+      <div style="background:#fff;padding:8px;border-radius:4px;">
+        <strong>Подход Б:</strong> DAG на каждую серию<br>
+        <code>buxa_vl80s</code>, <code>buxa_ep2k</code>, ...<br>
+        — 8 DAG, по типам подвижного состава
+      </div>
+    </div>
+  </div>
+  <p style="font-size:0.82em;margin-top:10px;">
+    <strong>Подумайте о:</strong> масштабируемости, диагностике, нагрузке на планировщик, понятности для дежурного инженера.
+  </p>
+  <aside class="notes">Нет однозначного ответа. Цель — научить думать о компромиссах. На практике обычно DAG на тип оборудования или маршрут.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 16: Квиз
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Проверка знаний — Квиз</h2>
+
+  <div style="margin-bottom:16px;">
+    <p style="font-size:0.88em;"><strong>Вопрос 1:</strong> Что такое Task Instance?</p>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Шаблон задачи в DAG-файле</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Конкретный запуск задачи в рамках DAG Run</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Файл Python-оператора</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Тип Connection в Airflow</button>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <p style="font-size:0.88em;"><strong>Вопрос 2:</strong> Какой статус получит задача, пропущенная BranchPythonOperator?</p>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">failed</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">success</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">skipped</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">none</button>
+  </div>
+
+  <div>
+    <p style="font-size:0.88em;"><strong>Вопрос 3:</strong> Что означает <code>catchup=False</code> в DAG буксового мониторинга ТЧЭ-15?</p>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Отключить повторы при падении задачи</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Не создавать DAG Run за пропущенные периоды</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Отключить сохранение логов</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Запускать DAG только вручную</button>
+  </div>
+
+  <aside class="notes">Дайте 2 минуты на ответы. После — разберите каждый вопрос. Вопрос 3 особенно важен: catchup=True + start_date месяц назад = 720 DAG Run для ежечасного расписания.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 17: Задание для группы
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Задание для работы в группах</h2>
+  <div class="task-box">
+    <strong>Задание (20 мин.):</strong> Спроектируйте DAG для ежесменной обработки телеметрии одного локомотива серии ВЛ80С в ТЧЭ-15.<br><br>
+    <strong>Требования:</strong>
+    <ol>
+      <li>Минимум <strong>5 задач</strong> с осмысленными именами (task_id)</li>
+      <li>Зависимости — нарисуйте стрелки на доске</li>
+      <li><code>default_args</code> с <code>retries=2</code>, <code>retry_delay=10 мин</code>, owner = ваша команда</li>
+      <li>Использование хотя бы одного <code>BashOperator</code> и одного <code>PythonOperator</code></li>
+      <li>Обоснуйте: <code>catchup=True</code> или <code>catchup=False</code>?</li>
+    </ol>
+    <hr style="border:none;border-top:1px solid #70AD47;margin:8px 0;">
+    <strong>Подсказки по задачам:</strong> проверка файла → чтение CSV → валидация букс/тяги → загрузка в БД → формирование отчёта смены
+  </div>
+  <p style="font-size:0.8em;margin-top:10px;">Каждая группа представляет результат за 2 минуты. Сравниваем подходы.</p>
+  <aside class="notes">Следите за временем. Цель — не идеальный код, а понимание структуры DAG. Акцент на обсуждении различий между группами.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 18: Обзор практической работы
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Практическая работа 02</h2>
+  <div class="rzd-header">
+    Создание DAG для загрузки телеметрии буксовых датчиков из CSV в PostgreSQL
+  </div>
+  <div class="two-col" style="margin-top:14px;">
+    <div>
+      <h3>Что делаем</h3>
+      <ol style="font-size:0.82em;">
+        <li>Изучаем структуру <code>sensor_readings.csv</code> (датчики букс локомотивов)</li>
+        <li>Пишем DAG <code>rzd_sensor_ingestion</code> с 5 задачами</li>
+        <li>Проверяем синтаксис через CLI</li>
+        <li>Запускаем через <code>airflow dags test</code></li>
+        <li>Исследуем Graph / Grid View в UI</li>
+        <li>Меняем расписание и наблюдаем поведение</li>
+        <li>Имитируем падение задачи → диагностика → восстановление</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Входные данные</h3>
+      <div class="arch-box" style="font-size:0.8em;">
+        <code>sensor_readings.csv</code><br>
+        <small>loco_id, series, timestamp,<br>sensor_type, value, unit, quality_flag</small>
+      </div>
+      <div style="margin-top:8px;" class="arch-box" style="font-size:0.8em;">
+        <code>locomotives.csv</code><br>
+        <small>Справочник локомотивов ТЧЭ-15</small>
+      </div>
+      <div style="margin-top:8px;" class="arch-box" style="font-size:0.8em;">
+        <strong>PostgreSQL:</strong> <code>rzd_analytics.sensor_readings</code>
+      </div>
+      <p style="font-size:0.78em;margin-top:8px;">
+        <span class="badge-ok">Продолжительность</span> 45–60 мин.
+      </p>
+    </div>
+  </div>
+  <aside class="notes">Практическая работа выполняется индивидуально на ВМ Яндекс Облака. Файл данных уже размещён в /opt/airflow/data/.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 19: Обзор лабораторной работы
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Лабораторная работа 02</h2>
+  <div class="rzd-header">
+    DAG-пайплайн: sensor_readings.csv → валидация температуры букс → rzd_analytics
+  </div>
+  <div class="two-col" style="margin-top:14px;">
+    <div>
+      <h3>Production-like DAG</h3>
+      <ol style="font-size:0.82em;">
+        <li>Создание схемы <code>rzd_analytics</code> в PostgreSQL</li>
+        <li>Настройка Connection в Airflow UI</li>
+        <li>DAG <code>rzd_buxa_pipeline</code> — минимум 7 задач</li>
+        <li>XCom: передача статистики между задачами</li>
+        <li>Идемпотентность: DELETE + INSERT</li>
+        <li>Backfill за 7 дней</li>
+        <li>Верификация: подсчёт записей в PostgreSQL</li>
+        <li>Проверка идемпотентности повторным запуском</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Задания повышенной сложности</h3>
+      <div class="arch-box" style="font-size:0.82em;">
+        <span class="badge-warn">+1</span> Финальный отчёт через XCom — статистика перегревов по сериям<br><br>
+        <span class="badge-warn">+2</span> Идемпотентность по <code>DATE(timestamp)</code> вместо <code>reading_id</code><br><br>
+        <span class="badge-warn">+3</span> Email/Telegram-уведомление при количестве перегревов &gt; 0
+      </div>
+      <p style="font-size:0.78em;margin-top:8px;">
+        <span class="badge-err">60–90 мин.</span>
+        Выполняется в малых группах (2–3 чел.) или индивидуально.
+      </p>
+    </div>
+  </div>
+  <aside class="notes">Лабораторная работа — углублённый вариант практики. Задания повышенной сложности рекомендуются продвинутым студентам.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 20: Метрики и мониторинг в ТЧЭ-15
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Что мы измеряем в аналитической платформе</h2>
+  <div class="three-col">
+    <div class="metric">
+      <span class="val">80°C</span>
+      Критический порог<br>температуры буксы
+    </div>
+    <div class="metric">
+      <span class="val">1 ч</span>
+      Периодичность<br>сбора телеметрии
+    </div>
+    <div class="metric">
+      <span class="val">48</span>
+      Локомотивов<br>в парке ТЧЭ-15
+    </div>
+  </div>
+  <div class="three-col" style="margin-top:14px;">
+    <div class="arch-box" style="text-align:center;font-size:0.8em;">
+      <strong>Соблюдение графика</strong><br>
+      <span class="hi-orange">OTD</span> — процент поездов<br>по расписанию
+    </div>
+    <div class="arch-box" style="text-align:center;font-size:0.8em;">
+      <strong>Расход энергоресурсов</strong><br>
+      <span class="hi-orange">кВт·ч / поездо-км</span><br>
+      для электровозов
+    </div>
+    <div class="arch-box" style="text-align:center;font-size:0.8em;">
+      <strong>Планирование ТО</strong><br>
+      ТО-1, ТО-2, ТР-1, ТР-2<br>
+      по моточасам
+    </div>
+  </div>
+  <p style="font-size:0.8em;margin-top:12px;">
+    <span class="hi-green">Следующий модуль:</span> PostgresOperator, хуки и подключения — загружаем данные напрямую через Airflow Connections.
+  </p>
+  <aside class="notes">Подведите итог модуля. Что нового узнали? Какие вопросы остались?</aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     СЛАЙД 21: Итоговый слайд
+═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Ключевые понятия модуля 02</h2>
+  <div class="two-col">
+    <div>
+      <ul style="font-size:0.85em;">
+        <li><strong>DAG-файл</strong> = 5 блоков: импорты, константы, default_args, функции, объявление</li>
+        <li><strong>default_args</strong> = умолчания для задач (retries, email, timeout)</li>
+        <li><strong>with DAG</strong> и <strong>@dag</strong> — два валидных синтаксиса</li>
+        <li><strong>BashOperator</strong> / <strong>PythonOperator</strong> / <strong>EmptyOperator</strong></li>
+        <li><strong>Состояния задач</strong>: success, failed, skipped, upstream_failed</li>
+        <li><strong>DAG Run</strong> ≠ <strong>Task Instance</strong> — конкретный запуск vs шаблон</li>
+        <li><strong>Graph View</strong> — топология, <strong>Grid View</strong> — история</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Контекст ТЧЭ-15</h3>
+      <div class="arch-box" style="font-size:0.82em;">
+        <strong>DAG буксового контроля:</strong><br>
+        <code>sensor_readings.csv</code><br>
+        → <span class="hi-orange">check_buxa_temp</span> (80°C порог)<br>
+        → <code>rzd_analytics.sensor_readings</code>
+      </div>
+      <div class="arch-box" style="margin-top:10px;font-size:0.82em;">
+        <strong>Что дальше (Модуль 03):</strong><br>
+        PostgresOperator, хуки, Connections,<br>
+        Variables — профессиональная работа с данными РЖД
+      </div>
+      <p style="font-size:0.78em;margin-top:8px;">
+        <span class="hi-green">Вопросы? Обсуждаем!</span>
+      </p>
+    </div>
+  </div>
+  <aside class="notes">Финальный слайд. Дайте 5 минут на вопросы. Напомните про дедлайн сдачи лабораторной работы.</aside>
+</section>
+
+</div><!-- .slides -->
+</div><!-- .reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: true,
+    slideNumber: 'c/t',
+    plugins: [RevealHighlight, RevealNotes],
+    transition: 'slide',
+    controls: true,
+    progress: true
+});
+function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll('.quiz-btn').forEach(function(b) { b.disabled = true; });
+    if (correct) { btn.classList.add('correct'); btn.textContent += ' ✓'; }
+    else { btn.classList.add('wrong'); btn.textContent += ' ✗'; p.querySelectorAll('[data-correct="true"]').forEach(function(b) { b.classList.add('correct'); }); }
+}
+</script>
+</body>
+</html>
+
+
+
