@@ -1,0 +1,786 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Модуль 01: Введение в Apache Airflow | Аналитическая платформа РЖД</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; --r-main-font-size: 28px; }
+.reveal { font-size: 24px; }
+.reveal h1 { color: #4472C4; font-size: 1.8em; }
+.reveal h2 { color: #4472C4; font-size: 1.3em; }
+.reveal h3 { color: #4472C4; font-size: 1.1em; }
+.reveal ul, .reveal ol { font-size: 0.88em; line-height: 1.5; }
+.reveal p { font-size: 0.88em; line-height: 1.5; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green { color: #70AD47; font-weight: bold; }
+.discuss { background:#fff8e7; border-left:5px solid #ED7D31; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.82em; line-height:1.4; border-radius:0 6px 6px 0; }
+.case-box { background:#eef4fb; border-left:5px solid #4472C4; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.8em; line-height:1.4; border-radius:0 6px 6px 0; }
+.task-box { background:#eafaf1; border-left:5px solid #70AD47; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.8em; line-height:1.4; border-radius:0 6px 6px 0; }
+.quiz-btn { background:#4472C4; color:#fff; border:none; padding:7px 15px; margin:4px; cursor:pointer; border-radius:4px; font-size:0.72em; transition:background 0.2s; }
+.quiz-btn:hover { background:#2d5699; }
+.quiz-btn.correct { background:#70AD47; }
+.quiz-btn.wrong { background:#e74c3c; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.arch-box { border:2px solid #4472C4; border-radius:6px; padding:10px; margin:4px; background:#f0f4fb; font-size:0.78em; line-height:1.4; }
+.reveal pre { font-size: 0.48em; width:100%; box-shadow:none; margin: 8px 0; }
+.reveal pre code { max-height: 380px; }
+.reveal code { background:#f6f8fa; padding:2px 4px; border-radius:3px; font-size:0.88em; }
+.reveal table { font-size: 0.78em; }
+.reveal table th { background: #4472C4; color: #fff; }
+.reveal table tr:nth-child(even) { background: #f0f4fb; }
+.tag { display:inline-block; background:#4472C4; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.68em; margin:2px; }
+.badge-ok { display:inline-block; background:#70AD47; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.badge-warn { display:inline-block; background:#ED7D31; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.badge-err { display:inline-block; background:#e74c3c; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.metric { background:#4472C4; color:#fff; padding:12px; border-radius:8px; text-align:center; }
+.metric .val { font-size:1.8em; font-weight:bold; color:#ED7D31; display:block; }
+.loco-badge { display:inline-block; background:#1a3a6b; color:#fff; padding:4px 10px; border-radius:4px; font-size:0.72em; margin:2px; font-family:monospace; }
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+     !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================== СЛАЙД 1: ТИТУЛЬНЫЙ ===================== -->
+<section>
+  <h1>Модуль 01</h1>
+  <h2>Введение в Apache Airflow</h2>
+  <hr style="border-color:#4472C4; width:60%; margin:20px auto;">
+  <p style="font-size:0.75em; color:#888;">
+    Курс: Оркестрация данных на Apache Airflow<br>
+    Продолжительность модуля: 1 час
+  </p>
+  <aside class="notes">Представьтесь, обозначьте контекст: курс рассчитан на инженеров и аналитиков ТЧЭ-15. Цель модуля — понять, что такое Airflow и зачем он нужен именно на локомотивном депо.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 2: ПОВЕСТКА ===================== -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li>Зачем РЖД оркестрация данных?</li>
+        <li>Что такое Apache Airflow</li>
+        <li>Архитектура: Scheduler, Webserver, Executor, MetaDB</li>
+        <li>Основные концепции: DAG, Task, Operator</li>
+        <li>Провайдеры и экосистема</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li>Установка в Яндекс Облаке</li>
+        <li>Обзор веб-интерфейса</li>
+        <li>Место Airflow в платформе РЖД</li>
+        <li>Практика и лабораторная работа</li>
+      </ul>
+      <div style="margin-top:12px;">
+        <span class="badge-ok">Теория</span>
+        <span class="badge-warn">Обсуждение</span>
+        <span class="badge-ok">Практика</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Пройдитесь по повестке, дайте слушателям понять структуру занятия. Обратите внимание, что вопросы и обсуждения встроены в каждую тему.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 3: ПРОБЛЕМА — ЗАЧЕМ РЖД ОРКЕСТРАЦИЯ ===================== -->
+<section>
+  <h2>Проблема: данные есть — порядка нет</h2>
+  <div class="two-col">
+    <div>
+      <h3>Что генерирует ТЧЭ-15 каждые сутки</h3>
+      <ul>
+        <li>ГЛОНАСС-телеметрия со <span class="hi-orange">120+ локомотивов</span></li>
+        <li>Температура <span class="hi-orange">букс</span> каждые 30 сек</li>
+        <li>Расход топлива (2ТЭ116, 2ТЭ25КМ)</li>
+        <li>Данные о расписании: <span class="hi-orange">план / факт</span></li>
+        <li>Журналы ТО-1, ТО-2, ТР-1, ТР-2, КР</li>
+        <li>ТСКБМ (контроль бодрствования)</li>
+        <li>САУТ (автоупр. торможением)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Текущая ситуация</h3>
+      <div class="arch-box" style="border-color:#ED7D31; background:#fff3e0;">
+        <strong style="color:#ED7D31;">Типичные проблемы:</strong><br>
+        — Скрипты Python запускаются вручную<br>
+        — Cron-задания без мониторинга<br>
+        — При сбое никто не знает<br>
+        — Нет зависимостей между задачами<br>
+        — Нельзя повторить упавший шаг<br>
+        — Данные рассогласованы по времени
+      </div>
+      <div class="arch-box" style="margin-top:8px; border-color:#70AD47; background:#eafaf1;">
+        <strong style="color:#70AD47;">Что нужно:</strong><br>
+        Единая платформа оркестрации с мониторингом, алертами и управлением зависимостями
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Попросите слушателей поднять руки: кто сталкивался с падением cron-скрипта, о котором узнали только через сутки? Это живая боль.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 4: ЧТО ТАКОЕ APACHE AIRFLOW ===================== -->
+<section>
+  <h2>Apache Airflow — оркестратор рабочих процессов</h2>
+  <div class="two-col">
+    <div>
+      <h3>Определение</h3>
+      <p>Airflow — платформа с открытым исходным кодом для <span class="hi-orange">программного создания, планирования и мониторинга</span> рабочих процессов обработки данных.</p>
+      <ul>
+        <li>Разработан в <strong>Airbnb</strong> (2014), передан в Apache (2016)</li>
+        <li>Версия 2.x: полностью переработана архитектура</li>
+        <li>Язык: <strong>Python</strong></li>
+        <li>Активное сообщество: 30 000+ GitHub ⭐</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Ключевые принципы</h3>
+      <div class="arch-box">
+        <strong>Workflows as Code</strong><br>
+        Пайплайны описываются кодом Python — версионирование в Git, тестирование, повторное использование
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <strong>Не для потоков реального времени</strong><br>
+        Airflow — <em>планировщик батч-задач</em>. Для RT используют Kafka/Flink. Идеален для ETL каждые 15 мин.
+      </div>
+      <div class="arch-box" style="margin-top:8px; border-color:#70AD47;">
+        <strong style="color:#70AD47;">Применение в РЖД:</strong><br>
+        Телеметрия → DWH → витрины BI → алерты по буксам
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Подчеркните отличие от Kafka/Spark Streaming. Airflow — это планировщик, а не движок реального времени. Пример: собираем телеметрию каждые 15 минут и строим агрегаты за смену.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 5: АРХИТЕКТУРА AIRFLOW ===================== -->
+<section>
+  <h2>Архитектура Apache Airflow</h2>
+  <div class="three-col" style="margin-bottom:10px;">
+    <div class="arch-box" style="border-color:#4472C4;">
+      <strong style="color:#4472C4;">Scheduler</strong><br>
+      Читает DAG-файлы, следит за расписанием, ставит задачи в очередь. Сердце системы.
+      <br><br>
+      <span class="tag">Python process</span>
+    </div>
+    <div class="arch-box" style="border-color:#ED7D31;">
+      <strong style="color:#ED7D31;">Webserver</strong><br>
+      Flask-приложение. Предоставляет UI для мониторинга DAG, логов, ручного запуска.
+      <br><br>
+      <span class="tag">Flask + Gunicorn</span>
+    </div>
+    <div class="arch-box" style="border-color:#70AD47;">
+      <strong style="color:#70AD47;">Executor</strong><br>
+      Решает, <em>как</em> выполнять задачи: локально, в очереди Celery, в Kubernetes.
+      <br><br>
+      <span class="tag">LocalExecutor</span> <span class="tag">CeleryExecutor</span>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="arch-box" style="border-color:#9B59B6;">
+      <strong style="color:#9B59B6;">MetaDB (PostgreSQL)</strong><br>
+      Хранит состояние всех DAG и задач, историю запусков, соединения, переменные. Критически важен.
+    </div>
+    <div class="arch-box" style="border-color:#1abc9c;">
+      <strong style="color:#1abc9c;">Worker</strong><br>
+      Процессы, непосредственно выполняющие код задач. При CeleryExecutor — отдельные VM.
+    </div>
+  </div>
+  <aside class="notes">Нарисуйте схему на доске: Scheduler читает DAG → кладет TaskInstance в MetaDB → Executor забирает → Worker выполняет → результат в MetaDB → Webserver показывает статус.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 6: DAG, TASK, OPERATOR ===================== -->
+<section>
+  <h2>Основные концепции: DAG, Task, Operator</h2>
+  <div class="three-col">
+    <div class="arch-box" style="border-color:#4472C4;">
+      <strong style="color:#4472C4;">DAG</strong><br>
+      Directed Acyclic Graph — граф задач без циклов. Описывает полный пайплайн обработки данных.
+      <hr style="border-color:#ddd; margin:6px 0;">
+      <em>Пример РЖД:</em><br>
+      <code>locomotive_telemetry_dag</code><br>
+      запускается каждые 15 мин, обрабатывает данные ГЛОНАСС по всем локомотивам депо
+    </div>
+    <div class="arch-box" style="border-color:#ED7D31;">
+      <strong style="color:#ED7D31;">Task</strong><br>
+      Единица работы внутри DAG. Каждая задача имеет статус: queued → running → success / failed.
+      <hr style="border-color:#ddd; margin:6px 0;">
+      <em>Пример РЖД:</em><br>
+      <code>validate_buxa_temp</code><br>
+      проверяет: температура букс &lt; 80°C. Если нет — алерт дежурному инженеру ТЧЭ-15
+    </div>
+    <div class="arch-box" style="border-color:#70AD47;">
+      <strong style="color:#70AD47;">Operator</strong><br>
+      Шаблон задачи. Определяет, что именно делать. Python, SQL, Bash, HTTP — всё это операторы.
+      <hr style="border-color:#ddd; margin:6px 0;">
+      <em>Пример РЖД:</em><br>
+      <code>PostgresOperator</code><br>
+      записывает агрегаты по расходу топлива 2ТЭ116 в схему <code>rzd_analytics</code>
+    </div>
+  </div>
+  <p style="margin-top:10px; font-size:0.78em; color:#555;">
+    <strong>Зависимость задач:</strong>
+    <code>extract >> validate >> transform >> load >> notify</code>
+  </p>
+  <aside class="notes">Объясните на примере: пайплайн телеметрии локомотива — это DAG. Шаги «читать CSV», «проверить температуру букс», «записать в PostgreSQL» — это Tasks. PythonOperator, PostgresOperator — это Operators.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 7: ПРОВАЙДЕРЫ ===================== -->
+<section>
+  <h2>Провайдеры — экосистема Airflow</h2>
+  <p>Провайдеры — отдельные пакеты, добавляющие операторы, хуки и сенсоры для конкретных технологий.</p>
+  <div class="two-col">
+    <div>
+      <h3>Провайдеры для платформы РЖД</h3>
+      <table>
+        <tr><th>Провайдер</th><th>Применение в ТЧЭ-15</th></tr>
+        <tr><td><code>apache-airflow-providers-postgres</code></td><td>Запись телеметрии в DWH rzd_analytics</td></tr>
+        <tr><td><code>apache-airflow-providers-http</code></td><td>REST API ГЛОНАСС-системы, ЦУП РЖД</td></tr>
+        <tr><td><code>apache-airflow-providers-amazon</code></td><td>S3-совместимое хранилище Яндекс Object Storage</td></tr>
+        <tr><td><code>apache-airflow-providers-telegram</code></td><td>Алерты дежурному инженеру депо</td></tr>
+        <tr><td><code>apache-airflow-providers-ssh</code></td><td>Запуск скриптов на VM обработки данных</td></tr>
+        <tr><td><code>apache-airflow-providers-yandex</code></td><td>Яндекс DataProc, DataSphere</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Как устанавливать</h3>
+      <pre><code class="language-bash"># Установка провайдеров
+pip install apache-airflow-providers-postgres
+pip install apache-airflow-providers-http
+pip install apache-airflow-providers-yandex
+
+# Проверка установленных провайдеров
+airflow providers list</code></pre>
+      <div class="arch-box" style="margin-top:8px; border-color:#70AD47; background:#eafaf1; font-size:0.75em;">
+        <strong style="color:#70AD47;">Совет:</strong> все провайдеры перечислите в <code>requirements.txt</code> и зафиксируйте версии для воспроизводимости.
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Провайдеры — это плагины. Каждый провайдер = отдельный pip-пакет. Это позволяет не тянуть лишние зависимости. В нашем проекте ключевые: postgres, http, yandex.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 8: УСТАНОВКА В ЯНДЕКС ОБЛАКЕ ===================== -->
+<section>
+  <h2>Установка Airflow в Яндекс Облаке</h2>
+  <div class="two-col">
+    <div>
+      <h3>Вариант А: Managed Airflow</h3>
+      <div class="arch-box" style="border-color:#70AD47; background:#eafaf1;">
+        <strong style="color:#70AD47;">Рекомендуется для боевой среды</strong><br>
+        — Управляемый сервис Яндекс Cloud<br>
+        — Автообновление, резервное копирование<br>
+        — Интеграция с IAM, Object Storage<br>
+        — Мониторинг из коробки
+      </div>
+      <pre><code class="language-bash"># Создание через Яндекс CLI
+yc managed-airflow cluster create \
+  --name rzd-tche15-airflow \
+  --zone ru-central1-a \
+  --service-account-name rzd-sa</code></pre>
+    </div>
+    <div>
+      <h3>Вариант Б: VM Ubuntu 22.04 (учебная)</h3>
+      <pre><code class="language-bash"># 1. Обновление системы
+sudo apt update && sudo apt upgrade -y
+
+# 2. Python 3.10 + pip
+sudo apt install -y python3.10 python3-pip
+
+# 3. Переменные окружения
+export AIRFLOW_HOME=~/airflow
+export AIRFLOW__CORE__EXECUTOR=LocalExecutor
+
+# 4. Установка Airflow 2.8.x
+CONSTRAINT_URL="https://raw.githubusercontent.com/apache/\
+airflow/constraints-2.8.4/\
+constraints-3.10.txt"
+pip install "apache-airflow==2.8.4" \
+  --constraint "${CONSTRAINT_URL}"
+
+# 5. Инициализация БД
+airflow db init
+
+# 6. Создание администратора
+airflow users create \
+  --username admin --firstname RZD \
+  --lastname Admin --role Admin \
+  --email admin@tche15.rzd.ru</code></pre>
+    </div>
+  </div>
+  <aside class="notes">На учебной VM используем LocalExecutor — проще всего. В продуктиве нужен CeleryExecutor или Kubernetes. Managed Airflow в Яндекс Cloud — самый быстрый старт для команды.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 9: ВЕБ-ИНТЕРФЕЙС ===================== -->
+<section>
+  <h2>Веб-интерфейс Airflow</h2>
+  <div class="two-col">
+    <div>
+      <h3>Ключевые разделы UI</h3>
+      <table>
+        <tr><th>Раздел</th><th>Назначение</th></tr>
+        <tr><td><strong>DAGs</strong></td><td>Список всех пайплайнов, статус, расписание</td></tr>
+        <tr><td><strong>Grid View</strong></td><td>История запусков DAG в виде сетки</td></tr>
+        <tr><td><strong>Graph View</strong></td><td>Граф зависимостей задач, статусы</td></tr>
+        <tr><td><strong>Gantt</strong></td><td>Диаграмма времени выполнения задач</td></tr>
+        <tr><td><strong>Logs</strong></td><td>Логи каждого запуска задачи</td></tr>
+        <tr><td><strong>Admin → Connections</strong></td><td>Подключения к PostgreSQL, HTTP и др.</td></tr>
+        <tr><td><strong>Admin → Variables</strong></td><td>Хранение конфигурации (без секретов!)</td></tr>
+        <tr><td><strong>Browse → Task Instances</strong></td><td>Поиск по конкретным запускам задач</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Практические сценарии в ТЧЭ-15</h3>
+      <ul>
+        <li>Просмотр статуса ночной загрузки телеметрии ГЛОНАСС</li>
+        <li>Диагностика упавшей задачи по логу</li>
+        <li>Ручной повторный запуск (<em>Clear &amp; Re-run</em>) после сбоя сети</li>
+        <li>Включение / отключение пайплайна на время ТО</li>
+        <li>Мониторинг времени выполнения загрузки данных о расписании</li>
+      </ul>
+      <div class="arch-box" style="margin-top:10px; border-color:#ED7D31; background:#fff3e0; font-size:0.76em;">
+        <strong style="color:#ED7D31;">Запуск Webserver:</strong><br>
+        <code>airflow webserver -p 8080</code><br>
+        <code>airflow scheduler</code><br>
+        URL: <code>http://&lt;VM-IP&gt;:8080</code>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Покажите UI в реальном времени, если есть доступ. Акцентируйте внимание на Grid View — он стал главным в Airflow 2.5+. Покажите как смотреть логи упавшей задачи.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 10: МЕСТО AIRFLOW В ПЛАТФОРМЕ РЖД ===================== -->
+<section>
+  <h2>Место Airflow в аналитической платформе РЖД</h2>
+  <div class="two-col">
+    <div>
+      <h3>Источники данных</h3>
+      <div class="arch-box" style="font-size:0.76em;">
+        <span class="loco-badge">ГЛОНАСС</span> координаты, скорость<br>
+        <span class="loco-badge">ТУ</span> температура букс<br>
+        <span class="loco-badge">ТСКБМ</span> контроль машиниста<br>
+        <span class="loco-badge">САУТ</span> данные торможения<br>
+        <span class="loco-badge">ТО-журналы</span> плановое обслуживание<br>
+        <span class="loco-badge">ГВЦ РЖД</span> расписание движения<br>
+        <span class="loco-badge">АСОУП</span> перевозочные документы
+      </div>
+    </div>
+    <div>
+      <h3>Схема потока данных</h3>
+      <div style="font-size:0.76em; line-height:1.8;">
+        <div class="arch-box" style="text-align:center; border-color:#ED7D31; background:#fff3e0;">
+          <strong>Источники</strong><br>ГЛОНАСС · ТУ · ГВЦ · АСОУП
+        </div>
+        <div style="text-align:center; font-size:1.2em; color:#4472C4;">▼</div>
+        <div class="arch-box" style="text-align:center; border-color:#4472C4; background:#eef4fb;">
+          <strong style="color:#4472C4;">Apache Airflow</strong><br>
+          Оркестрация: extract → validate → transform → load
+        </div>
+        <div style="text-align:center; font-size:1.2em; color:#4472C4;">▼</div>
+        <div class="arch-box" style="text-align:center; border-color:#9B59B6;">
+          <strong>DWH</strong> (PostgreSQL / ClickHouse)<br>
+          Схема <code>rzd_analytics</code>
+        </div>
+        <div style="text-align:center; font-size:1.2em; color:#4472C4;">▼</div>
+        <div class="arch-box" style="text-align:center; border-color:#70AD47; background:#eafaf1;">
+          <strong style="color:#70AD47;">BI-дашборды</strong> Яндекс DataLens<br>
+          OTD · расход топлива · состояние парка
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Airflow — это «клей» между источниками и DWH. Он не хранит данные, не трансформирует их сам — он оркеструет другие инструменты. Это важно понять с самого начала.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 11: ПРИМЕНЕНИЕ В ТЧЭ-15 ===================== -->
+<section>
+  <h2>Оркестрация пайплайнов депо ТЧЭ-15</h2>
+  <h3>Как Airflow объединит данные в единую платформу</h3>
+  <div class="three-col" style="margin-top:10px;">
+    <div class="arch-box" style="border-color:#4472C4;">
+      <strong style="color:#4472C4;">Телеметрия ГЛОНАСС</strong><br>
+      <em>Каждые 15 мин</em><br>
+      — Координаты и скорость<br>
+      — Тяговый ток (ВЛ80С, ЭП2К)<br>
+      — Расход дизеля (2ТЭ116)<br>
+      — Температура букс<br>
+      <span class="badge-err" style="margin-top:6px; display:block; width:fit-content;">Алерт: буксы &gt; 80°C</span>
+    </div>
+    <div class="arch-box" style="border-color:#ED7D31;">
+      <strong style="color:#ED7D31;">Расписание движения</strong><br>
+      <em>Каждый час</em><br>
+      — Плановые нитки графика<br>
+      — Фактические прибытия<br>
+      — Опоздания (мин)<br>
+      — OTD грузовых поездов<br>
+      <span class="badge-warn" style="margin-top:6px; display:block; width:fit-content;">KPI: OTD &gt; 95%</span>
+    </div>
+    <div class="arch-box" style="border-color:#70AD47;">
+      <strong style="color:#70AD47;">Планирование ТО</strong><br>
+      <em>Ежедневно в 04:00</em><br>
+      — Моточасы накопленные<br>
+      — ТО-1, ТО-2, ТР-1, ТР-2, КР<br>
+      — Межремонтные интервалы<br>
+      — Прогноз плановых ТО<br>
+      <span class="badge-ok" style="margin-top:6px; display:block; width:fit-content;">Список на завтра</span>
+    </div>
+  </div>
+  <p style="font-size:0.78em; margin-top:10px; color:#555;">
+    Итого в ТЧЭ-15: <span class="hi-orange">12 активных DAG</span> · ~<span class="hi-orange">80 задач/сутки</span> · <span class="hi-green">единый DWH rzd_analytics</span>
+  </p>
+  <aside class="notes">Это конкретная целевая архитектура. На этом слайде покажите, что три разных потока данных объединяются в одну платформу через Airflow. Задайте вопрос: какой из трёх потоков кажется наиболее критичным?</aside>
+</section>
+
+<!-- ===================== СЛАЙД 12: КОД ПЕРВОГО DAG ===================== -->
+<section>
+  <h2>Первый DAG: приём телеметрии локомотивов</h2>
+  <pre><code class="language-python">from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+
+default_args = {
+    "owner": "rzd-de-team",
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "email_on_failure": True,
+    "email": ["duty@tche15.rzd.ru"],
+}
+
+with DAG(
+    dag_id="locomotive_telemetry_ingest",
+    description="Ingestion of locomotive GLONASS telemetry for TChe-15",
+    schedule="*/15 * * * *",          # каждые 15 минут
+    start_date=datetime(2024, 3, 1),
+    catchup=False,
+    default_args=default_args,
+    tags=["rzd", "telemetry", "ingest", "tche15"],
+) as dag:
+
+    def read_telemetry(**context):
+        """Читает данные ГЛОНАСС для всех локомотивов депо."""
+        print("Reading telemetry from GLONASS system...")
+        # Здесь будет HTTP-запрос к API навигационной системы
+
+    def validate_buxa_temp(**context):
+        """Проверяет температуру букс. Критично: > 80°C."""
+        print("Validating buxa temperatures...")
+        # При превышении 80°C — генерация алерта
+
+    ingest = PythonOperator(
+        task_id="ingest_telemetry",
+        python_callable=read_telemetry,
+    )
+
+    validate = PythonOperator(
+        task_id="validate_buxa_temp",
+        python_callable=validate_buxa_temp,
+    )
+
+    ingest >> validate   # validate запускается после ingest</code></pre>
+  <aside class="notes">Разберите код построчно: default_args наследуются всеми задачами. schedule="*/15 * * * *" — это cron. catchup=False — не запускать пропущенные периоды. Оператор >> задаёт зависимость.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 13: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1 ===================== -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Обсудите в группе (5 минут):</strong><br><br>
+    Почему cron-заданий недостаточно для оркестрации 50+ пайплайнов локомотивного депо?<br><br>
+    Рассмотрите конкретные сценарии:
+    <ul>
+      <li>Пайплайн телеметрии букс упал в 03:15. Как об этом узнать?</li>
+      <li>Загрузка расписания зависит от успешного получения данных из ГВЦ РЖД. Как задать зависимость в cron?</li>
+      <li>Нужно повторить только шаг «валидация», не перезапуская весь пайплайн. Как?</li>
+      <li>Сколько человек нужно для мониторинга 50 cron-скриптов в ночную смену?</li>
+    </ul>
+  </div>
+  <p style="font-size:0.78em; color:#888; margin-top:10px;">Один представитель от группы озвучивает главный аргумент.</p>
+  <aside class="notes">Дайте 5 минут на обсуждение в группах по 3-4 человека. Ожидаемые ответы: нет зависимостей, нет алертов, нет повторного запуска, нет истории, нет UI. Cron — это всё-или-ничего.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 14: КЕЙС ===================== -->
+<section>
+  <h2>Кейс: инцидент в 03:15</h2>
+  <div class="case-box">
+    <strong>Ситуация:</strong><br>
+    В 03:15 пайплайн обработки телеметрии локомотива <span style="color:#ED7D31; font-weight:bold;">ВЛ80С-1847</span> завершился с ошибкой на задаче <code>validate_buxa_temp</code>. Дежурный инженер ТЧЭ-15 получил email-алерт.<br><br>
+    <strong>Вопросы для анализа:</strong>
+    <ol>
+      <li>Как в Airflow UI найти конкретный упавший запуск? Какой раздел открыть?</li>
+      <li>Что покажет лог задачи <code>validate_buxa_temp</code>? Как его открыть?</li>
+      <li>Локомотив <span style="color:#ED7D31;">ВЛ80С-1847</span> вышел на маршрут в 04:00. Данные телеметрии за 03:00–03:15 не попали в DWH. Как восстановить пропущенный запуск?</li>
+      <li>Какой оператор Airflow использовать для отправки алерта в Telegram дежурному диспетчеру?</li>
+    </ol>
+  </div>
+  <p style="font-size:0.76em; color:#555; margin-top:8px;">
+    <span class="badge-warn">Hint:</span> Grid View → клик на красную ячейку → Logs. Для повтора: Clear Task → Confirm.
+  </p>
+  <aside class="notes">Это практический разбор реального сценария. Дайте 5-7 минут на обдумывание, затем разберите пошагово в UI. Ключевой момент: Airflow хранит всю историю, cron — нет.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 15: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2 ===================== -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Подумайте индивидуально, затем обсудите (3 минуты):</strong><br><br>
+    Какие данные с подвижного состава ТЧЭ-15 критически важны для оперативного центра в режиме реального времени?
+    <ul>
+      <li>Данные каких локомотивов приоритетнее: грузовые (ВЛ80С, 2ТЭ116) или пассажирские (ЭП2К, ЭС2Г)?</li>
+      <li>Какая частота опроса датчиков достаточна для аналитики, а не для управления?</li>
+      <li>Что важнее: температура букс или соблюдение расписания?</li>
+    </ul>
+  </div>
+  <p style="font-size:0.78em; color:#888; margin-top:10px;">Нет правильного ответа — важен контекст и приоритеты депо.</p>
+  <aside class="notes">Вопрос помогает слушателям осознать, что Airflow — инструмент, а не цель. Цель — принятие решений на основе данных. Важно, чтобы они сами формулировали требования к системе.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 16: КВИЗ ===================== -->
+<section>
+  <h2>Проверка знаний</h2>
+
+  <p style="font-size:0.82em;"><strong>Вопрос 1.</strong> Что такое DAG в Apache Airflow?</p>
+  <div>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Файл конфигурации YAML</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Граф задач без циклов</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Тип оператора для Python</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">База данных метаданных</button>
+  </div>
+
+  <p style="font-size:0.82em; margin-top:16px;"><strong>Вопрос 2.</strong> Какой компонент Airflow читает DAG-файлы и запускает задачи по расписанию?</p>
+  <div>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Webserver</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Executor</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Scheduler</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">MetaDB</button>
+  </div>
+
+  <p style="font-size:0.82em; margin-top:16px;"><strong>Вопрос 3.</strong> Apache Airflow является:</p>
+  <div>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Базой данных реального времени</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Системой визуализации данных</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Оркестратором рабочих процессов</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Языком программирования</button>
+  </div>
+  <aside class="notes">Дайте 2 минуты. Отметьте, что Airflow — оркестратор, не ETL-движок и не БД. Это часто путают новички.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 17: ГРУППОВОЕ ЗАДАНИЕ ===================== -->
+<section>
+  <h2>Групповое задание</h2>
+  <div class="task-box">
+    <strong>Спроектируйте архитектуру пайплайна для ТЧЭ-15 (15 минут):</strong><br><br>
+    Разделитесь на 3 группы. Каждая группа проектирует один пайплайн:
+    <ul>
+      <li><strong>Группа 1 — Телеметрия:</strong> источники (ГЛОНАСС, датчики букс), периодичность (15 мин), шаги обработки, целевые таблицы в <code>rzd_analytics</code>, алерты при перегреве букс.</li>
+      <li><strong>Группа 2 — Расписание:</strong> получение плана из ГВЦ РЖД, сравнение план/факт, расчёт OTD, дашборд опозданий по маршрутам Новосибирск-Главный.</li>
+      <li><strong>Группа 3 — Плановое ТО:</strong> источник — счётчики моточасов, логика определения приближения ТО-1/ТО-2/ТР, формирование списка на завтра, уведомление мастера депо.</li>
+    </ul>
+    <strong>Представьте: список задач DAG → зависимости → расписание запуска.</strong>
+  </div>
+  <aside class="notes">Результат — список из 5-7 задач с именами и стрелками зависимостей на листе бумаги или доске. На следующем занятии это станет реальным DAG.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 18: ОБЗОР ПРАКТИЧЕСКОЙ РАБОТЫ ===================== -->
+<section>
+  <h2>Практическая работа №1</h2>
+  <h3>Развертывание Airflow и изучение веб-интерфейса</h3>
+  <div class="two-col">
+    <div>
+      <h3>Что сделаем</h3>
+      <ol>
+        <li>Создадим VM в Яндекс Compute Cloud</li>
+        <li>Установим Airflow 2.8.x на Ubuntu 22.04</li>
+        <li>Настроим PostgreSQL как MetaDB</li>
+        <li>Запустим Webserver и Scheduler</li>
+        <li>Изучим все разделы UI</li>
+        <li>Импортируем первый DAG мониторинга локомотивов</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Результат</h3>
+      <div class="arch-box" style="border-color:#70AD47; background:#eafaf1;">
+        <span class="badge-ok">Работающий Airflow</span><br>
+        — URL: <code>http://&lt;VM-IP&gt;:8080</code><br>
+        — MetaDB: PostgreSQL<br>
+        — DAG <code>locomotive_monitor_dag</code> активен<br>
+        — Подключение к PostgreSQL настроено<br>
+        — Первый успешный запуск задокументирован
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <strong>Файл инструкции:</strong><br>
+        <code>module_01/practice/README.md</code>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Практическая работа — самостоятельная работа на VM. Обойдите аудиторию, помогайте с сетевыми настройками в Яндекс Облаке. Частая проблема: порт 8080 закрыт в Security Group.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 19: ОБЗОР ЛАБОРАТОРНОЙ РАБОТЫ ===================== -->
+<section>
+  <h2>Лабораторная работа №1</h2>
+  <h3>Создание DAG для телеметрии локомотивов</h3>
+  <div class="two-col">
+    <div>
+      <h3>Задача</h3>
+      <p>Создать DAG <code>locomotive_telemetry_dag</code>, который читает файл <code>sensor_readings.csv</code> с показаниями датчиков локомотивов ТЧЭ-15 и загружает данные в PostgreSQL схему <code>rzd_analytics</code>.</p>
+      <h3>Структура DAG</h3>
+      <pre><code class="language-python">check_file
+    >> read_csv
+    >> validate_data
+    >> detect_anomalies
+    >> load_to_postgres
+    >> send_report</code></pre>
+    </div>
+    <div>
+      <h3>Ожидаемые результаты</h3>
+      <ul>
+        <li>DAG успешно запускается по расписанию</li>
+        <li>Данные из CSV загружены в таблицу <code>sensor_readings</code></li>
+        <li>Аномалии (буксы &gt; 80°C) выявлены и залогированы</li>
+        <li>Отчёт по смене сформирован</li>
+      </ul>
+      <div class="arch-box" style="margin-top:8px;">
+        <strong>Файл инструкции:</strong><br>
+        <code>module_01/lab/README.md</code>
+      </div>
+      <div class="arch-box" style="margin-top:6px; border-color:#ED7D31; background:#fff3e0; font-size:0.76em;">
+        <strong>Задания повышенной сложности:</strong><br>
+        Добавить XCom передачу данных, динамическую генерацию задач, интеграцию с Telegram.
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Лабораторная работа — основной практический результат модуля. Слушатели должны уйти с работающим DAG и пониманием, что он делает каждый шаг.</aside>
+</section>
+
+<!-- ===================== СЛАЙД 20: ИТОГ ===================== -->
+<section>
+  <h2>Итоги модуля 01</h2>
+  <div class="two-col">
+    <div>
+      <h3>Ключевые понятия</h3>
+      <ul>
+        <li><span class="hi-orange">DAG</span> — граф задач, описанный на Python</li>
+        <li><span class="hi-orange">Operator</span> — шаблон задачи (Python, SQL, HTTP...)</li>
+        <li><span class="hi-orange">Scheduler</span> — читает DAG, ставит задачи в очередь</li>
+        <li><span class="hi-orange">Executor</span> — решает как запускать задачи</li>
+        <li><span class="hi-orange">MetaDB</span> — PostgreSQL, хранит состояние</li>
+        <li><span class="hi-orange">Provider</span> — пакет расширений (postgres, http...)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Что дальше — Модуль 02</h3>
+      <div class="arch-box" style="border-color:#70AD47; background:#eafaf1;">
+        <strong style="color:#70AD47;">Операторы и сенсоры Airflow</strong><br>
+        — PythonOperator, BashOperator<br>
+        — PostgresOperator, HttpSensor<br>
+        — FileSensor для данных ГЛОНАСС<br>
+        — Продвинутые DAG для ТЧЭ-15<br>
+        — XCom: передача данных между задачами
+      </div>
+      <div class="three-col" style="margin-top:10px;">
+        <div class="metric">
+          <span class="val">DAG</span>
+          Граф задач
+        </div>
+        <div class="metric">
+          <span class="val">12</span>
+          DAG в ТЧЭ-15
+        </div>
+        <div class="metric">
+          <span class="val">15 мин</span>
+          Интервал телеметрии
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr style="border-color:#4472C4; width:60%; margin:16px auto;">
+  <p style="font-size:0.8em; color:#888;">
+    Вопросы? · <code>module_01/practice/README.md</code> · <code>module_01/lab/README.md</code>
+  </p>
+  <aside class="notes">Подведите итоги. Повторите 6 ключевых понятий, убедитесь что все понимают разницу между DAG, Task и Operator. Анонсируйте модуль 02. Дайте время на вопросы.</aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: true,
+    slideNumber: 'c/t',
+    plugins: [RevealHighlight, RevealNotes],
+    transition: 'slide',
+    controls: true,
+    progress: true
+});
+function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll('.quiz-btn').forEach(function(b) { b.disabled = true; });
+    if (correct) {
+        btn.classList.add('correct');
+        btn.textContent += ' ✓';
+    } else {
+        btn.classList.add('wrong');
+        btn.textContent += ' ✗';
+        p.querySelectorAll('[data-correct="true"]').forEach(function(b) {
+            b.classList.add('correct');
+        });
+    }
+}
+</script>
+</body>
+</html>
+
+
