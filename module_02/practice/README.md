@@ -109,7 +109,7 @@ yc storage ls s3://rzd-airflow-data/
 | Поле | Значение |
 |---|---|
 | Conn Id | `yandex_s3` |
-| Conn Type | `Amazon S3` |
+| Conn Type | `Amazon Web Services` |
 | Login | `<Идентификатор ключа из шага выше>` |
 | Password | `<Секретный ключ из шага выше>` |
 | Extra | `{"endpoint_url": "https://storage.yandexcloud.net", "region_name": "ru-central1"}` |

@@ -136,14 +136,16 @@ yc storage ls s3://rzd-airflow-data/
 | Поле | Значение |
 |---|---|
 | Connection Id | `yandex_s3` |
-| Connection Type | `Amazon S3` |
+| Connection Type | `Amazon Web Services` |
 | Login | `<key_id из шага выше>` |
 | Password | `<secret из шага выше>` |
 | Extra | `{"endpoint_url": "https://storage.yandexcloud.net", "region_name": "ru-central1"}` |
 
 Нажмите **Save**.
 
-> **Важно:** Connection Type = `Amazon S3` (не `Google Cloud Storage`). Yandex Object Storage полностью совместим с S3 API.
+> **Важно:** Connection Type = `Amazon Web Services` (не `Google Cloud Storage`). Yandex Object Storage полностью совместим с S3 API.
+>
+> Отдельного типа «Amazon S3» в списке нет: в современном Airflow он объединён с общим типом **Amazon Web Services**. `S3Hook` — наследник `AwsBaseHook` и работает поверх AWS-подключения, поэтому в коде используется параметр `aws_conn_id='yandex_s3'`. Подключение к Yandex Object Storage обеспечивает поле `endpoint_url` в Extra. Если типа `Amazon Web Services` нет в списке — в кластер не установлен провайдер `apache-airflow-providers-amazon` (добавьте его в pip-зависимости кластера).
 
 ### Connection rzd_postgres
 
@@ -249,7 +251,7 @@ done
 
 ### Шаг 5. Настроить Connection yandex_s3 в Airflow UI
 
-Тип `Amazon S3`, endpoint `https://storage.yandexcloud.net`, ключи из шага 2.
+Тип `Amazon Web Services`, endpoint `https://storage.yandexcloud.net`, ключи из шага 2.
 
 ### Шаг 6. Настроить кластер Managed PostgreSQL и Connection rzd_postgres
 

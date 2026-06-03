@@ -32,7 +32,7 @@ S3KeySensor → read_from_s3 → validate_buxa_temp → load_to_postgres → wri
   - `rzd-airflow-data/` — содержит `sensor_readings.csv` и другие CSV
   - `rzd-airflow-results/` — для записи результатов
 - Connection `yandex_s3` настроен в Airflow UI:
-  - Conn Type: `Amazon S3`
+  - Conn Type: `Amazon Web Services`
   - Extra: `{"endpoint_url": "https://storage.yandexcloud.net", "region_name": "ru-central1"}`
 - Connection `rzd_postgres` настроен (Managed PostgreSQL, схема `rzd_analytics`)
 - Variables `s3_bucket_data` и `s3_bucket_results` заданы в Airflow UI

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<title>Модуль 02: Устройство DAG | Аналитическая платформа РЖД</title>
+<title>Модуль 02: Устройство DAG | Курс Apache Airflow</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
@@ -51,7 +51,6 @@
 }
 .reveal pre code {
     background: #1e1e2e !important;
-     !important;
     padding: 18px 20px !important;
     display: block !important;
     border-radius: 8px !important;
@@ -98,16 +97,18 @@
   <hr style="border:none;border-top:2px solid #ED7D31;width:200px;margin:14px auto;">
   <div class="three-col" style="margin-top:18px;">
     <div class="arch-box" style="text-align:center;">
-      <div style="font-size:1.5em;">🚂</div>
+      <div style="font-size:1.5em;">⚙️</div>
+      <strong>Apache Airflow</strong><br>
+      <small>Оркестрация пайплайнов</small>
       </div>
     <div class="arch-box" style="text-align:center;">
       <div style="font-size:1.5em;">📡</div>
-      <strong>Телеметрия букс</strong><br>
-      <small>Температурный контроль</small>
+      <strong>Источники данных</strong><br>
+      <small>Потоковая телеметрия</small>
     </div>
     <div class="arch-box" style="text-align:center;">
       <div style="font-size:1.5em;">🗄️</div>
-      <strong>rzd_analytics</strong><br>
+      <strong>analytics</strong><br>
       <small>PostgreSQL / Яндекс Облако</small>
     </div>
   </div>
@@ -213,16 +214,16 @@ with DAG("buxa_monitor", ...):
   <h2>Атрибуты DAG</h2>
   <table>
     <thead>
-      <tr><th>Атрибут</th><th>Тип</th><th>Описание</th><th>Пример РЖД</th></tr>
+      <tr><th>Атрибут</th><th>Тип</th><th>Описание</th><th>Пример</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>dag_id</code></td><td>str</td><td>Уникальное имя DAG</td><td><code>"buxa_temp_monitor"</code></td></tr>
+      <tr><td><code>dag_id</code></td><td>str</td><td>Уникальное имя DAG</td><td><code>"sensor_monitor"</code></td></tr>
       <tr><td><code>schedule</code></td><td>str/None</td><td>Расписание (cron или preset)</td><td><code>"0 * * * *"</code> — ежечасно</td></tr>
       <tr><td><code>start_date</code></td><td>datetime</td><td>С какой даты создавать Run</td><td><code>datetime(2024, 3, 1)</code></td></tr>
-      <tr><td><code>catchup</code></td><td>bool</td><td>Создавать ли Run за прошлые периоды</td><td><code>False</code> — для телеметрии реального времени</td></tr>
+      <tr><td><code>catchup</code></td><td>bool</td><td>Создавать ли Run за прошлые периоды</td><td><code>False</code> — для данных реального времени</td></tr>
       <tr><td><code>max_active_runs</code></td><td>int</td><td>Макс. параллельных DAG Run</td><td><code>1</code> — важно при работе с файлами</td></tr>
-      <tr><td><code>tags</code></td><td>list</td><td>Метки для фильтрации в UI</td><td><code>["rzd", "safety", "tche15"]</code></td></tr>
-      <tr><td><code>description</code></td><td>str</td><td>Описание в UI</td><td><code>"Контроль температуры букс ТЧЭ-15"</code></td></tr>
+      <tr><td><code>tags</code></td><td>list</td><td>Метки для фильтрации в UI</td><td><code>["monitoring", "safety"]</code></td></tr>
+      <tr><td><code>description</code></td><td>str</td><td>Описание в UI</td><td><code>"Контроль показаний датчиков"</code></td></tr>
       <tr><td><code>doc_md</code></td><td>str</td><td>Документация Markdown в UI</td><td>Инструкция дежурного инженера</td></tr>
     </tbody>
   </table>
@@ -365,7 +366,7 @@ BashOperator(
   ),
 )
       </code></pre>
-      <p style="font-size:0.75em;">Использование в РЖД: проверка файлов, запуск скриптов выгрузки, архивирование логов.</p>
+      <p style="font-size:0.75em;">Применение: проверка файлов, запуск скриптов выгрузки, архивирование логов.</p>
     </div>
     <div class="arch-box">
       <h3 style="color:#4472C4;font-size:1em;">PythonOperator</h3>
@@ -379,7 +380,7 @@ PythonOperator(
   },
 )
       </code></pre>
-      <p style="font-size:0.75em;">Использование в РЖД: валидация телеметрии, расчёт KPI, обращение к PostgreSQL.</p>
+      <p style="font-size:0.75em;">Применение: валидация данных, расчёт KPI, обращение к PostgreSQL.</p>
     </div>
     <div class="arch-box">
       <h3 style="color:#4472C4;font-size:1em;">EmptyOperator</h3>
@@ -426,12 +427,12 @@ pipeline_end = EmptyOperator(
       </table>
     </div>
     <div>
-      <h3>Жизненный цикл в ТЧЭ-15</h3>
+      <h3>Жизненный цикл задач</h3>
       <div class="arch-box" style="font-size:0.8em;">
-        <strong>Сценарий: перегрев буксы локомотива ВЛ80С-1024</strong><br><br>
-        <code>read_telemetry</code>: <span class="badge-ok">success</span><br>
+        <strong>Сценарий: превышение порогового значения</strong><br><br>
+        <code>read_data</code>: <span class="badge-ok">success</span><br>
         ↓<br>
-        <code>validate_temp</code>: <span class="badge-err">failed</span> (80°C превышен)<br>
+        <code>validate</code>: <span class="badge-err">failed</span> (порог превышен)<br>
         ↓ (ожидает)<br>
         <code>insert_db</code>: <span class="badge-warn">upstream_failed</span><br>
         ↓ (не запустилась)<br>
@@ -473,16 +474,16 @@ pipeline_end = EmptyOperator(
       </div>
     </div>
     <div>
-      <h3>Аналогия для ТЧЭ-15</h3>
+      <h3>Аналогия из жизни</h3>
       <div class="arch-box" style="font-size:0.82em;">
         <table style="font-size:1em;">
-          <thead><tr><th>Понятие Airflow</th><th>Аналог в депо</th></tr></thead>
+          <thead><tr><th>Понятие Airflow</th><th>Бытовая аналогия</th></tr></thead>
           <tbody>
-            <tr><td>DAG</td><td>Технологическая карта ТО-2</td></tr>
-            <tr><td>DAG Run</td><td>Конкретное ТО-2 локомотива 15 марта</td></tr>
-            <tr><td>Task</td><td>Пункт карты: "проверить буксы"</td></tr>
-            <tr><td>Task Instance</td><td>Выполнение пункта слесарем Ивановым 15 марта</td></tr>
-            <tr><td>Лог</td><td>Запись в журнале с подписью</td></tr>
+            <tr><td>DAG</td><td>Рецепт блюда</td></tr>
+            <tr><td>DAG Run</td><td>Приготовление блюда 15 марта</td></tr>
+            <tr><td>Task</td><td>Шаг рецепта: "нарезать овощи"</td></tr>
+            <tr><td>Task Instance</td><td>Выполнение шага конкретным поваром 15 марта</td></tr>
+            <tr><td>Лог</td><td>Отметка в журнале выполнения</td></tr>
           </tbody>
         </table>
       </div>
@@ -536,7 +537,7 @@ pipeline_end = EmptyOperator(
         </tbody>
       </table>
       <div class="arch-box" style="margin-top:10px;font-size:0.78em;">
-        <span class="hi-orange">Практика ТЧЭ-15:</span> дежурный инженер ночной смены через Grid View видит, что за последние 8 DAG Run задача <code>validate_buxa_temp</code> 3 раза завершалась с <code>warning</code> по локомотиву ВЛ80С-1024.
+        <span class="hi-orange">Пример:</span> дежурный инженер ночной смены через Grid View видит, что за последние 8 DAG Run задача <code>validate_data</code> 3 раза завершалась с <code>warning</code>.
       </div>
     </div>
   </div>
@@ -871,32 +872,32 @@ with DAG(
   <h2>Что мы измеряем в аналитической платформе</h2>
   <div class="three-col">
     <div class="metric">
-      <span class="val">80°C</span>
-      Критический порог<br>температуры буксы
+      <span class="val">Порог</span>
+      Критическое<br>пороговое значение
     </div>
     <div class="metric">
       <span class="val">1 ч</span>
-      Периодичность<br>сбора телеметрии
+      Периодичность<br>сбора данных
     </div>
     <div class="metric">
-      <span class="val">48</span>
-      Локомотивов<br>в парке ТЧЭ-15
+      <span class="val">Парк</span>
+      Множество<br>контролируемых объектов
     </div>
   </div>
   <div class="three-col" style="margin-top:14px;">
     <div class="arch-box" style="text-align:center;font-size:0.8em;">
       <strong>Соблюдение графика</strong><br>
-      <span class="hi-orange">OTD</span> — процент поездов<br>по расписанию
+      <span class="hi-orange">OTD</span> — процент операций<br>в срок
     </div>
     <div class="arch-box" style="text-align:center;font-size:0.8em;">
-      <strong>Расход энергоресурсов</strong><br>
-      <span class="hi-orange">кВт·ч / поездо-км</span><br>
-      для электровозов
+      <strong>Расход ресурсов</strong><br>
+      <span class="hi-orange">метрики потребления</span><br>
+      на единицу работы
     </div>
     <div class="arch-box" style="text-align:center;font-size:0.8em;">
-      <strong>Планирование ТО</strong><br>
-      ТО-1, ТО-2, ТР-1, ТР-2<br>
-      по моточасам
+      <strong>Планирование обслуживания</strong><br>
+      регламентные работы<br>
+      по наработке
     </div>
   </div>
   <p style="font-size:0.8em;margin-top:12px;">
@@ -923,17 +924,17 @@ with DAG(
       </ul>
     </div>
     <div>
-      <h3>Контекст ТЧЭ-15</h3>
+      <h3>Сквозной пример</h3>
       <div class="arch-box" style="font-size:0.82em;">
-        <strong>DAG буксового контроля:</strong><br>
+        <strong>DAG контроля показаний:</strong><br>
         <code>sensor_readings.csv</code><br>
-        → <span class="hi-orange">check_buxa_temp</span> (80°C порог)<br>
-        → <code>rzd_analytics.sensor_readings</code>
+        → <span class="hi-orange">check_threshold</span> (пороговое значение)<br>
+        → <code>analytics.sensor_readings</code>
       </div>
       <div class="arch-box" style="margin-top:10px;font-size:0.82em;">
         <strong>Что дальше (Модуль 03):</strong><br>
         PostgresOperator, хуки, Connections,<br>
-        Variables — профессиональная работа с данными РЖД
+        Variables — профессиональная работа с данными
       </div>
       <p style="font-size:0.78em;margin-top:8px;">
         <span class="hi-green">Вопросы? Обсуждаем!</span>
@@ -970,6 +971,40 @@ function checkAnswer(btn, correct) {
     if (correct) { btn.classList.add('correct'); btn.textContent += ' ✓'; }
     else { btn.classList.add('wrong'); btn.textContent += ' ✗'; p.querySelectorAll('[data-correct="true"]').forEach(function(b) { b.classList.add('correct'); }); }
 }
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
 </script>
 </body>
 </html>

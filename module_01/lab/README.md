@@ -24,7 +24,7 @@
 - Managed Airflow запущен и доступен (выполнена Практическая работа №01)
 - Бакеты `rzd-airflow-data`, `rzd-airflow-results`, `rzd-airflow-dags` созданы
 - Файл `sensor_readings.csv` загружен в бакет `rzd-airflow-data`
-- Connection `yandex_s3` настроен в Airflow UI (тип Amazon S3, endpoint Yandex Object Storage)
+- Connection `yandex_s3` настроен в Airflow UI (тип Amazon Web Services, endpoint Yandex Object Storage)
 - Connection `rzd_postgres` настроен в Airflow UI (Managed PostgreSQL FQDN, порт 6432)
 - Переменные `s3_bucket_data` и `s3_bucket_results` заданы через Admin → Variables
 

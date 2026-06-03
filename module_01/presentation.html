@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<title>Модуль 01: Введение в Apache Airflow | Аналитическая платформа РЖД</title>
+<title>Модуль 01: Введение в Apache Airflow | Курс Apache Airflow</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
@@ -51,7 +51,6 @@
 }
 .reveal pre code {
     background: #1e1e2e !important;
-     !important;
     padding: 18px 20px !important;
     display: block !important;
     border-radius: 8px !important;
@@ -105,7 +104,7 @@
   <div class="two-col">
     <div>
       <ul>
-        <li>Зачем РЖД оркестрация данных?</li>
+        <li>Зачем нужна оркестрация данных?</li>
         <li>Что такое Apache Airflow</li>
         <li>Архитектура: Scheduler, Webserver, Executor, MetaDB</li>
         <li>Основные концепции: DAG, Task, Operator</li>
@@ -116,7 +115,7 @@
       <ul>
         <li>Установка в Яндекс Облаке</li>
         <li>Обзор веб-интерфейса</li>
-        <li>Место Airflow в платформе РЖД</li>
+        <li>Место Airflow в аналитической платформе</li>
         <li>Практика и лабораторная работа</li>
       </ul>
       <div style="margin-top:12px;">
@@ -134,15 +133,15 @@
   <h2>Проблема: данные есть — порядка нет</h2>
   <div class="two-col">
     <div>
-      <h3>Что генерирует ТЧЭ-15 каждые сутки</h3>
+      <h3>Что генерирует организация каждые сутки</h3>
       <ul>
-        <li>ГЛОНАСС-телеметрия со <span class="hi-orange">120+ локомотивов</span></li>
-        <li>Температура <span class="hi-orange">букс</span> каждые 30 сек</li>
-        <li>Расход топлива (2ТЭ116, 2ТЭ25КМ)</li>
-        <li>Данные о расписании: <span class="hi-orange">план / факт</span></li>
-        <li>Журналы ТО-1, ТО-2, ТР-1, ТР-2, КР</li>
-        <li>ТСКБМ (контроль бодрствования)</li>
-        <li>САУТ (автоупр. торможением)</li>
+        <li>Телеметрия с <span class="hi-orange">сотен устройств</span></li>
+        <li>Показания <span class="hi-orange">датчиков</span> каждые 30 сек</li>
+        <li>Метрики расхода ресурсов</li>
+        <li>Данные о выполнении плана: <span class="hi-orange">план / факт</span></li>
+        <li>Журналы операций и обслуживания</li>
+        <li>События из внешних систем</li>
+        <li>Логи приложений и интеграций</li>
       </ul>
     </div>
     <div>
@@ -190,8 +189,8 @@
         Airflow — <em>планировщик батч-задач</em>. Для RT используют Kafka/Flink. Идеален для ETL каждые 15 мин.
       </div>
       <div class="arch-box" style="margin-top:8px; border-color:#70AD47;">
-        <strong style="color:#70AD47;">Применение в РЖД:</strong><br>
-        Телеметрия → DWH → витрины BI → алерты по буксам
+        <strong style="color:#70AD47;">Применение:</strong><br>
+        Телеметрия → DWH → витрины BI → алерты по событиям
       </div>
     </div>
   </div>
@@ -242,25 +241,25 @@
       <strong style="color:#4472C4;">DAG</strong><br>
       Directed Acyclic Graph — граф задач без циклов. Описывает полный пайплайн обработки данных.
       <hr style="border-color:#ddd; margin:6px 0;">
-      <em>Пример РЖД:</em><br>
-      <code>locomotive_telemetry_dag</code><br>
-      запускается каждые 15 мин, обрабатывает данные ГЛОНАСС по всем локомотивам депо
+      <em>Пример:</em><br>
+      <code>telemetry_ingest_dag</code><br>
+      запускается каждые 15 мин, обрабатывает телеметрию со всех устройств
     </div>
     <div class="arch-box" style="border-color:#ED7D31;">
       <strong style="color:#ED7D31;">Task</strong><br>
       Единица работы внутри DAG. Каждая задача имеет статус: queued → running → success / failed.
       <hr style="border-color:#ddd; margin:6px 0;">
-      <em>Пример РЖД:</em><br>
-      <code>validate_buxa_temp</code><br>
-      проверяет: температура букс &lt; 80°C. Если нет — алерт дежурному инженеру ТЧЭ-15
+      <em>Пример:</em><br>
+      <code>validate_sensor_value</code><br>
+      проверяет: значение датчика в допустимых пределах. Если нет — алерт дежурному
     </div>
     <div class="arch-box" style="border-color:#70AD47;">
       <strong style="color:#70AD47;">Operator</strong><br>
       Шаблон задачи. Определяет, что именно делать. Python, SQL, Bash, HTTP — всё это операторы.
       <hr style="border-color:#ddd; margin:6px 0;">
-      <em>Пример РЖД:</em><br>
+      <em>Пример:</em><br>
       <code>PostgresOperator</code><br>
-      записывает агрегаты по расходу топлива 2ТЭ116 в схему <code>rzd_analytics</code>
+      записывает агрегаты по расходу ресурсов в схему <code>analytics</code>
     </div>
   </div>
   <p style="margin-top:10px; font-size:0.78em; color:#555;">
@@ -276,13 +275,13 @@
   <p>Провайдеры — отдельные пакеты, добавляющие операторы, хуки и сенсоры для конкретных технологий.</p>
   <div class="two-col">
     <div>
-      <h3>Провайдеры для платформы РЖД</h3>
+      <h3>Часто используемые провайдеры</h3>
       <table>
-        <tr><th>Провайдер</th><th>Применение в ТЧЭ-15</th></tr>
-        <tr><td><code>apache-airflow-providers-postgres</code></td><td>Запись телеметрии в DWH rzd_analytics</td></tr>
-        <tr><td><code>apache-airflow-providers-http</code></td><td>REST API ГЛОНАСС-системы, ЦУП РЖД</td></tr>
+        <tr><th>Провайдер</th><th>Применение</th></tr>
+        <tr><td><code>apache-airflow-providers-postgres</code></td><td>Запись данных в DWH analytics</td></tr>
+        <tr><td><code>apache-airflow-providers-http</code></td><td>REST API внешних систем</td></tr>
         <tr><td><code>apache-airflow-providers-amazon</code></td><td>S3-совместимое хранилище Яндекс Object Storage</td></tr>
-        <tr><td><code>apache-airflow-providers-telegram</code></td><td>Алерты дежурному инженеру депо</td></tr>
+        <tr><td><code>apache-airflow-providers-telegram</code></td><td>Алерты дежурному инженеру</td></tr>
         <tr><td><code>apache-airflow-providers-ssh</code></td><td>Запуск скриптов на VM обработки данных</td></tr>
         <tr><td><code>apache-airflow-providers-yandex</code></td><td>Яндекс DataProc, DataSphere</td></tr>
       </table>
@@ -374,13 +373,13 @@ airflow users create \
       </table>
     </div>
     <div>
-      <h3>Практические сценарии в ТЧЭ-15</h3>
+      <h3>Практические сценарии</h3>
       <ul>
-        <li>Просмотр статуса ночной загрузки телеметрии ГЛОНАСС</li>
+        <li>Просмотр статуса ночной загрузки телеметрии</li>
         <li>Диагностика упавшей задачи по логу</li>
         <li>Ручной повторный запуск (<em>Clear &amp; Re-run</em>) после сбоя сети</li>
-        <li>Включение / отключение пайплайна на время ТО</li>
-        <li>Мониторинг времени выполнения загрузки данных о расписании</li>
+        <li>Включение / отключение пайплайна на время работ</li>
+        <li>Мониторинг времени выполнения загрузки данных план/факт</li>
       </ul>
       <div class="arch-box" style="margin-top:10px; border-color:#ED7D31; background:#fff3e0; font-size:0.76em;">
         <strong style="color:#ED7D31;">Запуск Webserver:</strong><br>
@@ -395,25 +394,25 @@ airflow users create \
 
 <!-- ===================== СЛАЙД 10: МЕСТО AIRFLOW В ПЛАТФОРМЕ РЖД ===================== -->
 <section>
-  <h2>Место Airflow в аналитической платформе РЖД</h2>
+  <h2>Место Airflow в аналитической платформе</h2>
   <div class="two-col">
     <div>
       <h3>Источники данных</h3>
       <div class="arch-box" style="font-size:0.76em;">
-        <span class="loco-badge">ГЛОНАСС</span> координаты, скорость<br>
-        <span class="loco-badge">ТУ</span> температура букс<br>
-        <span class="loco-badge">ТСКБМ</span> контроль машиниста<br>
-        <span class="loco-badge">САУТ</span> данные торможения<br>
-        <span class="loco-badge">ТО-журналы</span> плановое обслуживание<br>
-        <span class="loco-badge">ГВЦ РЖД</span> расписание движения<br>
-        <span class="loco-badge">АСОУП</span> перевозочные документы
+        <span class="loco-badge">Телеметрия</span> координаты, скорость<br>
+        <span class="loco-badge">Датчики</span> показания оборудования<br>
+        <span class="loco-badge">Внешний API</span> события систем<br>
+        <span class="loco-badge">Логи</span> данные приложений<br>
+        <span class="loco-badge">Журналы</span> операции и обслуживание<br>
+        <span class="loco-badge">Справочники</span> план / расписание<br>
+        <span class="loco-badge">Документы</span> учётные записи
       </div>
     </div>
     <div>
       <h3>Схема потока данных</h3>
       <div style="font-size:0.76em; line-height:1.8;">
         <div class="arch-box" style="text-align:center; border-color:#ED7D31; background:#fff3e0;">
-          <strong>Источники</strong><br>ГЛОНАСС · ТУ · ГВЦ · АСОУП
+          <strong>Источники</strong><br>Телеметрия · Датчики · API · Журналы
         </div>
         <div style="text-align:center; font-size:1.2em; color:#4472C4;">▼</div>
         <div class="arch-box" style="text-align:center; border-color:#4472C4; background:#eef4fb;">
@@ -423,12 +422,12 @@ airflow users create \
         <div style="text-align:center; font-size:1.2em; color:#4472C4;">▼</div>
         <div class="arch-box" style="text-align:center; border-color:#9B59B6;">
           <strong>DWH</strong> (PostgreSQL / ClickHouse)<br>
-          Схема <code>rzd_analytics</code>
+          Схема <code>analytics</code>
         </div>
         <div style="text-align:center; font-size:1.2em; color:#4472C4;">▼</div>
         <div class="arch-box" style="text-align:center; border-color:#70AD47; background:#eafaf1;">
           <strong style="color:#70AD47;">BI-дашборды</strong> Яндекс DataLens<br>
-          OTD · расход топлива · состояние парка
+          KPI · расход ресурсов · состояние систем
         </div>
       </div>
     </div>
@@ -717,8 +716,8 @@ with DAG(
         <strong style="color:#70AD47;">Операторы и сенсоры Airflow</strong><br>
         — PythonOperator, BashOperator<br>
         — PostgresOperator, HttpSensor<br>
-        — FileSensor для данных ГЛОНАСС<br>
-        — Продвинутые DAG для ТЧЭ-15<br>
+        — FileSensor / S3KeySensor для данных<br>
+        — Продвинутые DAG<br>
         — XCom: передача данных между задачами
       </div>
       <div class="three-col" style="margin-top:10px;">
@@ -728,11 +727,11 @@ with DAG(
         </div>
         <div class="metric">
           <span class="val">12</span>
-          DAG в ТЧЭ-15
+          DAG в платформе
         </div>
         <div class="metric">
           <span class="val">15 мин</span>
-          Интервал телеметрии
+          Интервал загрузки
         </div>
       </div>
     </div>
@@ -779,6 +778,40 @@ function checkAnswer(btn, correct) {
         });
     }
 }
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
 </script>
 </body>
 </html>
