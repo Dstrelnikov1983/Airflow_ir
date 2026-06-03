@@ -1,0 +1,12 @@
+{
+  "depot_code": "TCH-15",
+  "depot_name": "Новосибирск-Главный",
+  "delay_threshold_min": "15",
+  "fuel_norm_lkm": "5.0",
+  "axlebox_temp_limit_c": "70",
+  "appendix1_fleet": {
+    "electric": ["ВЛ80-1521", "ВЛ80-1733", "ЭП2К-0412"],
+    "diesel": ["2ТЭ116-0894", "ЧМЭ3-5217"],
+    "emu": ["ЭД4М-0031"]
+  }
+}
