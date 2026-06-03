@@ -1,0 +1,1251 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Модуль 03: Календарное планирование — Курс Apache Airflow</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/monokai.css" />
+  <style>
+    :root { --r-heading-color: #4472C4; --r-link-color: #4472C4; --r-main-font-size: 28px; }
+    .reveal { font-size: 24px; }
+    .reveal h1 { color: #4472C4; font-size: 1.8em; }
+    .reveal h2 { color: #4472C4; font-size: 1.3em; }
+    .reveal h3 { color: #4472C4; font-size: 1.1em; }
+    .reveal ul, .reveal ol { font-size: 0.88em; line-height: 1.5; }
+    .reveal p { font-size: 0.88em; line-height: 1.5; }
+    .hi-orange { color: #ED7D31; font-weight: bold; }
+    .hi-green  { color: #70AD47; font-weight: bold; }
+    .discuss {
+      background: #fff8e7; border-left: 5px solid #ED7D31;
+      padding: 12px 16px; margin: 8px 0; text-align: left;
+      font-size: 0.82em; line-height: 1.4; border-radius: 0 6px 6px 0;
+    }
+    .case-box {
+      background: #eef4fb; border-left: 5px solid #4472C4;
+      padding: 12px 16px; margin: 8px 0; text-align: left;
+      font-size: 0.80em; line-height: 1.4; border-radius: 0 6px 6px 0;
+    }
+    .task-box {
+      background: #eafaf1; border-left: 5px solid #70AD47;
+      padding: 12px 16px; margin: 8px 0; text-align: left;
+      font-size: 0.80em; line-height: 1.4; border-radius: 0 6px 6px 0;
+    }
+    .quiz-btn {
+      background: #4472C4; color: #fff; border: none;
+      padding: 7px 15px; margin: 4px; cursor: pointer;
+      border-radius: 4px; font-size: 0.72em; transition: background 0.2s;
+    }
+    .quiz-btn:hover  { background: #2d5699; }
+    .quiz-btn.correct { background: #70AD47; }
+    .quiz-btn.wrong   { background: #e74c3c; }
+    .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .arch-box {
+      border: 2px solid #4472C4; border-radius: 6px;
+      padding: 10px; margin: 4px; background: #f0f4fb;
+      font-size: 0.78em; line-height: 1.4;
+    }
+    .reveal pre { font-size: 0.48em; width: 100%; box-shadow: none; margin: 8px 0; }
+    .reveal pre code { max-height: 380px; }
+    .reveal code { background: #f6f8fa; padding: 2px 4px; border-radius: 3px; font-size: 0.88em; }
+    .reveal table { font-size: 0.78em; }
+    .reveal table th { background: #4472C4; color: #fff; }
+    .reveal table tr:nth-child(even) { background: #f0f4fb; }
+    .tag { display: inline-block; background: #4472C4; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.68em; margin: 2px; }
+    .badge-ok   { display: inline-block; background: #70AD47; color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.72em; }
+    .badge-warn { display: inline-block; background: #ED7D31; color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.72em; }
+    .badge-err  { display: inline-block; background: #e74c3c; color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.72em; }
+    .metric { background: #4472C4; color: #fff; padding: 12px; border-radius: 8px; text-align: center; }
+    .metric .val { font-size: 1.8em; font-weight: bold; color: #ED7D31; display: block; }
+    .timeline-item { display: flex; align-items: flex-start; margin: 6px 0; }
+    .timeline-time {
+      background: #4472C4; color: #fff; border-radius: 4px;
+      padding: 3px 8px; font-size: 0.72em; min-width: 90px;
+      text-align: center; margin-right: 10px; flex-shrink: 0;
+    }
+    .timeline-desc { font-size: 0.80em; line-height: 1.4; }
+    .info-box {
+      background: #eef4fb; border: 1px solid #4472C4;
+      border-radius: 6px; padding: 10px 14px; margin: 6px 0;
+      font-size: 0.80em; line-height: 1.4;
+    }
+    .warn-box {
+      background: #fff3e0; border: 1px solid #ED7D31;
+      border-radius: 6px; padding: 10px 14px; margin: 6px 0;
+      font-size: 0.80em; line-height: 1.4;
+    }
+    .ok-box {
+      background: #eafaf1; border: 1px solid #70AD47;
+      border-radius: 6px; padding: 10px 14px; margin: 6px 0;
+      font-size: 0.80em; line-height: 1.4;
+    }
+    .cron-cell {
+      font-family: monospace; background: #2d2d2d; color: #f8f8f2;
+      padding: 2px 6px; border-radius: 3px; font-size: 0.85em;
+    }
+  /* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- СЛАЙД 1: Титульный -->
+    <section>
+      <h1>Модуль 03</h1>
+      <h2>Календарное планирование в Apache Airflow</h2>
+      <hr style="border-color:#4472C4; margin:20px auto; width:60%;" />
+      <div class="three-col" style="margin-top:16px;">
+        <div class="metric">
+          <span class="val">5</span>
+          расписаний DAG
+        </div>
+        <div class="metric">
+          <span class="val">1.5 ч</span>
+          длительность
+        </div>
+        <div class="metric">
+          <span class="val">7</span>
+          ключевых тем
+        </div>
+      </div>
+      <aside class="notes">
+        Представьтесь, обозначьте цели модуля. Спросите: кто уже работал с cron-выражениями?
+      </aside>
+    </section>
+
+    <!-- СЛАЙД 2: Повестка -->
+    <section>
+      <h2>Повестка модуля</h2>
+      <div class="two-col">
+        <div>
+          <h3>Теория</h3>
+          <ol>
+            <li>Параметр <code>schedule</code> и cron-синтаксис</li>
+            <li>Параметр <code>start_date</code></li>
+            <li><code>catchup</code> и операция <code>backfill</code></li>
+            <li><code>max_active_runs</code> и параллелизм</li>
+            <li>Временные зоны и <code>pendulum</code></li>
+            <li>Пресеты: <code>@daily</code>, <code>@hourly</code>, <code>@weekly</code></li>
+            <li>Кастомные <code>Timetables</code></li>
+          </ol>
+        </div>
+        <div>
+          <h3>Сценарий: ТЧЭ-15</h3>
+          <div class="timeline-item">
+            <span class="timeline-time">Каждые 15 мин</span>
+            <span class="timeline-desc">Телеметрия ГЛОНАСС локомотивов</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">Каждый час</span>
+            <span class="timeline-desc">Расчёт KPI: буксы, потребление</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">Каждые 8 ч</span>
+            <span class="timeline-desc">Посменный отчёт по опозданиям</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">Ежедневно</span>
+            <span class="timeline-desc">Сводка для руководства дирекции</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">Еженедельно</span>
+            <span class="timeline-desc">OTD-отчёт по грузовым перевозкам</span>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Покажите на доске схему взаимосвязи всех пайплайнов ТЧЭ-15.
+      </aside>
+    </section>
+
+    <!-- СЛАЙД 3: Параметр schedule -->
+    <section>
+      <h2>Параметр <code>schedule</code> в DAG</h2>
+      <div class="two-col">
+        <div>
+          <p>Определяет <span class="hi-orange">когда и как часто</span> запускается DAG.</p>
+          <ul>
+            <li>Cron-строка: <code>"*/15 * * * *"</code></li>
+            <li>Timedelta: <code>timedelta(hours=1)</code></li>
+            <li>Пресет: <code>"@daily"</code></li>
+            <li>Объект <code>Timetable</code></li>
+            <li><code>None</code> — только вручную</li>
+          </ul>
+          <div class="info-box" style="margin-top:12px;">
+            <strong>Важно:</strong> schedule определяет
+            <em>логический интервал</em>, а не момент запуска.
+            DAG стартует <span class="hi-orange">после окончания интервала</span>.
+          </div>
+          <div class="warn-box" style="margin-top:8px;">
+            В Airflow 2.x параметр <code>schedule_interval</code>
+            устарел — используйте <code>schedule</code>.
+          </div>
+        </div>
+        <div>
+          <pre><code class="language-python">from airflow import DAG
+from datetime import datetime, timedelta
+
+# Cron: каждые 15 минут
+dag_glonass = DAG(
+    dag_id="glonass_telemetry",
+    schedule="*/15 * * * *",
+    start_date=datetime(2024, 3, 1),
+)
+
+# Timedelta: каждый час
+dag_kpi = DAG(
+    dag_id="hourly_kpi",
+    schedule=timedelta(hours=1),
+    start_date=datetime(2024, 3, 1),
+)
+
+# Пресет: ежедневно
+dag_report = DAG(
+    dag_id="daily_summary",
+    schedule="@daily",
+    start_date=datetime(2024, 3, 1),
+)
+
+# Только вручную (нет авторасписания)
+dag_manual = DAG(
+    dag_id="manual_audit",
+    schedule=None,
+    start_date=datetime(2024, 3, 1),
+)</code></pre>
+        </div>
+      </div>
+      <aside class="notes">
+        Покажите список deprecated параметров в Airflow 2.x.
+      </aside>
+    </section>
+
+    <!-- СЛАЙД 4: Cron-синтаксис -->
+    <section>
+      <h2>Cron-синтаксис</h2>
+      <div class="two-col">
+        <div>
+          <table>
+            <thead>
+              <tr><th>Поле</th><th>Допустимые значения</th><th>Спецсимволы</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Минуты</td><td>0–59</td><td><code>* , - /</code></td></tr>
+              <tr><td>Часы</td><td>0–23</td><td><code>* , - /</code></td></tr>
+              <tr><td>Дни месяца</td><td>1–31</td><td><code>* , - / ?</code></td></tr>
+              <tr><td>Месяцы</td><td>1–12</td><td><code>* , - /</code></td></tr>
+              <tr><td>Дни недели</td><td>0–7 (0 и 7 = вс)</td><td><code>* , - /</code></td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:10px;"><strong>Примеры (UTC):</strong></p>
+          <ul>
+            <li><span class="cron-cell">*/15 * * * *</span> — каждые 15 минут</li>
+            <li><span class="cron-cell">0 * * * *</span> — каждый час</li>
+            <li><span class="cron-cell">0 17,1,9 * * *</span> — 3 раза в сутки</li>
+            <li><span class="cron-cell">0 23 * * *</span> — ежедневно в 23:00</li>
+            <li><span class="cron-cell">0 0 * * 1</span> — каждый понедельник в 00:00</li>
+          </ul>
+          <div class="info-box" style="margin-top:8px; font-size:0.76em;">
+            Онлайн-проверка: <strong>crontab.guru</strong>
+          </div>
+        </div>
+        <div>
+          <pre><code class="language-python">from croniter import croniter
+from datetime import datetime
+
+# Проверка расписания смен ТЧЭ-15 (UTC)
+cron = croniter(
+    "0 17,1,9 * * *",
+    datetime(2024, 3, 1)
+)
+
+# Вывод следующих 6 запусков
+print("Следующие запуски (UTC):")
+for i in range(6):
+    nxt = cron.get_next(datetime)
+    print(f"  {nxt.strftime('%Y-%m-%d %H:%M')}")
+
+# Вывод:
+# 2024-03-01 09:00  (смена 3 → 16:00 НСК)
+# 2024-03-01 17:00  (смена 1 → 00:00 НСК)
+# 2024-03-02 01:00  (смена 2 → 08:00 НСК)
+# 2024-03-02 09:00  (смена 3 → 16:00 НСК)
+# 2024-03-02 17:00  (смена 1 → 00:00 НСК)
+# 2024-03-03 01:00  (смена 2 → 08:00 НСК)</code></pre>
+          <div class="ok-box" style="font-size:0.75em;">
+            <strong>Совет:</strong> Всегда проверяйте cron-выражение перед деплоем. Ошибка в расписании = пропущенные или лишние запуски DAG.
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Попросите слушателей составить cron для планового ТО-2 каждые 72 часа.
+      </aside>
+    </section>
+
+    <!-- СЛАЙД 5: start_date -->
+    <section>
+      <h2>Параметр <code>start_date</code></h2>
+      <div class="two-col">
+        <div>
+          <p>Определяет <span class="hi-orange">начало логического календаря</span> DAG.</p>
+          <div class="warn-box">
+            <strong>Ключевое правило:</strong><br>
+            Первый DAG Run стартует <em>не в момент</em> <code>start_date</code>,
+            а <span class="hi-orange">после завершения первого полного интервала</span>.
+          </div>
+          <div class="info-box" style="margin-top:8px;">
+            Пример: <code>start_date=2024-03-01</code>, <code>schedule="@daily"</code><br>
+            Первый run: <strong>2024-03-02 00:00</strong><br>
+            <code>data_interval_start</code> = 2024-03-01 00:00<br>
+            <code>data_interval_end</code> = 2024-03-02 00:00
+          </div>
+          <h3 style="margin-top:10px;">Правила:</h3>
+          <ul>
+            <li>Всегда задавать <strong>статическую</strong> дату</li>
+            <li>Не использовать <code>datetime.now()</code></li>
+            <li>Предпочтительно: <code>pendulum.datetime()</code></li>
+          </ul>
+        </div>
+        <div>
+          <pre><code class="language-python">import pendulum
+from airflow import DAG
+
+# Правильно: статическая дата с TZ
+dag_shift = DAG(
+    dag_id="shift_report",
+    schedule="0 17,1,9 * * *",
+    start_date=pendulum.datetime(
+        2024, 3, 1,
+        tz="Asia/Novosibirsk"
+    ),
+    catchup=False,
+)
+
+# НЕПРАВИЛЬНО — не делайте так!
+# start_date=datetime.now()
+# start_date=datetime.today()
+#
+# При каждом перечтении DAG-файла
+# start_date будет меняться.
+# Это нарушает логику catchup:
+# scheduler не может понять,
+# за какие периоды уже были runs.
+
+# Рекомендация для ТЧЭ-15:
+# start_date = дата первого запуска
+# аналитической платформы в деп
+# (например, 2024-03-01)</code></pre>
+          <div class="badge-err" style="margin-top:8px;">Антипаттерн: datetime.now()</div>
+          <div class="badge-ok" style="margin-left:6px; margin-top:8px;">Лучшая практика: pendulum</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 6: catchup и backfill -->
+    <section>
+      <h2><code>catchup</code> и операция <code>backfill</code></h2>
+      <div class="two-col">
+        <div>
+          <h3><code>catchup</code></h3>
+          <p>Автоматическое наверстывание пропущенных интервалов.</p>
+          <table>
+            <thead><tr><th>Значение</th><th>Поведение</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>True</code> (умолч.)</td>
+                <td>Создаёт runs за все пропущенные периоды</td>
+              </tr>
+              <tr>
+                <td><code>False</code></td>
+                <td>Создаёт только последний run</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="warn-box" style="margin-top:8px;">
+            <strong>Риск:</strong> DAG с расписанием каждые 15 минут и
+            <code>catchup=True</code> после 5 дней простоя создаст
+            <span class="hi-orange">480 runs</span>
+            (5 сут &times; 24 ч &times; 4 запуска/ч).
+          </div>
+          <h3 style="margin-top:10px;"><code>backfill</code> — ручное восстановление</h3>
+          <pre style="font-size:0.42em;"><code class="language-bash">airflow dags backfill \
+    --dag-id shift_adherence_report \
+    --start-date 2024-03-01 \
+    --end-date 2024-03-07 \
+    --reset-dagruns</code></pre>
+        </div>
+        <div>
+          <pre><code class="language-python">from airflow import DAG
+import pendulum
+from datetime import timedelta
+
+NSK = "Asia/Novosibirsk"
+
+# Телеметрия ГЛОНАСС: catchup=False
+# Реальное время — прошлое не нужно
+glonass_dag = DAG(
+    dag_id="glonass_telemetry",
+    schedule="*/15 * * * *",
+    start_date=pendulum.datetime(
+        2024, 3, 1, tz=NSK
+    ),
+    catchup=False,      # ← важно!
+    max_active_runs=1,
+    dagrun_timeout=timedelta(minutes=10),
+)
+
+# Посменный отчёт: catchup=True
+# Нужно восстановить пропущенные смены
+shift_dag = DAG(
+    dag_id="shift_adherence_report",
+    schedule="0 17,1,9 * * *",
+    start_date=pendulum.datetime(
+        2024, 3, 1, tz=NSK
+    ),
+    catchup=True,       # ← восстанавливаем
+    max_active_runs=3,  # до 3 смен параллельно
+)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 7: max_active_runs -->
+    <section>
+      <h2><code>max_active_runs</code> и параллелизм</h2>
+      <div class="two-col">
+        <div>
+          <p>
+            Ограничивает число
+            <span class="hi-orange">одновременно активных DAG Run</span>
+            для одного DAG.
+          </p>
+          <div class="info-box">
+            <strong>По умолчанию:</strong> значение из <code>airflow.cfg</code><br>
+            (<code>max_active_runs_per_dag = 16</code>)
+          </div>
+          <h3 style="margin-top:10px;">Типовые рекомендации:</h3>
+          <table>
+            <thead>
+              <tr><th>Тип DAG</th><th>max_active_runs</th><th>Причина</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Потоковый (15 мин)</td><td>1</td><td>Не накапливать очередь</td></tr>
+              <tr><td>Почасовой (1 ч)</td><td>2</td><td>Небольшой параллелизм</td></tr>
+              <tr><td>Периодический отчёт</td><td>3</td><td>Несколько периодов сразу</td></tr>
+              <tr><td>Ежедневная сводка</td><td>1</td><td>Строгий порядок</td></tr>
+              <tr><td>Еженедельный отчёт</td><td>1</td><td>Один раз в неделю</td></tr>
+            </tbody>
+          </table>
+          <div class="ok-box" style="margin-top:8px;">
+            При catchup-восстановлении временно увеличьте
+            <code>max_active_runs</code>, затем верните обратно.
+          </div>
+        </div>
+        <div>
+          <pre><code class="language-python">from airflow import DAG
+import pendulum
+from datetime import timedelta
+
+# Телеметрия: строго один run за раз
+glonass_dag = DAG(
+    dag_id="glonass_telemetry",
+    schedule="*/15 * * * *",
+    start_date=pendulum.datetime(
+        2024, 3, 1,
+        tz="Asia/Novosibirsk"
+    ),
+    catchup=False,
+    max_active_runs=1,
+    # Если DAG завис — освободить слот
+    dagrun_timeout=timedelta(minutes=10),
+)
+
+# Пул ресурсов для телеметрии
+default_args = {
+    "pool": "rzd_telemetry_pool",
+    "pool_slots": 1,
+    "priority_weight": 10,
+    "retries": 2,
+    "retry_delay": timedelta(minutes=1),
+}</code></pre>
+          <div class="info-box" style="font-size:0.75em; margin-top:8px;">
+            <strong>Разница:</strong><br>
+            <code>max_active_runs</code> — уровень DAG (кол-во одновременных запусков DAG)<br>
+            <code>concurrency</code> в <code>airflow.cfg</code> — глобальный лимит задач
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Покажите в Airflow UI как выглядит очередь runs при max_active_runs=1 vs 5.
+      </aside>
+    </section>
+
+    <!-- СЛАЙД 8: Временные зоны -->
+    <section>
+      <h2>Временные зоны в Airflow</h2>
+      <div class="two-col">
+        <div>
+          <div class="warn-box">
+            <strong>Airflow хранит все метки времени в UTC!</strong><br>
+            Для локального часового пояса UTC+7 это критично:
+            событие в 08:00 местного времени = 01:00 UTC.
+          </div>
+          <h3 style="margin-top:10px;">Примеры часовых поясов:</h3>
+          <table>
+            <thead>
+              <tr><th>Регион</th><th>Зона</th><th>Смещение</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Новосибирск</td><td>Asia/Novosibirsk</td><td>UTC+7</td></tr>
+              <tr><td>Москва</td><td>Europe/Moscow</td><td>UTC+3</td></tr>
+              <tr><td>Airflow DB</td><td>UTC</td><td>UTC+0</td></tr>
+            </tbody>
+          </table>
+          <h3 style="margin-top:10px;">Локальное время в разных зонах:</h3>
+          <table>
+            <thead><tr><th>Точка</th><th>Местное (UTC+7)</th><th>UTC</th></tr></thead>
+            <tbody>
+              <tr><td>Точка 1</td><td>00:00</td><td>17:00 пред. дня</td></tr>
+              <tr><td>Точка 2</td><td>08:00</td><td>01:00</td></tr>
+              <tr><td>Точка 3</td><td>16:00</td><td>09:00</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <pre><code class="language-python">import pendulum
+from airflow import DAG
+
+# Явное указание TZ в start_date
+NSK_TZ = pendulum.timezone(
+    "Asia/Novosibirsk"
+)
+
+# Смены 00:00, 08:00, 16:00 НСК
+# = 17:00, 01:00, 09:00 UTC
+shift_dag = DAG(
+    dag_id="shift_report_nsk",
+    # Cron ВСЕГДА в UTC для Airflow!
+    schedule="0 17,1,9 * * *",
+    start_date=pendulum.datetime(
+        2024, 3, 1, tz=NSK_TZ
+    ),
+    catchup=False,
+)
+
+# Сводка для руководства в 06:00 НСК
+# 06:00 НСК = 23:00 UTC (пред. день)
+mgmt_dag = DAG(
+    dag_id="daily_management_report",
+    schedule="0 23 * * *",  # UTC
+    start_date=pendulum.datetime(
+        2024, 3, 1, tz=NSK_TZ
+    ),
+    catchup=False,
+)</code></pre>
+          <div class="ok-box" style="font-size:0.75em; margin-top:8px;">
+            <code>pendulum</code> встроен в Airflow и автоматически обрабатывает переходы часовых поясов и летнее время.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 9: Пресеты -->
+    <section>
+      <h2>Пресеты расписания</h2>
+      <div class="two-col">
+        <div>
+          <table>
+            <thead>
+              <tr><th>Пресет</th><th>Эквивалент cron</th><th>Описание</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>@once</code></td><td>—</td><td>Один раз при активации</td></tr>
+              <tr><td><code>@hourly</code></td><td><code>0 * * * *</code></td><td>Каждый час</td></tr>
+              <tr><td><code>@daily</code></td><td><code>0 0 * * *</code></td><td>Каждый день в 00:00 UTC</td></tr>
+              <tr><td><code>@weekly</code></td><td><code>0 0 * * 0</code></td><td>Каждое воскресенье 00:00 UTC</td></tr>
+              <tr><td><code>@monthly</code></td><td><code>0 0 1 * *</code></td><td>1-е число месяца</td></tr>
+              <tr><td><code>@yearly</code></td><td><code>0 0 1 1 *</code></td><td>1 января</td></tr>
+            </tbody>
+          </table>
+          <div class="warn-box" style="margin-top:10px;">
+            <strong>Ограничения пресетов:</strong><br>
+            <code>@daily</code> = 00:00 UTC = 07:00 в зоне UTC+7 — неудобно, если отчёт нужен к 06:00 местного времени.
+            Лучше явный cron: <span class="cron-cell">0 23 * * *</span>
+          </div>
+        </div>
+        <div>
+          <pre><code class="language-python">from airflow import DAG
+import pendulum
+
+NSK = "Asia/Novosibirsk"
+
+# @hourly для KPI буксового узла
+buxa_kpi_dag = DAG(
+    dag_id="buxa_kpi_hourly",
+    schedule="@hourly",  # = "0 * * * *"
+    start_date=pendulum.datetime(
+        2024, 3, 1, tz=NSK
+    ),
+    catchup=False,
+)
+
+# Явный cron вместо @daily
+# 06:00 НСК = 23:00 UTC пред. дня
+daily_mgmt = DAG(
+    dag_id="daily_management_report",
+    schedule="0 23 * * *",  # ← явный
+    start_date=pendulum.datetime(
+        2024, 3, 1, tz=NSK
+    ),
+    catchup=False,
+)
+
+# @weekly для OTD
+# Пн 07:00 НСК = пн 00:00 UTC
+weekly_otd = DAG(
+    dag_id="weekly_otd_report",
+    schedule="0 0 * * 1",
+    start_date=pendulum.datetime(
+        2024, 3, 1, tz=NSK
+    ),
+)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 10: Timetables -->
+    <section>
+      <h2>Кастомные <code>Timetables</code></h2>
+      <div class="two-col">
+        <div>
+          <p>
+            Позволяют задать произвольную логику расписания,
+            которую нельзя выразить cron-строкой.
+          </p>
+          <h3>Типовые сценарии:</h3>
+          <ul>
+            <li>Запуск только в рабочие дни (с учётом производственного календаря)</li>
+            <li>Расписание по внешнему нормативному графику</li>
+            <li>Адаптивный запуск по завершению периода (не по фиксированному часу)</li>
+            <li>Отчёт после закрытия учётного периода</li>
+            <li>Пропуск ежедневного окна обслуживания (02:00–04:00)</li>
+          </ul>
+          <div class="info-box" style="margin-top:8px;">
+            Timetable — Python-класс, реализующий интерфейс из
+            <code>airflow.timetables.base</code>.<br>
+            Регистрируется как Airflow plugin.
+          </div>
+        </div>
+        <div>
+          <pre><code class="language-python">from airflow.timetables.base import (
+    DagRunInfo, DataInterval,
+    TimeRestriction, Timetable
+)
+import pendulum
+
+class ShiftTimetable(Timetable):
+    """Расписание 3 смен ТЧЭ-15 (НСК)."""
+    # Начало смен в НСК
+    SHIFT_HOURS = [0, 8, 16]
+    TZ = pendulum.timezone(
+        "Asia/Novosibirsk"
+    )
+
+    def next_dagrun_info(
+        self,
+        last_automated_data_interval,
+        restriction: TimeRestriction,
+    ):
+        now = pendulum.now(self.TZ)
+        for h in self.SHIFT_HOURS:
+            candidate = now.set(
+                hour=h, minute=5,
+                second=0, microsecond=0
+            )
+            if candidate > now:
+                return DagRunInfo.interval(
+                    start=candidate,
+                    end=candidate.add(hours=8)
+                )
+        # Первая смена следующих суток
+        nxt = now.add(days=1).set(
+            hour=0, minute=5,
+            second=0, microsecond=0
+        )
+        return DagRunInfo.interval(
+            start=nxt,
+            end=nxt.add(hours=8)
+        )</code></pre>
+        </div>
+      </div>
+      <aside class="notes">
+        Спросите: в каких ещё случаях cron недостаточен? Например, запуск только при наличии новых данных от локомотива.
+      </aside>
+    </section>
+
+    <!-- СЛАЙД 11: Расписания ТЧЭ-15 -->
+    <section>
+      <h2>Расписания пайплайнов ТЧЭ-15</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>DAG</th>
+            <th>Расписание (cron UTC)</th>
+            <th>Время НСК</th>
+            <th>catchup</th>
+            <th>max_active_runs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>glonass_telemetry</code></td>
+            <td><span class="cron-cell">*/15 * * * *</span></td>
+            <td>Каждые 15 мин</td>
+            <td><span class="badge-warn">False</span></td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>buxa_kpi_hourly</code></td>
+            <td><span class="cron-cell">0 * * * *</span></td>
+            <td>Каждый час</td>
+            <td><span class="badge-warn">False</span></td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td><code>shift_adherence_report</code></td>
+            <td><span class="cron-cell">0 17,1,9 * * *</span></td>
+            <td>00:00 / 08:00 / 16:00</td>
+            <td><span class="badge-ok">True</span></td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td><code>daily_management_report</code></td>
+            <td><span class="cron-cell">0 23 * * *</span></td>
+            <td>06:00</td>
+            <td><span class="badge-warn">False</span></td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>weekly_otd_report</code></td>
+            <td><span class="cron-cell">0 0 * * 1</span></td>
+            <td>Пн 07:00</td>
+            <td><span class="badge-ok">True</span></td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>loco_maintenance_plan</code></td>
+            <td><span class="cron-cell">0 1 * * 0</span></td>
+            <td>Вс 08:00 (план ТО)</td>
+            <td><span class="badge-ok">True</span></td>
+            <td>1</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="info-box" style="margin-top:8px; font-size:0.78em;">
+        <strong>Примечание:</strong> все cron-выражения в UTC. Новосибирск — UTC+7.
+        Смены ТЧЭ-15: 1-я 00:00, 2-я 08:00, 3-я 16:00 НСК = 17:00, 01:00, 09:00 UTC.
+      </div>
+    </section>
+
+    <!-- СЛАЙД 12: Код пайплайнов ТЧЭ-15 -->
+    <section>
+      <h2>Код: Расписания пайплайнов ТЧЭ-15</h2>
+      <pre><code class="language-python"># Различные варианты расписания для РЖД-пайплайнов
+from airflow import DAG
+from datetime import timedelta
+import pendulum
+
+NSK_TZ = pendulum.timezone("Asia/Novosibirsk")
+
+# Каждые 15 минут — телеметрия ГЛОНАСС локомотивов ТЧЭ-15
+glonass_dag = DAG(
+    dag_id="glonass_telemetry",
+    schedule="*/15 * * * *",
+    start_date=pendulum.datetime(2024, 3, 1, tz=NSK_TZ),
+    catchup=False,           # не восстанавливать прошлое
+    max_active_runs=1,       # один run за раз
+    dagrun_timeout=timedelta(minutes=10),
+    tags=["telemetry", "realtime", "tche15"],
+)
+
+# Каждый час — расчёт KPI: температура букс, тяговый ток
+buxa_kpi = DAG(
+    dag_id="buxa_kpi_hourly",
+    schedule="0 * * * *",   # в начале каждого часа (UTC)
+    start_date=pendulum.datetime(2024, 3, 1, tz=NSK_TZ),
+    catchup=False,
+    tags=["kpi", "safety", "tche15"],
+)
+
+# Каждые 8 часов — посменный отчёт (смены: 0, 8, 16 НСК = 17, 1, 9 UTC)
+shift_report = DAG(
+    dag_id="shift_adherence_report",
+    schedule="0 17,1,9 * * *",
+    start_date=pendulum.datetime(2024, 3, 1, tz=NSK_TZ),
+    catchup=True,            # восстанавливаем пропущенные смены
+    max_active_runs=3,       # до 3 смен параллельно
+    tags=["report", "schedule", "tche15"],
+)
+
+# Ежедневно в 06:00 НСК — сводка для руководства дирекции тяги
+daily_summary = DAG(
+    dag_id="daily_management_report",
+    schedule="0 23 * * *",  # UTC: 23:00 = 06:00 следующего дня НСК
+    start_date=pendulum.datetime(2024, 3, 1, tz=NSK_TZ),
+    catchup=False,
+    tags=["report", "management", "tche15"],
+)
+
+# Каждый понедельник в 07:00 НСК — недельный OTD-отчёт по грузовым перевозкам
+weekly_report = DAG(
+    dag_id="weekly_otd_report",
+    schedule="0 0 * * 1",   # UTC: 00:00 пн = 07:00 пн НСК
+    start_date=pendulum.datetime(2024, 3, 1, tz=NSK_TZ),
+    catchup=True,
+    tags=["report", "otd", "weekly", "tche15"],
+)</code></pre>
+    </section>
+
+    <!-- СЛАЙД 13: Вопрос для обсуждения — catchup -->
+    <section>
+      <h2>Вопрос для обсуждения</h2>
+      <div class="discuss">
+        <strong>Обсудите в группе (5 мин):</strong><br><br>
+        Airflow-сервер ТЧЭ-15 был остановлен на
+        <strong>5 суток</strong> для планового технического обслуживания.<br><br>
+        После запуска все DAG с <code>catchup=True</code> начали наверстывать упущенное.
+        <br><br>
+        <strong>Вопросы:</strong>
+        <ol style="margin-top:8px;">
+          <li>
+            Сколько DAG runs создастся для
+            <code>glonass_telemetry</code> (<code>*/15 * * * *</code>)?
+          </li>
+          <li>
+            Сколько для <code>shift_adherence_report</code> (3 раза в сутки)?
+          </li>
+          <li>Каковы последствия для сервера и базы данных PostgreSQL?</li>
+          <li>Как нужно было настроить DAG, чтобы избежать этой ситуации?</li>
+        </ol>
+      </div>
+      <div class="info-box" style="margin-top:10px; font-size:0.78em;">
+        <strong>Подсказка:</strong>
+        5 сут &times; 24 ч &times; 4 = <strong>480 runs</strong> для ГЛОНАСС,
+        5 &times; 3 = <strong>15 runs</strong> для посменного отчёта.<br>
+        Решение: <code>catchup=False</code> + <code>max_active_runs=1</code> + <code>dagrun_timeout</code>.
+      </div>
+    </section>
+
+    <!-- СЛАЙД 14: Кейс — перегрузка сервера -->
+    <section>
+      <h2>Кейс: Перегрузка Airflow после обслуживания</h2>
+      <div class="case-box">
+        <strong>Ситуация:</strong><br>
+        Airflow-сервер ТЧЭ-15 был остановлен на 5 дней для планового обслуживания.
+        После запуска все DAG с <code>catchup=True</code> начали наверстывать упущенное —
+        это создало <strong>120+ одновременных runs</strong>.
+        Сервер перестал отвечать, PostgreSQL получил пиковую нагрузку,
+        несколько runs упали с timeout.
+        Руководство дирекции тяги не получило утреннюю сводку.
+      </div>
+      <div class="two-col" style="margin-top:10px;">
+        <div>
+          <h3 style="color:#e74c3c;">Что пошло не так:</h3>
+          <ul>
+            <li><span class="hi-orange">Проблема 1:</span> <code>catchup=True</code> для DAG реального времени (телеметрия)</li>
+            <li><span class="hi-orange">Проблема 2:</span> Нет <code>max_active_runs</code> — все runs стартовали одновременно</li>
+            <li><span class="hi-orange">Проблема 3:</span> Нет <code>dagrun_timeout</code> — зависшие runs не освобождали ресурсы</li>
+            <li><span class="hi-orange">Проблема 4:</span> Нет приоритетов — критичные DAG встали в общую очередь</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:#70AD47;">Как исправить:</h3>
+          <ul>
+            <li><span class="hi-green">Решение 1:</span> <code>catchup=False</code> для телеметрии и KPI-DAG</li>
+            <li><span class="hi-green">Решение 2:</span> <code>max_active_runs=1</code> — последовательное наверстывание</li>
+            <li><span class="hi-green">Решение 3:</span> <code>dagrun_timeout=timedelta(minutes=30)</code></li>
+            <li><span class="hi-green">Решение 4:</span> <code>priority_weight</code> — приоритет критичных DAG выше</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 15: Вопрос для обсуждения — смены и окно ТО -->
+    <section>
+      <h2>Вопрос для обсуждения</h2>
+      <div class="discuss">
+        <strong>Обсудите в группе (7 мин):</strong><br><br>
+        ТЧЭ-15 работает круглосуточно в <strong>3 смены по 8 часов</strong>.<br>
+        Начало смен (НСК, UTC+7): 00:00, 08:00, 16:00.<br>
+        Ежесуточное <strong>окно технологических работ</strong>: 02:00–04:00 НСК
+        (обслуживание инфраструктуры Яндекс Облако).<br><br>
+        <strong>Задача:</strong> Спроектируйте расписание для следующих DAG:
+        <ol style="margin-top:8px;">
+          <li>
+            Сбор телеметрии ГЛОНАСС (не должен запускаться в окне 02:00–04:00 НСК)
+          </li>
+          <li>
+            Посменный отчёт — строго по <em>окончании</em> каждой смены
+          </li>
+          <li>
+            Проверка температуры букс — каждые 30 мин, кроме окна ТО
+          </li>
+        </ol>
+        <br>
+        Запишите cron-выражения (в UTC). Обоснуйте выбор.
+      </div>
+    </section>
+
+    <!-- СЛАЙД 16: Квиз -->
+    <section>
+      <h2>Квиз: Проверка знаний</h2>
+
+      <div style="margin-bottom:14px;">
+        <p style="font-size:0.82em; margin-bottom:6px;">
+          <strong>В1.</strong> DAG с <code>start_date=2024-03-01</code> и
+          <code>schedule="@daily"</code> — когда запустится первый run?
+        </p>
+        <div>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            01 марта в 00:00
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">
+            02 марта в 00:00
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            Зависит от catchup
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            Только вручную
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <p style="font-size:0.82em; margin-bottom:6px;">
+          <strong>В2.</strong> Что означает cron-выражение
+          <code>0 0,8,16 * * *</code>?
+        </p>
+        <div>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            Каждые 8 часов начиная с 1:00
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">
+            Три раза в сутки: в 00:00, 08:00 и 16:00
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            Каждый 8-й день месяца в полночь
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            С 0-й по 16-ю минуту каждого часа
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:0.82em; margin-bottom:6px;">
+          <strong>В3.</strong> Параметр <code>max_active_runs=1</code> гарантирует:
+        </p>
+        <div>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            Только одна задача (task) выполняется параллельно
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">
+            Не более одного DAG Run активно в один момент времени
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            Одно соединение с базой данных PostgreSQL
+          </button>
+          <button class="quiz-btn" onclick="checkAnswer(this, false)">
+            Один воркер Celery на данный DAG
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 17: Групповое задание -->
+    <section>
+      <h2>Задание для групповой работы</h2>
+      <div class="task-box">
+        <strong>Задание (20 минут, группы по 3–4 человека):</strong><br><br>
+        Составьте полную таблицу расписаний для аналитической платформы ТЧЭ-15.
+        <ol style="margin-top:6px;">
+          <li>Минимум 6–7 DAG с разными <code>schedule</code></li>
+          <li>
+            Для каждого: cron-выражение (UTC), частота, <code>catchup</code>,
+            <code>max_active_runs</code>
+          </li>
+          <li>Обоснуйте периодичность каждого DAG — зачем именно такая частота?</li>
+          <li>Учтите временную зону UTC+7 и окно ТО 02:00–04:00 НСК</li>
+          <li>
+            Укажите категорию каждого DAG:
+            <span class="badge-err">real-time</span>
+            <span class="badge-warn">operational</span>
+            <span class="badge-ok">analytical</span>
+          </li>
+        </ol>
+      </div>
+      <div class="two-col" style="margin-top:10px;">
+        <div class="info-box">
+          <strong>Подсказка — источники данных ТЧЭ-15:</strong>
+          <ul>
+            <li>ГЛОНАСС: 5 позиций / лок / мин</li>
+            <li>Температура букс: 60+ датчиков / состав</li>
+            <li>Тяговый ток ВЛ80С / ЭП2К: непрерывно</li>
+            <li>График движения: обновление по факту</li>
+            <li>Расход ДТ тепловозов: раз в смену</li>
+          </ul>
+        </div>
+        <div class="info-box">
+          <strong>Критерии оценки:</strong>
+          <ul>
+            <li>Корректность cron-выражений (UTC)</li>
+            <li>Обоснованность catchup / max_active_runs</li>
+            <li>Учёт временных зон и окна ТО</li>
+            <li>Полнота охвата аналитических задач</li>
+            <li>Приоритетность (real-time vs analytical)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 18: Обзор практической работы -->
+    <section>
+      <h2>Практическая работа — Обзор</h2>
+      <h3>Настройка расписания DAG для ТЧЭ-15</h3>
+      <div class="two-col">
+        <div>
+          <h3>Что делаем:</h3>
+          <ol>
+            <li>Создание DAG телеметрии ГЛОНАСС (каждые 15 мин)</li>
+            <li>Настройка посменного отчёта (каждые 8 часов)</li>
+            <li>Тестирование <code>catchup=True/False</code></li>
+            <li>Выполнение <code>backfill</code> за прошедшую неделю</li>
+            <li>Мониторинг runs в Airflow UI</li>
+            <li>Анализ Gantt-диаграммы выполнения</li>
+          </ol>
+        </div>
+        <div>
+          <h3>Входные данные:</h3>
+          <div class="info-box">
+            <ul>
+              <li><code>locomotives.csv</code> — парк локомотивов ТЧЭ-15</li>
+              <li><code>sensor_readings.csv</code> — телеметрия датчиков (буксы, ток)</li>
+              <li><code>trips.csv</code> — маршруты и рейсы</li>
+              <li><code>schedule_adherence.csv</code> — отклонения от графика</li>
+            </ul>
+          </div>
+          <div class="ok-box" style="margin-top:8px;">
+            <strong>Платформа:</strong> Яндекс Облако<br>
+            Managed Airflow или VM Ubuntu 22.04
+          </div>
+          <p style="font-size:0.78em; color:#555; margin-top:8px;">
+            Инструкция: <code>module_03/practice/README.md</code>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 19: Обзор лабораторной работы -->
+    <section>
+      <h2>Лабораторная работа — Обзор</h2>
+      <h3>DAG посменного отчёта по опозданиям с backfill</h3>
+      <div class="two-col">
+        <div>
+          <h3>Задача:</h3>
+          <p>Разработать DAG <code>shift_adherence_report</code>, который:</p>
+          <ol>
+            <li>Извлекает данные об опозданиях поездов из PostgreSQL</li>
+            <li>Рассчитывает метрики по каждой смене</li>
+            <li>Загружает результаты в аналитическую таблицу</li>
+            <li>Отправляет уведомление при превышении порога</li>
+            <li>Выполняет <strong>backfill</strong> за 2024-03-01 — 2024-03-07</li>
+          </ol>
+        </div>
+        <div>
+          <h3>Технологии:</h3>
+          <div class="arch-box">
+            <strong>PostgreSQL:</strong> схема <code>rzd_analytics</code><br>
+            Таблицы: <code>trips</code>, <code>schedule_deviations</code>,
+            <code>shift_reports</code>
+          </div>
+          <div class="arch-box" style="margin-top:8px;">
+            <strong>Операторы Airflow:</strong><br>
+            <code>PostgresOperator</code>, <code>PythonOperator</code>,
+            <code>BranchPythonOperator</code>
+          </div>
+          <div class="arch-box" style="margin-top:8px;">
+            <strong>backfill за тестовую неделю:</strong>
+            <pre style="margin:4px 0; font-size:0.85em;"><code class="language-bash">airflow dags backfill \
+  --dag-id shift_adherence_report \
+  --start-date 2024-03-01 \
+  --end-date 2024-03-07</code></pre>
+          </div>
+          <p style="font-size:0.78em; color:#555; margin-top:8px;">
+            Инструкция: <code>module_03/lab/README.md</code>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 20: Итоговый слайд -->
+    <section>
+      <h2>Итоги модуля 03</h2>
+      <div class="two-col">
+        <div>
+          <h3>Ключевые понятия:</h3>
+          <ul>
+            <li><code>schedule</code> — cron / timedelta / пресет / Timetable</li>
+            <li><code>start_date</code> — всегда статическая дата; используйте pendulum</li>
+            <li><code>catchup=True/False</code> — управление наверстыванием пропусков</li>
+            <li><code>backfill</code> — ручное восстановление runs за диапазон дат</li>
+            <li><code>max_active_runs</code> — ограничение параллелизма DAG Run</li>
+            <li>Временные зоны: Airflow хранит UTC, pendulum помогает с конвертацией</li>
+            <li>Пресеты: <code>@daily</code>, <code>@hourly</code>, <code>@weekly</code> — удобны, но ограничены</li>
+            <li>Кастомные <code>Timetables</code> — для сложной логики расписания</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Что дальше — Модуль 04:</h3>
+          <div class="info-box">
+            <strong>Операторы и задачи Airflow</strong>
+            <ul style="margin-top:6px;">
+              <li><code>BashOperator</code>, <code>PythonOperator</code></li>
+              <li><code>PostgresOperator</code> для работы с БД</li>
+              <li>Операторы Яндекс Облако (S3, CH)</li>
+              <li>TaskFlow API: <code>@task</code> decorator</li>
+              <li>Зависимости: <code>&gt;&gt;</code>, <code>&lt;&lt;</code>, ветвление</li>
+            </ul>
+          </div>
+          <div class="ok-box" style="margin-top:8px; text-align:center;">
+            <strong>Домашнее задание:</strong><br>
+            Спроектировать DAG планового обслуживания
+            на основе показаний счётчика наработки.
+            Какое расписание и catchup-настройку выберете?
+          </div>
+        </div>
+      </div>
+      <hr style="border-color:#4472C4; margin:14px auto; width:80%;" />
+      <p style="font-size:0.78em; color:#555; text-align:center;">
+        <strong>Курс Apache Airflow · Модуль 03 · Календарное планирование</strong>
+      </p>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: true,
+    slideNumber: 'c/t',
+    plugins: [RevealHighlight, RevealNotes],
+    transition: 'slide',
+    controls: true,
+    progress: true
+});
+
+function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll('.quiz-btn').forEach(function(b) { b.disabled = true; });
+    if (correct) {
+        btn.classList.add('correct');
+        btn.textContent += ' ✓';
+    } else {
+        btn.classList.add('wrong');
+        btn.textContent += ' ✗';
+        p.querySelectorAll('[data-correct="true"]').forEach(function(b) {
+            b.classList.add('correct');
+        });
+    }
+}
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+
+

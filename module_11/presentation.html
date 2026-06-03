@@ -1,0 +1,1130 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Модуль 11: Эксплуатация Airflow — Курс Apache Airflow</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+  <style>
+    .reveal { font-size: 24px; }
+    .reveal h1, .reveal h2, .reveal h3 { color: #4472C4; }
+    .hi-orange { color: #ED7D31; font-weight: bold; }
+    .hi-green  { color: #70AD47; font-weight: bold; }
+    .discuss {
+      background: #fff8e7;
+      border-left: 5px solid #ED7D31;
+      padding: 12px 16px;
+      font-size: 0.82em;
+      text-align: left;
+    }
+    .case-box {
+      background: #eef4fb;
+      border-left: 5px solid #4472C4;
+      padding: 12px 16px;
+      font-size: 0.8em;
+      text-align: left;
+    }
+    .task-box {
+      background: #eafaf1;
+      border-left: 5px solid #70AD47;
+      padding: 12px 16px;
+      font-size: 0.8em;
+      text-align: left;
+    }
+    .quiz-btn {
+      background: #4472C4;
+      color: #fff;
+      border: none;
+      padding: 7px 15px;
+      margin: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.72em;
+    }
+    .quiz-btn.correct { background: #70AD47; }
+    .quiz-btn.wrong   { background: #e74c3c; }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .arch-box {
+      border: 2px solid #4472C4;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f0f4fb;
+      font-size: 0.78em;
+    }
+    .reveal pre            { font-size: 0.48em; width: 100%; box-shadow: none; }
+    .reveal pre code       { max-height: 360px; }
+    .reveal table          { font-size: 0.78em; }
+    .reveal table th       { background: #4472C4; color: #fff; }
+    .badge {
+      display: inline-block;
+      background: #4472C4;
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-size: 0.7em;
+      margin: 2px;
+    }
+    .badge-orange { background: #ED7D31; }
+    .badge-green  { background: #70AD47; }
+    .slide-subtitle {
+      color: #ED7D31;
+      font-size: 0.85em;
+      margin-top: -10px;
+      margin-bottom: 16px;
+    }
+    .note-box {
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 0.75em;
+      color: #555;
+      text-align: left;
+    }
+  
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ========== СЛАЙД 1: Титульный ========== -->
+    <section>
+      <h1 style="font-size:1.4em;">Модуль 11</h1>
+      <h2>Эксплуатация Apache Airflow</h2>
+      <p class="slide-subtitle">Мониторинг, логи, алертинг и производительность</p>
+      <hr style="border-color:#4472C4;">
+      <p style="font-size:0.85em;">
+        <span class="badge">Мониторинг</span>
+        <span class="badge badge-orange">Алертинг</span>
+        <span class="badge badge-green">Масштабирование</span>
+      </p>
+      <p style="font-size:0.8em; color:#555; margin-top:20px;">
+        Продолжительность: <strong>3 часа</strong> &nbsp;|&nbsp;
+        Платформа: <strong>Яндекс Облако</strong> &nbsp;|&nbsp;
+        Уровень: <strong>Производственная эксплуатация</strong>
+      </p>
+      <aside class="notes">
+        Вводный слайд. Напомните слушателям, что в этом модуле мы переходим от разработки DAG к промышленной эксплуатации Airflow на производственной инфраструктуре РЖД.
+      </aside>
+    </section>
+
+    <!-- ========== СЛАЙД 2: Повестка ========== -->
+    <section>
+      <h2>Содержание модуля</h2>
+      <div class="two-col">
+        <div>
+          <h3 style="font-size:0.9em;">Теория</h3>
+          <ol style="font-size:0.8em; line-height:1.9em;">
+            <li>Типы исполнителей: Local / Celery / Kubernetes</li>
+            <li>Масштабирование воркеров</li>
+            <li>Мониторинг: Prometheus + StatsD</li>
+            <li>Grafana — дашборды эксплуатации</li>
+            <li>Алертинг: email и Telegram</li>
+            <li>Управление логами Airflow</li>
+            <li>Обслуживание метабазы (метаданных)</li>
+            <li>Pools и приоритеты задач</li>
+          </ol>
+        </div>
+        <div>
+          <h3 style="font-size:0.9em;">Практика и лаб. работы</h3>
+          <ul style="font-size:0.8em; line-height:1.9em;">
+            <li>Production-стек в Яндекс Облаке</li>
+            <li>CeleryExecutor с 3 воркерами</li>
+            <li>Prometheus + Grafana мониторинг</li>
+            <li>Telegram-алерты дежурному инженеру</li>
+            <li>Алерты по событиям и сбоям пайплайнов</li>
+          </ul>
+          <div class="note-box" style="margin-top:12px;">
+            Цель: подготовить инфраструктуру к 24/7 эксплуатации без постоянного ручного мониторинга
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 3: Типы исполнителей ========== -->
+    <section>
+      <h2>Типы исполнителей (Executors)</h2>
+      <p style="font-size:0.78em; color:#555;">Executor определяет, <em>где</em> и <em>как</em> запускаются задачи DAG</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Executor</th>
+            <th>Параллельность</th>
+            <th>Инфраструктура</th>
+            <th>Типичное применение</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SequentialExecutor</strong></td>
+            <td>1 задача</td>
+            <td>SQLite</td>
+            <td>Разработка, тестирование DAG</td>
+          </tr>
+          <tr>
+            <td><strong>LocalExecutor</strong></td>
+            <td>N процессов</td>
+            <td>Один сервер</td>
+            <td>Пилот на 1 VM в Яндекс Облаке</td>
+          </tr>
+          <tr>
+            <td><span class="hi-orange">CeleryExecutor</span></td>
+            <td>N воркеров</td>
+            <td>Redis/RabbitMQ + PostgreSQL</td>
+            <td><strong>Production (несколько воркеров)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>KubernetesExecutor</strong></td>
+            <td>Pod на задачу</td>
+            <td>Kubernetes кластер</td>
+            <td>Перспектива: Managed K8s в YC</td>
+          </tr>
+        </tbody>
+      </table>
+      <aside class="notes">
+        Объясните, что выбор executor — ключевое архитектурное решение. Для ТЧЭ-15 с 20-30 одновременными DAG оптимален CeleryExecutor. Попросите слушателей подумать, какой executor они бы выбрали и почему.
+      </aside>
+    </section>
+
+    <!-- ========== СЛАЙД 4: LocalExecutor vs CeleryExecutor ========== -->
+    <section>
+      <h2>LocalExecutor vs CeleryExecutor</h2>
+      <div class="two-col">
+        <div class="arch-box">
+          <h3 style="font-size:1em; color:#4472C4;">LocalExecutor</h3>
+          <pre><code class="language-ini"># airflow.cfg
+[core]
+executor = LocalExecutor
+parallelism = 16
+max_active_tasks_per_dag = 8
+
+[database]
+sql_alchemy_conn =
+  postgresql+psycopg2://
+  airflow:pass@localhost/airflow</code></pre>
+          <ul style="margin-top:8px; font-size:0.9em; line-height:1.7em;">
+            <li>Один хост, несколько процессов</li>
+            <li>Не требует Redis</li>
+            <li>Ограничен ресурсами одной VM</li>
+            <li class="hi-orange">Нет горизонтального масштабирования</li>
+          </ul>
+        </div>
+        <div class="arch-box">
+          <h3 style="font-size:1em; color:#4472C4;">CeleryExecutor</h3>
+          <pre><code class="language-ini"># airflow.cfg
+[core]
+executor = CeleryExecutor
+
+[celery]
+broker_url =
+  redis://redis:6379/0
+result_backend =
+  db+postgresql://
+  airflow:pass@postgres/airflow
+worker_concurrency = 8</code></pre>
+          <ul style="margin-top:8px; font-size:0.9em; line-height:1.7em;">
+            <li>Распределённые воркеры</li>
+            <li>Горизонтальное масштабирование</li>
+            <li class="hi-green">Отказоустойчивость</li>
+            <li class="hi-green">Идеален для 20-30 одновременных DAG</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 5: KubernetesExecutor ========== -->
+    <section>
+      <h2>KubernetesExecutor — архитектура</h2>
+      <div class="arch-box" style="margin-bottom:12px; font-size:0.82em;">
+        <strong>Принцип:</strong> каждая задача Airflow запускается как отдельный Kubernetes Pod, который удаляется после завершения
+      </div>
+      <div class="two-col">
+        <div>
+          <pre><code class="language-ini"># airflow.cfg
+[core]
+executor = KubernetesExecutor
+
+[kubernetes]
+namespace = airflow-rzd
+worker_container_repository =
+  cr.yandex/rzd/airflow-worker
+worker_container_tag = 2.8.0
+delete_worker_pods = True
+delete_worker_pods_on_failure = False
+in_cluster = True</code></pre>
+        </div>
+        <div style="font-size:0.82em;">
+          <p><strong>Преимущества:</strong></p>
+          <ul>
+            <li class="hi-green">Изоляция каждой задачи</li>
+            <li class="hi-green">Авто-масштабирование (HPA)</li>
+            <li class="hi-green">Разные Docker-образы для задач</li>
+          </ul>
+          <p style="margin-top:10px;"><strong>Недостатки:</strong></p>
+          <ul>
+            <li class="hi-orange">Cold start ~30 сек (критично для алертов)</li>
+            <li class="hi-orange">Сложнее в обслуживании</li>
+            <li class="hi-orange">Требует Managed K8s в Яндекс Облаке</li>
+          </ul>
+          <div class="note-box" style="margin-top:8px;">
+            На практике: рассматривать как следующий шаг после стабилизации Celery-стека
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 6: Масштабирование воркеров ========== -->
+    <section>
+      <h2>Масштабирование воркеров CeleryExecutor</h2>
+      <p class="slide-subtitle">Production-конфигурация в Яндекс Облаке</p>
+      <div class="two-col">
+        <div>
+          <pre><code class="language-bash"># Масштабирование через Docker Compose
+docker compose up -d \
+  --scale airflow-worker=5
+
+# Проверка активных воркеров Celery
+docker exec -it airflow-worker \
+  celery -A \
+  airflow.executors.celery_executor.app \
+  inspect active
+
+# Мониторинг очереди задач
+docker exec -it airflow-worker \
+  celery -A \
+  airflow.executors.celery_executor.app \
+  inspect reserved
+
+# Статус воркеров (Flower UI)
+# http://localhost:5555</code></pre>
+        </div>
+        <div class="arch-box">
+          <p><strong>Схема масштабирования:</strong></p>
+          <div style="font-family: monospace; font-size:0.85em; line-height:1.8em;">
+            <div style="background:#4472C4;color:#fff;padding:4px 8px;border-radius:4px;margin:2px;text-align:center;">
+              Scheduler (x1)
+            </div>
+            <div style="text-align:center;">&#8595; задачи в очередь</div>
+            <div style="background:#ED7D31;color:#fff;padding:4px 8px;border-radius:4px;margin:2px;text-align:center;">
+              Redis Broker
+            </div>
+            <div style="text-align:center;">&#8595; раздача задач</div>
+            <div style="display:flex;gap:4px;margin:2px;">
+              <div style="background:#70AD47;color:#fff;padding:4px 6px;border-radius:4px;flex:1;text-align:center;">Worker 1<br><small>8 слотов</small></div>
+              <div style="background:#70AD47;color:#fff;padding:4px 6px;border-radius:4px;flex:1;text-align:center;">Worker 2<br><small>8 слотов</small></div>
+              <div style="background:#70AD47;color:#fff;padding:4px 6px;border-radius:4px;flex:1;text-align:center;">Worker 3<br><small>8 слотов</small></div>
+            </div>
+          </div>
+          <p style="font-size:0.82em;margin-top:8px;">
+            Итого: <span class="hi-green">24 параллельные задачи</span><br>
+            Масштабируется до 5-6 воркеров без простоя
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 7: Prometheus + StatsD ========== -->
+    <section>
+      <h2>Мониторинг: Prometheus + StatsD Exporter</h2>
+      <div class="two-col">
+        <div>
+          <pre><code class="language-ini"># airflow.cfg — включение метрик
+[metrics]
+statsd_on = True
+statsd_host = statsd-exporter
+statsd_port = 8125
+statsd_prefix = airflow
+
+# Ключевые метрики Airflow:
+# airflow.dag_processing.total_parse_time
+# airflow.executor.open_slots
+# airflow.executor.queued_tasks
+# airflow.executor.running_tasks
+# airflow.dagrun.duration.success.*
+# airflow.dagrun.duration.failed.*
+# airflow.scheduler.heartbeat
+# airflow.pool.open_slots.*
+# airflow.pool.queued_slots.*</code></pre>
+        </div>
+        <div>
+          <pre><code class="language-yaml"># prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: airflow_statsd
+    static_configs:
+      - targets:
+          - statsd-exporter:9102
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: airflow_.*
+        action: keep
+
+  - job_name: rzd_sensors
+    static_configs:
+      - targets:
+          - sensor-exporter:9200
+    labels:
+      depot: tche15
+      region: west_siberia</code></pre>
+        </div>
+      </div>
+      <div class="note-box" style="margin-top:8px; font-size:0.75em;">
+        <strong>Поток данных:</strong> Airflow &#8594; UDP 8125 &#8594; StatsD Exporter &#8594; HTTP /metrics &#8594; Prometheus &#8594; Grafana + Alertmanager
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 8: Grafana дашборд ========== -->
+    <section>
+      <h2>Grafana — дашборд эксплуатации ТЧЭ-15</h2>
+      <div class="two-col">
+        <div>
+          <div class="arch-box">
+            <p><strong>Панели дашборда (8 штук):</strong></p>
+            <ul style="font-size:0.85em; line-height:1.8em;">
+              <li><strong>Stat:</strong> Running Tasks / Queued Tasks</li>
+              <li><strong>Gauge:</strong> Free Worker Slots (0–24)</li>
+              <li><strong>Time Series:</strong> DAG Duration p50 / p95</li>
+              <li><strong>Stat:</strong> Failed DAG Runs за 24 ч</li>
+              <li><strong>Time Series:</strong> Scheduler Heartbeat</li>
+              <li><strong>Table:</strong> Перегрев букс (&gt;80°C)</li>
+              <li><strong>Bar:</strong> Опоздания поездов (мин)</li>
+              <li><strong>Stat:</strong> OTD% (on-time delivery)</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <pre><code class="language-json">// Grafana Alert Rule — очередь задач
+{
+  "name": "Airflow Queue Overload",
+  "condition": "B",
+  "data": [
+    {
+      "refId": "A",
+      "expr":
+        "airflow_executor_queued_tasks"
+    },
+    {
+      "refId": "B",
+      "type": "threshold",
+      "conditions": [{
+        "evaluator": {
+          "type": "gt",
+          "params": [50]
+        }
+      }]
+    }
+  ],
+  "for": "5m",
+  "labels": {
+    "severity": "warning",
+    "depot": "tche15"
+  },
+  "annotations": {
+    "summary":
+      "Очередь задач Airflow > 50"
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 9: Email и Telegram алерты ========== -->
+    <section>
+      <h2>Алертинг: Email и Telegram</h2>
+      <div class="two-col">
+        <div>
+          <pre><code class="language-python"># dags/utils/alerts.py
+import requests
+from airflow.hooks.base import BaseHook
+
+TELEGRAM_CONN_ID = "telegram_tche15"
+
+
+def send_telegram_alert(context):
+    """Алерт дежурному инженеру ТЧЭ-15."""
+    conn = BaseHook.get_connection(
+        TELEGRAM_CONN_ID
+    )
+    token = conn.password
+    chat_id = conn.host
+
+    dag_id = context["dag"].dag_id
+    task_id = context["task"].task_id
+    exec_date = context[
+        "execution_date"
+    ].strftime("%d.%m.%Y %H:%M")
+    exception = str(
+        context.get("exception", "—")
+    )[:200]
+
+    msg = (
+        f"🚨 AIRFLOW ALERT\n"
+        f"DAG: {dag_id}\n"
+        f"Task: {task_id}\n"
+        f"Время: {exec_date}\n"
+        f"Ошибка: {exception}\n"
+        f"Дирекция: ТЧЭ-15 НГ"
+    )
+    requests.post(
+        f"https://api.telegram.org"
+        f"/bot{token}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": msg,
+            "parse_mode": "HTML",
+        },
+        timeout=10,
+    )
+</code></pre>
+        </div>
+        <div>
+          <pre><code class="language-python"># Подключение алертов в DAG
+from datetime import timedelta
+from utils.alerts import (
+    send_telegram_alert,
+)
+
+default_args = {
+    "owner": "tche15",
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "on_failure_callback":
+        send_telegram_alert,
+    "email": ["duty@tche15.rzd.ru"],
+    "email_on_failure": True,
+    "email_on_retry": False,
+}
+
+# airflow.cfg — SMTP
+# [smtp]
+# smtp_host = smtp.rzd.ru
+# smtp_port = 587
+# smtp_starttls = True
+# smtp_user = airflow@rzd.ru
+# smtp_password = ${SMTP_PASS}
+# smtp_mail_from =
+#   Airflow TChE-15
+#   &lt;airflow@tche15.rzd.ru&gt;
+</code></pre>
+          <div class="note-box" style="margin-top:8px; font-size:0.8em;">
+            Connection <code>telegram_tche15</code>:<br>
+            Host = chat_id, Password = bot_token
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 10: Управление логами ========== -->
+    <section>
+      <h2>Управление логами Airflow</h2>
+      <div class="two-col">
+        <div>
+          <div class="arch-box" style="margin-bottom:8px;">
+            <p><strong>Уровни хранения логов:</strong></p>
+            <ul style="font-size:0.85em; line-height:1.7em;">
+              <li><strong>Локально</strong> — на воркере, 7 дней</li>
+              <li><strong>Remote (S3)</strong> — Yandex Object Storage, 90 дней</li>
+              <li><strong>Elasticsearch</strong> — полнотекстовый поиск</li>
+            </ul>
+          </div>
+          <pre><code class="language-ini"># airflow.cfg — Remote Logging YC
+[logging]
+remote_logging = True
+remote_log_conn_id = yc_s3
+remote_base_log_folder =
+  s3://rzd-airflow-logs/tche15/
+
+# Шаблон пути к логу задачи
+log_filename_template =
+  {{ ti.dag_id }}/
+  {{ ti.task_id }}/
+  {{ ts }}/{{ try_number }}.log</code></pre>
+        </div>
+        <div>
+          <pre><code class="language-python"># Connection: yc_s3
+# Conn Type: Amazon Web Services
+# Extra (JSON):
+{
+  "aws_access_key_id":
+    "YC_STATIC_KEY_ID",
+  "aws_secret_access_key":
+    "YC_STATIC_KEY_SECRET",
+  "endpoint_url":
+    "https://storage.yandexcloud.net",
+  "region_name": "ru-central1"
+}
+
+# Очистка старых логов (cron: 0 3 * * *)
+# BashOperator в DAG db_maintenance:
+# airflow db clean
+#   --clean-before-timestamp
+#   "{{ macros.ds_add(ds, -90) }}"
+#   --tables log
+#   --yes
+</code></pre>
+          <div class="note-box" style="margin-top:8px; font-size:0.8em;">
+            После 90 дней логи в S3 переходят в Glacier-класс хранения (стоимость ниже в 10 раз)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 11: Обслуживание метабазы ========== -->
+    <section>
+      <h2>Обслуживание метабазы Airflow</h2>
+      <p class="slide-subtitle">Регулярное обслуживание PostgreSQL БД метаданных</p>
+      <div class="two-col">
+        <div>
+          <pre><code class="language-bash"># Очистка устаревших данных
+airflow db clean \
+  --clean-before-timestamp \
+  "2024-01-01 00:00:00" \
+  --tables dag_run,task_instance,\
+           log,xcom,job \
+  --yes
+
+# Проверка состояния метабазы
+airflow db check
+
+# Применение миграций при обновлении
+airflow db migrate
+
+# Резервное копирование переменных
+airflow variables export \
+  /backup/vars_$(date +%Y%m%d).json
+
+# Резервное копирование connections
+airflow connections export \
+  /backup/conns_$(date +%Y%m%d).json</code></pre>
+        </div>
+        <div>
+          <pre><code class="language-python"># DAG: автоматическое обслуживание БД
+from airflow import DAG
+from airflow.operators.bash import (
+    BashOperator,
+)
+from datetime import datetime
+
+with DAG(
+    dag_id="db_maintenance_tche15",
+    schedule="0 2 * * 0",  # вс, 02:00
+    start_date=datetime(2024, 1, 1),
+    catchup=False,
+    tags=["ops", "tche15", "maintenance"],
+) as dag:
+    clean = BashOperator(
+        task_id="clean_old_dag_runs",
+        bash_command=(
+            "airflow db clean "
+            "--clean-before-timestamp "
+            '"{{ macros.ds_add(ds,-90) }}" '
+            "--tables dag_run,"
+            "task_instance,log,xcom "
+            "--yes"
+        ),
+    )
+    vacuum = BashOperator(
+        task_id="vacuum_analyze",
+        bash_command=(
+            'psql "$AIRFLOW__DATABASE__'
+            'SQL_ALCHEMY_CONN" '
+            '-c "VACUUM ANALYZE;"'
+        ),
+    )
+    clean >> vacuum
+</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 12: Pools и приоритеты ========== -->
+    <section>
+      <h2>Pools и приоритеты задач</h2>
+      <div class="two-col">
+        <div>
+          <pre><code class="language-python"># Создание пулов (CLI или Admin UI)
+# airflow pools set sensor_pool 10 \
+#   "Телеметрия локомотивов ТЧЭ-15"
+# airflow pools set alert_pool 5 \
+#   "Критические алерты"
+# airflow pools set db_pool 5 \
+#   "Запросы к rzd_analytics"
+# airflow pools set report_pool 3 \
+#   "Формирование отчётов ночью"
+
+from airflow.operators.python import (
+    PythonOperator,
+)
+
+check_buxa = PythonOperator(
+    task_id="check_buxa_temperature",
+    python_callable=check_temp_fn,
+    pool="alert_pool",
+    pool_slots=1,
+    priority_weight=200,   # наивысший
+    weight_rule="absolute",
+)
+
+gen_report = PythonOperator(
+    task_id="generate_otd_report",
+    python_callable=gen_report_fn,
+    pool="report_pool",
+    priority_weight=10,    # низкий
+)
+</code></pre>
+        </div>
+        <div>
+          <div class="arch-box">
+            <p><strong>Стратегия пулов:</strong></p>
+            <table>
+              <thead>
+                <tr><th>Пул</th><th>Слоты</th><th>Приоритет</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>alert_pool</td><td>5</td><td class="hi-orange">Критический (200)</td></tr>
+                <tr><td>sensor_pool</td><td>10</td><td class="hi-orange">Высокий (100)</td></tr>
+                <tr><td>db_pool</td><td>5</td><td>Средний (50)</td></tr>
+                <tr><td>report_pool</td><td>3</td><td class="hi-green">Низкий (10)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note-box" style="margin-top:10px; font-size:0.78em;">
+            <strong>Общее правило:</strong> задачи алертов и мониторинга — наивысший приоритет. Отчёты формируются в окне 02:00–05:00, когда нагрузка минимальна.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 13: Применение в РЖД — Production Setup ========== -->
+    <section>
+      <h2>Production Setup ТЧЭ-15</h2>
+      <p class="slide-subtitle">CeleryExecutor в Яндекс Облаке — полная архитектура</p>
+      <div class="arch-box" style="margin-bottom:12px;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:0.8em;">
+          <div style="background:#4472C4;color:#fff;padding:5px 8px;border-radius:4px;text-align:center;">Локомотивы<br><small>ВЛ80С, 2ТЭ116, ЭП2К, ЧМЭ3</small></div>
+          <div>&#8594;</div>
+          <div style="background:#ED7D31;color:#fff;padding:5px 8px;border-radius:4px;text-align:center;">ГЛОНАСС + Датчики<br><small>буксы, ток, топливо</small></div>
+          <div>&#8594;</div>
+          <div style="background:#4472C4;color:#fff;padding:5px 8px;border-radius:4px;text-align:center;">Airflow DAGs<br><small>CeleryExecutor x3</small></div>
+          <div>&#8594;</div>
+          <div style="background:#70AD47;color:#fff;padding:5px 8px;border-radius:4px;text-align:center;">PostgreSQL<br><small>rzd_analytics</small></div>
+          <div>&#8594;</div>
+          <div style="background:#ED7D31;color:#fff;padding:5px 8px;border-radius:4px;text-align:center;">Telegram<br><small>Дежурный инженер</small></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div style="font-size:0.8em;">
+          <p><strong>Ресурсы Яндекс Облака:</strong></p>
+          <ul style="line-height:1.8em;">
+            <li>2× VM Standard-v3 (8 vCPU, 16 ГБ) — воркеры</li>
+            <li>1× VM Standard-v2 (4 vCPU, 8 ГБ) — scheduler + webserver</li>
+            <li>Managed PostgreSQL 14 — метабаза + rzd_analytics</li>
+            <li>Managed Redis 7 — Celery broker</li>
+            <li>Object Storage — логи, бэкапы DAG</li>
+            <li>Prometheus + Grafana — мониторинг</li>
+          </ul>
+        </div>
+        <div style="font-size:0.8em;">
+          <p><strong>Производственные DAG-и:</strong></p>
+          <ul style="line-height:1.8em;">
+            <li><code>sensor_ingestion</code> — каждые 5 мин</li>
+            <li><code>buxa_temp_monitor</code> — каждые 2 мин</li>
+            <li><code>schedule_adherence</code> — каждые 15 мин</li>
+            <li><code>fuel_consumption_report</code> — ежедневно 06:00</li>
+            <li><code>maintenance_planner</code> — еженедельно</li>
+            <li><code>db_maintenance_tche15</code> — воскресенье 02:00</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 14: docker-compose.yml ========== -->
+    <section>
+      <h2>docker-compose.yml — Production ТЧЭ-15</h2>
+      <pre><code class="language-yaml"># docker-compose.yml — Production Airflow с CeleryExecutor
+# (фрагмент основных сервисов)
+services:
+  airflow-webserver:
+    image: apache/airflow:2.8.0
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${DB_PASS}@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__METRICS__STATSD_ON: "true"
+      AIRFLOW__METRICS__STATSD_HOST: statsd-exporter
+      AIRFLOW__METRICS__STATSD_PORT: "8125"
+    ports: ["8080:8080"]
+
+  airflow-worker:
+    image: apache/airflow:2.8.0
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${DB_PASS}@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+    command: celery worker
+    deploy:
+      replicas: 3  # 3 воркера для ТЧЭ-15
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  statsd-exporter:
+    image: prom/statsd-exporter:v0.26.0
+    ports: ["9102:9102", "8125:8125/udp"]
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    volumes: ["./prometheus.yml:/etc/prometheus/prometheus.yml"]
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASS}
+    volumes: ["grafana_data:/var/lib/grafana"]
+</code></pre>
+    </section>
+
+    <!-- ========== СЛАЙД 15: Вопрос для обсуждения 1 ========== -->
+    <section>
+      <h2>&#10067; Вопрос для обсуждения</h2>
+      <div class="discuss">
+        <p><strong>CeleryExecutor с Redis vs KubernetesExecutor</strong> для производственной эксплуатации в Яндекс Облаке</p>
+        <p>Что выбрать для ТЧЭ-15 с 20–30 одновременными DAG?</p>
+        <hr style="border-color:#ED7D31; margin:10px 0;">
+        <p>Обсудите в парах (5 минут), затем — общее обсуждение:</p>
+        <ul>
+          <li>Какой executor проще в обслуживании для дежурного инженера в ночную смену?</li>
+          <li>Что важнее для ТЧЭ-15 — изоляция задач или предсказуемость запуска?</li>
+          <li>Как задержка cold start K8s ~30 сек влияет на алерты по перегреву букс?</li>
+          <li>Есть ли в штате ТЧЭ-15 DevOps с опытом Kubernetes?</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 16: Кейс для анализа ========== -->
+    <section>
+      <h2>&#128269; Кейс для анализа</h2>
+      <div class="case-box">
+        <p><strong>02:30 ночи — пайплайн ТЧЭ-15 завис</strong></p>
+        <p>В 02:30 пайплайн <code>sensor_ingestion</code> начал выполняться в 8 раз медленнее обычного. Задачи висят в состоянии <code>queued</code> по 20 минут. Grafana показывает рост queue_size с 5 до 58. Воркеры живы, scheduler heartbeat в норме. Дежурный получил Telegram-алерт.</p>
+        <hr style="border-color:#4472C4; margin:10px 0;">
+        <p><strong>Вопросы для анализа:</strong></p>
+        <ul style="font-size:0.9em;">
+          <li>Каков первый шаг диагностики? (<code>celery inspect</code>? Grafana? Logs воркера?)</li>
+          <li>Как быстро добавить 2 воркера в Яндекс Облаке без остановки системы?</li>
+          <li>Какие задачи отменить первыми — отчёты (report_pool) или мониторинг датчиков?</li>
+          <li>Как предотвратить повторение? (auto-scaling воркеров по метрике queue_size)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 17: Вопрос для обсуждения 2 ========== -->
+    <section>
+      <h2>&#10067; Вопрос для обсуждения 2</h2>
+      <div class="discuss">
+        <p><strong>Что показывать дежурному инженеру ТЧЭ-15 в Telegram в 3:00 ночи?</strong></p>
+        <p>Какие метрики должны быть в алерте? Без лишних деталей — решение за 30 секунд.</p>
+        <hr style="border-color:#ED7D31; margin:10px 0;">
+        <p>Предложите формат сообщения для каждого случая:</p>
+        <ul>
+          <li>Перегрев буксы локомотива ВЛ80С-1247 (ось 3: 95°C, координаты ГЛОНАСС)</li>
+          <li>Опоздание грузового состава №3420 на 45 мин (ст. Инская &#8594; ст. Новосибирск-Гл.)</li>
+          <li>Падение DAG <code>sensor_ingestion</code> (нет данных с 10 локомотивов уже 25 мин)</li>
+        </ul>
+        <p style="margin-top:8px; font-size:0.9em;"><em>Принцип: дежурный должен принять решение за 30 секунд, не заходя в UI Airflow.</em></p>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 18: Квиз ========== -->
+    <section>
+      <h2>Проверка знаний — Квиз</h2>
+      <div style="font-size:0.85em;">
+        <p><strong>Вопрос 1:</strong> CeleryExecutor требует дополнительно:</p>
+        <div>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Только Python 3.10+</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Брокер сообщений (Redis/RabbitMQ) и result backend</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Только Docker</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">GPU-сервер для ML-задач</button>
+        </div>
+
+        <p style="margin-top:16px;"><strong>Вопрос 2:</strong> Pool в Airflow используется для:</p>
+        <div>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Хранения паролей и секретов</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Ограничения числа параллельно выполняемых задач определённого типа</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Кэширования результатов задач (XCom)</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Резервного копирования DAG-файлов</button>
+        </div>
+
+        <p style="margin-top:16px;"><strong>Вопрос 3:</strong> Команда <code>airflow db clean</code> используется для:</p>
+        <div>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Удаления всех DAG и их файлов</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Удаления устаревших записей из таблиц метабазы (dag_run, task_instance, log и др.)</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Сброса паролей пользователей Airflow</button>
+          <button class="quiz-btn" onclick="checkAnswer(this,false)">Очистки S3-бакета с логами задач</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 19: Задание для группы ========== -->
+    <section>
+      <h2>&#128101; Задание для группы</h2>
+      <div class="task-box">
+        <p><strong>Спроектируйте дашборд мониторинга Airflow для ночной смены ТЧЭ-15</strong></p>
+        <p><strong>Время: 25 минут.</strong> Разбейтесь на группы по 3–4 человека.</p>
+        <hr style="border-color:#70AD47; margin:10px 0;">
+        <ol style="font-size:0.9em; line-height:1.9em;">
+          <li>Выберите 6–8 метрик для дашборда ночной смены. Обоснуйте каждую.</li>
+          <li>Определите пороги алертов (warning / critical) для каждой метрики.</li>
+          <li>Предложите тип визуализации: gauge, time series, table, stat.</li>
+          <li>Опишите порядок действий дежурного при каждом виде алерта.</li>
+          <li>Нарисуйте от руки схему расположения панелей на экране дашборда.</li>
+        </ol>
+        <p style="margin-top:10px;"><strong>Презентация:</strong> 5 минут на группу + голосование за лучший дизайн.</p>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 20: Обзор практической работы ========== -->
+    <section>
+      <h2>Практическая работа</h2>
+      <p class="slide-subtitle">Настройка Prometheus + Grafana для мониторинга Airflow ТЧЭ-15</p>
+      <div class="two-col">
+        <div>
+          <div class="arch-box">
+            <p><strong>Шаги выполнения:</strong></p>
+            <ol style="font-size:0.85em; line-height:1.8em;">
+              <li>Развёртывание стека в Яндекс Облаке</li>
+              <li>Настройка StatsD Exporter (UDP 8125)</li>
+              <li>Конфигурация Prometheus scraping</li>
+              <li>Создание Grafana дашборда (8 панелей)</li>
+              <li>Настройка алертов в Grafana</li>
+              <li>Нагрузочное тестирование с DAG ТЧЭ-15</li>
+            </ol>
+          </div>
+        </div>
+        <div>
+          <div class="arch-box">
+            <p><strong>Наборы данных:</strong></p>
+            <ul style="font-size:0.85em; line-height:1.8em;">
+              <li><code>locomotives.csv</code> — парк ТЧЭ-15 (30 локомотивов)</li>
+              <li><code>sensor_readings.csv</code> — телеметрия (100 тыс. строк)</li>
+              <li><code>trips.csv</code> — поездки за 30 дней</li>
+              <li><code>schedule_adherence.csv</code> — соблюдение графика</li>
+            </ul>
+            <p style="margin-top:8px;"><strong>Схема:</strong> <code>rzd_analytics</code> (PostgreSQL)</p>
+          </div>
+          <div class="note-box" style="margin-top:8px; font-size:0.78em;">
+            Инструкция: <code>module_11/practice/README.md</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 21: Обзор лабораторной работы ========== -->
+    <section>
+      <h2>Лабораторная работа</h2>
+      <p class="slide-subtitle">Три production-алерта для ТЧЭ-15 &#8594; Telegram</p>
+      <div class="two-col">
+        <div>
+          <div class="arch-box">
+            <p><strong>Алерт 1: Перегрев букс</strong></p>
+            <p style="font-size:0.82em; line-height:1.5em;">Температура буксы &gt; <span class="hi-orange">80°C</span> &#8594; критический алерт. Содержит: серию и номер локомотива, ось, температуру, координаты ГЛОНАСС.</p>
+          </div>
+          <div class="arch-box" style="margin-top:8px;">
+            <p><strong>Алерт 2: Опоздания поездов</strong></p>
+            <p style="font-size:0.82em; line-height:1.5em;">Опоздание &gt; <span class="hi-orange">30 мин</span> &#8594; уведомление. Содержит: номер поезда, станцию, план vs факт.</p>
+          </div>
+          <div class="arch-box" style="margin-top:8px;">
+            <p><strong>Алерт 3: Отказ пайплайна</strong></p>
+            <p style="font-size:0.82em; line-height:1.5em;">Падение DAG &#8594; немедленный алерт. Содержит: имя DAG, задачу, первые 200 символов ошибки.</p>
+          </div>
+        </div>
+        <div>
+          <div class="arch-box">
+            <p><strong>Что строим:</strong></p>
+            <ul style="font-size:0.85em; line-height:1.8em;">
+              <li>DAG <code>tche15_alert_system</code></li>
+              <li>Схема PostgreSQL <code>rzd_analytics</code></li>
+              <li>Telegram Bot через BotFather</li>
+              <li>Airflow Connection <code>telegram_tche15</code></li>
+              <li>Пулы задач и приоритеты</li>
+            </ul>
+            <p style="margin-top:8px;"><strong>Задания повышенной сложности:</strong></p>
+            <ol style="font-size:0.82em; line-height:1.7em;">
+              <li>Мульти-уровневые алерты (warning 70°C / critical 80°C)</li>
+              <li>Агрегация алертов — не спамить ночью (батчинг за 15 мин)</li>
+              <li>Авто-эскалация при игнорировании алерта более 30 мин</li>
+            </ol>
+          </div>
+          <div class="note-box" style="margin-top:8px; font-size:0.78em;">
+            Инструкция: <code>module_11/lab/README.md</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== СЛАЙД 22: Итоговый ========== -->
+    <section>
+      <h2>Итоги модуля 11</h2>
+      <div class="two-col">
+        <div>
+          <h3 style="font-size:0.9em;">Что изучили:</h3>
+          <ul style="font-size:0.82em; line-height:1.8em;">
+            <li><span class="hi-green">LocalExecutor</span> — разработка и пилот</li>
+            <li><span class="hi-orange">CeleryExecutor</span> — production (3 воркера)</li>
+            <li><strong>KubernetesExecutor</strong> — перспективная архитектура</li>
+            <li>Prometheus + StatsD + Grafana — мониторинг 24/7</li>
+            <li>Telegram-алерты дежурному инженеру</li>
+            <li>Управление логами (Yandex Object Storage)</li>
+            <li>Обслуживание метабазы (<code>airflow db clean</code>)</li>
+            <li>Pools и приоритеты задач</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size:0.9em;">Следующий шаг:</h3>
+          <div class="note-box" style="margin-top:8px;">
+            <p style="font-size:0.85em;"><strong>Модуль 12:</strong> CI/CD для DAG-ов — автоматическое тестирование и деплой пайплайнов через GitLab CI / Yandex Cloud.</p>
+          </div>
+          <div class="arch-box" style="margin-top:12px;">
+            <p style="font-size:0.85em;"><strong>Платформа Airflow теперь умеет:</strong></p>
+            <ul style="font-size:0.82em; line-height:1.7em;">
+              <li class="hi-green">Масштабироваться под нагрузку без простоя</li>
+              <li class="hi-green">Мониторить себя и оборудование 24/7</li>
+              <li class="hi-green">Будить инженера только при реальных проблемах</li>
+              <li class="hi-green">Самоочищаться и обслуживать метабазу</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <p style="text-align:center; margin-top:20px; font-size:0.8em; color:#555;">
+        <span class="badge">Модуль 11 завершён</span>
+        <span class="badge badge-orange">Production Ready</span>
+        <span class="badge badge-green">Вопросы?</span>
+      </p>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+  function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll(".quiz-btn").forEach(function(b) {
+      b.disabled = true;
+    });
+    if (correct) {
+      btn.classList.add("correct");
+      btn.textContent += " ✓";
+    } else {
+      btn.classList.add("wrong");
+      btn.textContent += " ✗";
+      p.querySelectorAll("[data-correct=true]").forEach(function(b) {
+        b.classList.add("correct");
+      });
+    }
+  }
+
+  Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: true,
+    slideNumber: "c/t",
+    plugins: [RevealHighlight, RevealNotes],
+    transition: "slide"
+  });
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+

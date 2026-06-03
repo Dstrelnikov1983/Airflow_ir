@@ -1,0 +1,1180 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Модуль 08 — Тестирование DAG | Курс Apache Airflow</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+  <style>
+    :root {
+      --c-blue:   #4472C4;
+      --c-orange: #ED7D31;
+      --c-green:  #70AD47;
+      --c-dark:   #1F2D3D;
+      --c-bg:     #F7F9FC;
+    }
+
+    .reveal { font-size: 24px; font-family: 'Segoe UI', Arial, sans-serif; background: var(--c-bg); }
+
+    .reveal h1, .reveal h2 { color: #4472C4; }
+    .reveal h3 { color: #1F2D3D; }
+
+    .hi-orange { color: #ED7D31; font-weight: bold; }
+    .hi-green  { color: #70AD47; font-weight: bold; }
+    .hi-blue   { color: #4472C4; font-weight: bold; }
+
+    .discuss {
+      background: #fff8e7;
+      border-left: 5px solid #ED7D31;
+      padding: 12px 16px;
+      font-size: 0.82em;
+      border-radius: 6px;
+      text-align: left;
+      margin: 10px 0;
+    }
+    .discuss strong { color: #ED7D31; }
+
+    .case-box {
+      background: #eef4fb;
+      border-left: 5px solid #4472C4;
+      padding: 12px 16px;
+      font-size: 0.8em;
+      border-radius: 6px;
+      text-align: left;
+      margin: 10px 0;
+    }
+    .case-box strong { color: #4472C4; }
+
+    .task-box {
+      background: #eafaf1;
+      border-left: 5px solid #70AD47;
+      padding: 12px 16px;
+      font-size: 0.8em;
+      border-radius: 6px;
+      text-align: left;
+      margin: 10px 0;
+    }
+    .task-box strong { color: #2e7d32; }
+
+    .quiz-btn {
+      background: #4472C4;
+      color: #fff;
+      border: none;
+      padding: 7px 15px;
+      margin: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.72em;
+    }
+    .quiz-btn.correct { background: #70AD47; }
+    .quiz-btn.wrong   { background: #e74c3c; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      text-align: left;
+    }
+
+    .arch-box {
+      border: 2px solid #4472C4;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f0f4fb;
+      font-size: 0.78em;
+      text-align: left;
+    }
+    .arch-box h4 { color: #4472C4; margin: 0 0 6px; }
+
+    .reveal pre { font-size: 0.48em; width: 100%; box-shadow: none; }
+    .reveal pre code { max-height: 360px; }
+    .reveal table { font-size: 0.78em; }
+    .reveal table th { background: #4472C4; color: #fff; }
+    .reveal ul { text-align: left; }
+    .reveal li  { font-size: 0.82em; line-height: 1.65; }
+
+    .badge {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.72em;
+      font-weight: 700;
+      margin: 2px;
+    }
+    .badge-blue   { background: #4472C4; color: #fff; }
+    .badge-orange { background: #ED7D31; color: #fff; }
+    .badge-green  { background: #70AD47; color: #fff; }
+
+    .info-box {
+      background: #eef3fb;
+      border-left: 4px solid #4472C4;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.8em;
+      text-align: left;
+      margin: 8px 0;
+    }
+    .info-box.green  { background: #eafaf1; border-color: #70AD47; }
+    .info-box.orange { background: #fff4ec; border-color: #ED7D31; }
+
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .summary-item {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.08);
+      text-align: left;
+    }
+    .summary-item h4 { margin: 0 0 6px; font-size: 0.8em; color: #4472C4; }
+    .summary-item p  { margin: 0; font-size: 0.72em; color: #555; }
+
+    .reveal section { padding: 10px 30px; }
+
+    .pyramid { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .pyramid .layer {
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 700;
+      text-align: center;
+      padding: 10px 20px;
+      font-size: 0.78em;
+    }
+  /* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 1: ТИТУЛЬНЫЙ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h1 style="font-size:1.5em;">Модуль 08</h1>
+  <h2 style="font-size:1.2em;">Тестирование DAG</h2>
+  <hr style="border-color:#4472C4; margin:18px auto; width:60%;">
+  <p style="font-size:0.82em;">
+    <span class="hi-blue">Сценарий:</span> Тест-сьют для пайплайна обработки данных<br>
+    <span class="hi-blue">Продолжительность:</span> 2 академических часа
+  </p>
+  <div style="margin-top:18px;">
+    <span class="badge badge-blue">pytest</span>
+    <span class="badge badge-orange">unittest.mock</span>
+    <span class="badge badge-green">CI/CD GitHub Actions</span>
+    <span class="badge badge-blue">DagBag</span>
+    <span class="badge badge-orange">XCom</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 2: ПОВЕСТКА
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Теоретические темы</h4>
+      <ul>
+        <li>DagBag и тесты структуры DAG</li>
+        <li>pytest — фикстуры, параметризация</li>
+        <li>Мокирование внешних систем (unittest.mock)</li>
+        <li>Тестирование @task-функций</li>
+        <li>XCom тесты</li>
+        <li>CI/CD для DAG (GitHub Actions)</li>
+        <li>airflow tasks test</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Практический сценарий</h4>
+      <p><strong>Пайплайн обработки телеметрии</strong></p>
+      <ul>
+        <li>Проверка структуры DAG</li>
+        <li>Логика ветвления по пороговым значениям</li>
+        <li>XCom-передача результатов</li>
+        <li>Mock внешних систем (REST API, PostgreSQL)</li>
+        <li>Полный CI конвейер</li>
+      </ul>
+      <div style="margin-top:8px;">
+        <span class="badge badge-orange">Критично:</span>
+        <span style="font-size:0.78em;"> превышение порогового значения</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 3: КОНТЕКСТ — ЗАЧЕМ ТЕСТИРОВАТЬ DAG В РЖД
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Зачем тестировать DAG?</h2>
+  <div class="two-col">
+    <div>
+      <div class="info-box orange">
+        <strong>Риски без тестирования</strong><br>
+        Пропущенное критическое событие — сбой в продакшне<br>
+        Неверный расчёт метрик — ошибочные бизнес-решения<br>
+        Некорректная обработка данных — порча витрин
+      </div>
+      <div class="info-box" style="margin-top:10px;">
+        <strong>Масштаб данных:</strong><br>
+        Десятки источников телеметрии<br>
+        Сотни объектов → тысячи показаний/час
+      </div>
+    </div>
+    <div>
+      <div class="arch-box">
+        <h4>Что даёт тест-сьют</h4>
+        <ul>
+          <li>Уверенность при деплое новой версии DAG</li>
+          <li>Защита от регрессий бизнес-логики</li>
+          <li>Быстрая обратная связь (CI &lt; 5 мин)</li>
+          <li>Документация через тесты</li>
+          <li>Безопасный рефакторинг</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 4: DAGBAG — ТЕСТЫ СТРУКТУРЫ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>DagBag — тесты структуры DAG</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Что такое DagBag?</h4>
+      <p>Загрузчик DAG-файлов Airflow. Сканирует папку, импортирует Python-модули, собирает объекты DAG.</p>
+      <ul>
+        <li><code>dagbag.dags</code> — словарь <em>dag_id → DAG</em></li>
+        <li><code>dagbag.import_errors</code> — ошибки импорта</li>
+        <li>Работает без запущенного Airflow</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Что проверяем структурно</h4>
+      <ul>
+        <li>Отсутствие ошибок импорта</li>
+        <li>Наличие нужных dag_id</li>
+        <li>Состав задач (task_ids)</li>
+        <li>Порядок зависимостей</li>
+        <li>Расписание и параметры</li>
+        <li>Теги, retries, catchup</li>
+      </ul>
+    </div>
+  </div>
+  <pre><code class="language-python">from airflow.models import DagBag
+
+def test_no_import_errors():
+    bag = DagBag(dag_folder="dags/", include_examples=False)
+    assert bag.import_errors == {}, f"Ошибки: {bag.import_errors}"
+
+def test_dag_exists():
+    bag = DagBag(dag_folder="dags/", include_examples=False)
+    assert "buxa_temp_monitor" in bag.dags
+</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 5: PYTEST — ФИКСТУРЫ И ПАРАМЕТРИЗАЦИЯ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>pytest — фикстуры и параметризация</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Фикстуры</h4>
+      <ul>
+        <li><code>@pytest.fixture</code> — переиспользуемые объекты</li>
+        <li><code>scope="session"</code> — дорогие ресурсы (DagBag)</li>
+        <li><code>scope="function"</code> — изолированный mock</li>
+        <li><code>conftest.py</code> — общие фикстуры</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Параметризация</h4>
+      <ul>
+        <li><code>@pytest.mark.parametrize</code></li>
+        <li>Один тест × N наборов входных данных</li>
+        <li>Граничные значения пороговых показателей</li>
+        <li>normal / warning / critical</li>
+      </ul>
+    </div>
+  </div>
+  <pre><code class="language-python">import pytest
+from airflow.models import DagBag
+
+@pytest.fixture(scope="session")
+def dagbag():
+    """Загружаем DAG один раз на всю тест-сессию."""
+    return DagBag(dag_folder="dags/", include_examples=False)
+
+@pytest.mark.parametrize("temp_c,expected", [
+    (60,  "normal"),    # ниже порога предупреждения
+    (75,  "normal"),    # граница нормы
+    (80,  "warning"),   # ровно 80 — предупреждение
+    (85,  "warning"),   # между порогами
+    (90,  "critical"),  # критический перегрев
+    (110, "critical"),  # экстремальный перегрев
+])
+def test_classify_temperature(temp_c, expected):
+    from dags.buxa_monitor import classify_temperature
+    assert classify_temperature(temp_c) == expected
+</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 6: МОКИРОВАНИЕ ВНЕШНИХ СИСТЕМ (unittest.mock)
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Мокирование внешних систем</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Внешние системы</h4>
+      <ul>
+        <li>PostgreSQL — хранилище телеметрии</li>
+        <li>REST API — координаты, скорость</li>
+        <li>Брокер сообщений — потоковые события</li>
+        <li>Object Storage — файлы данных</li>
+      </ul>
+      <p style="margin-top:8px; font-size:0.9em;">В тестах заменяем на <span class="hi-orange">Mock-объекты</span></p>
+    </div>
+    <div class="arch-box">
+      <h4>Инструменты mock</h4>
+      <ul>
+        <li><code>@patch("module.Class")</code> — патч импорта</li>
+        <li><code>MagicMock()</code> — объект с любыми атрибутами</li>
+        <li><code>.return_value</code> — задать возвращаемое значение</li>
+        <li><code>.side_effect</code> — последовательность ответов</li>
+        <li><code>.assert_called_once()</code> — проверить вызов</li>
+      </ul>
+    </div>
+  </div>
+  <pre><code class="language-python">from unittest.mock import patch, MagicMock
+
+@patch("dags.buxa_monitor.psycopg2.connect")
+def test_db_connection_called(mock_connect):
+    mock_conn = MagicMock()
+    mock_connect.return_value.__enter__ = lambda s: mock_conn
+    mock_connect.return_value.__exit__  = MagicMock(return_value=False)
+
+    from dags.buxa_monitor import load_buxa_alerts
+    load_buxa_alerts(alerts=[{"loco_id": "ВЛ80С-731", "temp_c": 87}])
+
+    mock_conn.cursor().execute.assert_called_once()
+</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 7: ТЕСТИРОВАНИЕ @TASK ФУНКЦИЙ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Тестирование @task-функций</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>TaskFlow API (@task)</h4>
+      <ul>
+        <li>Функция обёрнута декоратором <code>@task</code></li>
+        <li>При прямом вызове ведёт себя как обычная функция</li>
+        <li>Можно тестировать без Airflow runtime</li>
+        <li>XCom-обмен — через return/аргументы</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Два способа тестирования</h4>
+      <p><strong>1. Прямой вызов функции</strong> — для unit-тестов бизнес-логики</p>
+      <p><strong>2. .test() метод</strong> — для тестирования с Airflow context</p>
+    </div>
+  </div>
+  <pre><code class="language-python">from airflow.decorators import task
+
+# --- DAG-файл (dags/buxa_monitor.py) ---
+@task
+def classify_readings(readings: list) -> dict:
+    """Классифицировать показания датчиков букс."""
+    alerts = [r for r in readings if r["temp_c"] >= 80]
+    return {
+        "total":    len(readings),
+        "alerts":   len(alerts),
+        "critical": [r for r in alerts if r["temp_c"] >= 90],
+    }
+
+# --- tests/test_buxa_task.py ---
+def test_classify_readings_direct():
+    """Прямой вызов @task функции — без Airflow."""
+    from dags.buxa_monitor import classify_readings
+    readings = [
+        {"loco_id": "ВЛ80С-731", "buxa": "Л1", "temp_c": 65},
+        {"loco_id": "2ТЭ116-927", "buxa": "П3", "temp_c": 82},
+        {"loco_id": "ЭП2К-100",   "buxa": "Л4", "temp_c": 94},
+    ]
+    result = classify_readings.function(readings)  # .function — сырая функция
+    assert result["total"]   == 3
+    assert result["alerts"]  == 2
+    assert len(result["critical"]) == 1
+</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 8: XCOM ТЕСТЫ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>XCom тесты — проверка передачи данных</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Что проверяем в XCom</h4>
+      <ul>
+        <li>xcom_push вызван с правильным ключом</li>
+        <li>xcom_pull получает корректные данные</li>
+        <li>Обработка None (отсутствующий XCom)</li>
+        <li>Тип и структура передаваемых данных</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Мок TaskInstance (ti)</h4>
+      <ul>
+        <li><code>MagicMock()</code> для объекта ti</li>
+        <li><code>ti.xcom_pull.return_value</code></li>
+        <li><code>ti.xcom_push.assert_called_with()</code></li>
+        <li>Проверка ключей: "readings", "alerts"</li>
+      </ul>
+    </div>
+  </div>
+  <pre><code class="language-python">from unittest.mock import MagicMock
+
+def test_xcom_push_alerts_key():
+    """Таск должен записать 'buxa_alerts' в XCom."""
+    mock_ti = MagicMock()
+    sample_readings = [
+        {"loco_id": "ВЛ80С-731", "buxa": "Л1", "temp_c": 87},
+        {"loco_id": "2ТЭ116-927", "buxa": "П2", "temp_c": 60},
+    ]
+    mock_ti.xcom_pull.return_value = sample_readings
+
+    from dags.buxa_monitor import process_readings
+    process_readings(ti=mock_ti)
+
+    # Проверяем, что push был вызван с нужным ключом
+    push_kwargs = {
+        call.kwargs["key"]
+        for call in mock_ti.xcom_push.call_args_list
+    }
+    assert "buxa_alerts" in push_kwargs
+
+def test_xcom_none_raises_value_error():
+    """Если XCom вернул None — должна быть ValueError."""
+    mock_ti = MagicMock()
+    mock_ti.xcom_pull.return_value = None
+
+    from dags.buxa_monitor import process_readings
+    import pytest
+    with pytest.raises(ValueError, match="buxa_readings XCom not found"):
+        process_readings(ti=mock_ti)
+</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 9: CI/CD ДЛЯ DAG
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>CI/CD для DAG — GitHub Actions</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Триггеры запуска</h4>
+      <ul>
+        <li>push в <code>dags/**</code> или <code>tests/**</code></li>
+        <li>pull_request в main</li>
+        <li>feature-ветки разработчиков</li>
+      </ul>
+      <h4 style="margin-top:10px;">Этапы (jobs)</h4>
+      <ol>
+        <li>Lint (flake8, pylint)</li>
+        <li>Unit Tests (pytest)</li>
+        <li>Coverage (&ge;80%)</li>
+        <li>Notify (summary)</li>
+      </ol>
+    </div>
+    <div>
+      <pre><code class="language-yaml">name: Test DAGs — ТЧЭ-15
+
+on:
+  push:
+    paths:
+      - "dags/**"
+      - "tests/**"
+
+env:
+  AIRFLOW__CORE__UNIT_TEST_MODE: "True"
+  PYTHONPATH: ${{ github.workspace }}
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          pip install apache-airflow==2.9.0 \
+            pytest pytest-mock coverage
+          airflow db init
+      - run: |
+          pytest tests/ -v \
+            --tb=short \
+            --junitxml=results.xml
+</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 10: AIRFLOW TASKS TEST
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>airflow tasks test — ручная проверка</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Команда airflow tasks test</h4>
+      <ul>
+        <li>Запускает один таск локально</li>
+        <li>Не записывает результат в БД Airflow</li>
+        <li>Не отмечает DagRun как выполненный</li>
+        <li>Удобна для отладки на VM Яндекс Облако</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Синтаксис</h4>
+      <pre style="font-size:0.9em; box-shadow:none;"><code class="language-bash">airflow tasks test \
+  &lt;dag_id&gt; \
+  &lt;task_id&gt; \
+  &lt;execution_date&gt;
+
+# Пример для ТЧЭ-15:
+airflow tasks test \
+  buxa_temp_monitor \
+  read_telemetry \
+  2024-06-01
+
+# Проверить рендер шаблонов
+airflow tasks render \
+  buxa_temp_monitor \
+  log_summary \
+  2024-06-01</code></pre>
+    </div>
+  </div>
+  <div class="info-box green" style="margin-top:10px;">
+    <strong>Отличие от pytest:</strong> airflow tasks test использует реальное окружение Airflow (connections, variables), но без записи в метабазу. Используйте его для интеграционной проверки перед деплоем в Managed Airflow.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 11: ПРИМЕНЕНИЕ В РЖД — ТЕСТ-СЬЮТ ТЧЭ-15
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Применение в РЖД: Тест-сьют ТЧЭ-15</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Пайплайн мониторинга букс</h4>
+      <p><code>buxa_temp_monitor</code></p>
+      <ol style="font-size:0.85em;">
+        <li><code>read_telemetry</code> — запрос к PostgreSQL (ГЛОНАСС/датчики)</li>
+        <li><code>check_buxa_temp</code> — классификация температур</li>
+        <li><code>branch_alert</code> — ветвление: норма / предупреждение / критично</li>
+        <li><code>send_alert</code> — уведомление ТЧМИ</li>
+        <li><code>log_summary</code> — запись в DWH</li>
+      </ol>
+    </div>
+    <div class="arch-box">
+      <h4>Тест-план (7 блоков)</h4>
+      <table>
+        <tr><th>Блок</th><th>Что проверяем</th></tr>
+        <tr><td>Структура</td><td>DagBag, task_ids, зависимости</td></tr>
+        <tr><td>Температура</td><td>Пороги 80°C / 90°C</td></tr>
+        <tr><td>Ветвление</td><td>normal/warning/critical</td></tr>
+        <tr><td>XCom</td><td>buxa_readings → alerts</td></tr>
+        <tr><td>Mock ГЛОНАСС</td><td>REST API запрос</td></tr>
+        <tr><td>Mock PostgreSQL</td><td>INSERT алертов</td></tr>
+        <tr><td>CI/CD</td><td>GitHub Actions конфиг</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 12: КОД — ПОЛНЫЙ ТЕСТ-СЬЮТ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Тест-сьют: buxa_temp_monitor</h2>
+  <pre><code class="language-python">import pytest
+from unittest.mock import patch, MagicMock
+from airflow.models import DagBag
+
+# tests/test_buxa_monitor_dag.py
+
+@pytest.fixture
+def dagbag():
+    return DagBag(dag_folder="dags/", include_examples=False)
+
+def test_dag_loaded_without_errors(dagbag):
+    assert dagbag.import_errors == {}, \
+        f"DAG import errors: {dagbag.import_errors}"
+
+def test_buxa_monitor_dag_exists(dagbag):
+    assert "buxa_temp_monitor" in dagbag.dags
+
+def test_dag_has_required_tasks(dagbag):
+    dag = dagbag.get_dag("buxa_temp_monitor")
+    task_ids = {t.task_id for t in dag.tasks}
+    required = {"read_telemetry", "check_buxa_temp", "log_summary"}
+    assert required.issubset(task_ids)
+
+def test_buxa_threshold_logic():
+    from dags.buxa_monitor import classify_temperature
+    assert classify_temperature(65) == "normal"
+    assert classify_temperature(82) == "warning"
+    assert classify_temperature(91) == "critical"
+
+@patch("dags.buxa_monitor.psycopg2.connect")
+def test_db_insert_called(mock_connect):
+    mock_conn = MagicMock()
+    mock_connect.return_value = mock_conn
+    from dags.buxa_monitor import load_to_db
+    load_to_db(data=[{"loco_id":"L001","temp":72}])
+    mock_conn.cursor().execute.assert_called_once()
+</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 13: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Ситуация:</strong><br>
+    Тесты DAG буксового контроля написаны с mock PostgreSQL. Тесты проходят, но в продакшне вставка падает из-за конфликта типов данных — <code>temp_c</code> передаётся как строка, а PostgreSQL ожидает <code>FLOAT</code>.<br><br>
+    <strong>Вопрос:</strong> Как этого избежать? Какие дополнительные проверки добавить в тест, чтобы поймать ошибку типов данных до деплоя?
+  </div>
+  <div class="info-box" style="margin-top:12px;">
+    <strong>Подсказки для обсуждения:</strong>
+    <ul>
+      <li>Типизация аргументов функций (<code>temp_c: float</code>)</li>
+      <li>Проверка типов в assert (<code>isinstance(val, float)</code>)</li>
+      <li>Интеграционный тест с SQLite вместо mock</li>
+      <li>Schema-валидация входных данных (pydantic)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 14: КЕЙС ДЛЯ АНАЛИЗА
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Кейс для анализа</h2>
+  <div class="case-box">
+    <strong>Инцидент в ТЧЭ-15:</strong><br><br>
+    После деплоя обновлённого DAG <code>buxa_temp_monitor</code> в пятницу вечером перестал работать расчёт OTD (on-time delivery) — все значения стали 0%. Тесты в CI проходили зелёными.<br><br>
+    <strong>Расследование:</strong>
+    <ul>
+      <li>DAG изменили расписание с <code>*/4 * * * *</code> на <code>0 */4 * * *</code></li>
+      <li>Тест расписания проверял только факт наличия строки, но не её значение</li>
+      <li>OTD-витрина обновлялась каждый час и не получала данных</li>
+      <li>Инцидент обнаружили только в понедельник утром</li>
+    </ul>
+    <br>
+    <strong>Вопрос:</strong> Как написать тест, который поймал бы эту ошибку? Какие атрибуты DAG нужно проверять?
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 15: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения 2</h2>
+  <div class="discuss">
+    <strong>Дискуссионный вопрос:</strong><br><br>
+    Насколько полным должно быть покрытие тестами для safety-critical DAG мониторинга температуры букс? Достижимо ли покрытие 100% в реальных условиях? Где проходит граница между разумной достаточностью и избыточностью?
+  </div>
+  <div class="two-col" style="margin-top:12px;">
+    <div class="info-box orange">
+      <strong>Аргументы за 100%</strong>
+      <ul>
+        <li>Безопасность движения</li>
+        <li>Перегрев буксы — сход состава</li>
+        <li>Регуляторные требования ОАО РЖД</li>
+      </ul>
+    </div>
+    <div class="info-box green">
+      <strong>Реалистичный подход</strong>
+      <ul>
+        <li>80–90% для бизнес-логики</li>
+        <li>100% для функций классификации критичных состояний</li>
+        <li>Интеграционные тесты — отдельно</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 16: КВИЗ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Квиз: проверка знаний</h2>
+  <div style="text-align:left; max-width:820px; margin:0 auto;">
+
+    <p style="font-weight:700; font-size:0.85em; color:#1F2D3D;">
+      В1. <code>DagBag().import_errors</code> должен быть:
+    </p>
+    <div id="q1">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Заполнен ошибками</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Пустым — все DAG загружаются без ошибок</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Содержать предупреждения</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Игнорируется</button>
+    </div>
+
+    <p style="font-weight:700; font-size:0.85em; color:#1F2D3D; margin-top:14px;">
+      В2. <code>unittest.mock.patch</code> используется чтобы:
+    </p>
+    <div id="q2">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Запустить реальную БД в тесте</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Заменить импортированный объект заглушкой на время теста</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Ускорить работу pytest</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Создать копию DAG</button>
+    </div>
+
+    <p style="font-weight:700; font-size:0.85em; color:#1F2D3D; margin-top:14px;">
+      В3. <code>airflow tasks test dag_id task_id date</code> — что происходит?
+    </p>
+    <div id="q3">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Записывает результат в метабазу</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Запускает таск локально без записи в БД Airflow</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Запускает полный DagRun</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Удаляет предыдущий запуск</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 17: ЗАДАНИЕ ДЛЯ ГРУППЫ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Задание для группы</h2>
+  <div class="task-box">
+    <strong>Тест-план для DAG буксового мониторинга</strong><br><br>
+    Напишите тест-план для <code>buxa_temp_monitor</code>: перечислите 8–10 тест-кейсов, укажите что именно проверяет каждый, какие mock нужны.<br><br>
+    <strong>Время:</strong> 25 минут
+  </div>
+  <div class="two-col" style="margin-top:12px;">
+    <div class="info-box">
+      <strong>Шаблон тест-кейса:</strong>
+      <ol>
+        <li>Название теста (test_...)</li>
+        <li>Что проверяет</li>
+        <li>Входные данные / фикстура</li>
+        <li>Нужен ли mock и какой</li>
+        <li>Ожидаемый результат</li>
+      </ol>
+    </div>
+    <div class="info-box green">
+      <strong>Обязательно покройте:</strong>
+      <ul>
+        <li>Структуру DAG</li>
+        <li>Пороги temp_c (80°C, 90°C)</li>
+        <li>Граничные значения (79, 80, 89, 90, 91)</li>
+        <li>XCom-передачу</li>
+        <li>Mock PostgreSQL</li>
+        <li>Mock ГЛОНАСС API</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 18: ПИРАМИДА ТЕСТИРОВАНИЯ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Пирамида тестирования DAG</h2>
+  <div class="two-col">
+    <div>
+      <div class="pyramid">
+        <div class="layer" style="background:#e74c3c; width:260px;">
+          E2E (2–5%) — полный запуск DAG
+        </div>
+        <div class="layer" style="background:#ED7D31; width:360px; margin-top:4px;">
+          Интеграция (15–20%) — с реальным Airflow/БД
+        </div>
+        <div class="layer" style="background:#4472C4; width:460px; margin-top:4px;">
+          Структура DAG (20–25%) — DagBag тесты
+        </div>
+        <div class="layer" style="background:#70AD47; width:560px; margin-top:4px;">
+          Unit (55–60%) — бизнес-логика, mock
+        </div>
+      </div>
+    </div>
+    <div class="arch-box">
+      <h4>Unit-тесты (основа)</h4>
+      <ul>
+        <li>classify_value() — пороговая классификация</li>
+        <li>calculate_metric() — расчёт показателей</li>
+        <li>plan_schedule() — планирование задач</li>
+        <li>parse_api_data() — разбор ответа API</li>
+      </ul>
+      <h4 style="margin-top:10px;">DagBag тесты</h4>
+      <ul>
+        <li>Отсутствие ошибок импорта</li>
+        <li>Состав тасков</li>
+        <li>Порядок зависимостей</li>
+        <li>Расписание, retries, catchup</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 19: MOCK ГЛОНАСС API — ДЕТАЛИ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Mock ГЛОНАСС API — пример</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Зачем мокировать ГЛОНАСС?</h4>
+      <ul>
+        <li>API недоступен в CI/CD окружении</li>
+        <li>Нестабильные данные — тест нестабилен</li>
+        <li>Сетевые запросы замедляют тесты</li>
+        <li>Нужны контролируемые координаты</li>
+      </ul>
+      <div class="info-box orange" style="margin-top:8px;">
+        Пример ответа ГЛОНАСС:<br>
+        <code>lat=54.95, lon=82.92, speed_kmh=74.3</code>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-python">from unittest.mock import patch, MagicMock
+
+@patch("dags.buxa_monitor.requests.get")
+def test_glonass_data_parsed(mock_get):
+    """Mock ГЛОНАСС REST API."""
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "loco_id": "ВЛ80С-731",
+        "lat": 54.9526,
+        "lon": 82.9156,
+        "speed_kmh": 74.3,
+        "timestamp": "2024-06-01T08:15:00Z",
+    }
+    mock_get.return_value = mock_response
+
+    from dags.buxa_monitor import fetch_loco_position
+    result = fetch_loco_position("ВЛ80С-731")
+
+    assert result["speed_kmh"] == 74.3
+    assert result["loco_id"]   == "ВЛ80С-731"
+    mock_get.assert_called_once()
+</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 20: ПАРАМЕТРИЧЕСКИЙ ТЕСТ ТЕМПЕРАТУР БУКС
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Параметрический тест: пороги температуры буксы</h2>
+  <pre><code class="language-python"># tests/test_buxa_classification.py
+import pytest
+from dags.buxa_monitor import classify_temperature
+
+# Пороги ТЧЭ-15:
+#   < 80°C  — normal    (штатный режим)
+#   80–89°C — warning   (предупреждение ТЧМИ)
+#   >= 90°C — critical  (экстренная остановка)
+
+@pytest.mark.parametrize("temp_c, expected_status", [
+    # Нормальный диапазон
+    (20,  "normal"),    # буксы в холодный день
+    (55,  "normal"),    # типичный рабочий режим
+    (79,  "normal"),    # граница нормы (не включительно 80)
+    # Предупреждение
+    (80,  "warning"),   # ровно порог предупреждения
+    (85,  "warning"),   # середина диапазона warning
+    (89,  "warning"),   # граница warning (не включительно 90)
+    # Критический перегрев
+    (90,  "critical"),  # ровно порог критического состояния
+    (95,  "critical"),  # типичный перегрев при неисправности
+    (120, "critical"),  # экстремальный перегрев
+])
+def test_classify_temperature_buxa(temp_c, expected_status):
+    result = classify_temperature(temp_c)
+    assert result == expected_status, (
+        f"temp_c={temp_c}°C: ожидали '{expected_status}', "
+        f"получили '{result}'"
+    )
+</code></pre>
+  <div class="info-box orange" style="margin-top:8px;">
+    9 тест-кейсов в одной функции — граничные значения плюс типичные случаи.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 21: CONFTEST.PY ДЛЯ ТЧЭ-15
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>conftest.py — общие фикстуры ТЧЭ-15</h2>
+  <pre><code class="language-python"># tests/conftest.py
+import os
+import pytest
+from unittest.mock import MagicMock
+from airflow.models import DagBag
+
+os.environ["AIRFLOW__CORE__SQL_ALCHEMY_CONN"] = "sqlite:///./test_airflow.db"
+os.environ["AIRFLOW__CORE__UNIT_TEST_MODE"]   = "True"
+
+@pytest.fixture(scope="session")
+def dagbag():
+    """DagBag — загружаем один раз для всей сессии."""
+    return DagBag(dag_folder="dags/", include_examples=False)
+
+@pytest.fixture
+def mock_ti():
+    """Мок TaskInstance для XCom-тестов."""
+    return MagicMock()
+
+@pytest.fixture
+def sample_buxa_readings():
+    """Тестовые показания датчиков букс по локомотивам ТЧЭ-15."""
+    return [
+        {"loco_id": "ВЛ80С-731",  "section": "А", "buxa": "Л1", "temp_c": 65.2},
+        {"loco_id": "ВЛ80С-731",  "section": "А", "buxa": "П3", "temp_c": 84.7},
+        {"loco_id": "2ТЭ116-927", "section": "1", "buxa": "Л2", "temp_c": 92.1},
+        {"loco_id": "ЭП2К-100",   "section": "-", "buxa": "П4", "temp_c": 71.0},
+        {"loco_id": "ЧМЭ3-4412",  "section": "-", "buxa": "Л3", "temp_c": 58.5},
+    ]
+
+@pytest.fixture
+def critical_buxa_readings():
+    """Критические показания — все буксы перегреты выше 90°C."""
+    return [
+        {"loco_id": "2ТЭ116-927", "section": "1", "buxa": "Л1", "temp_c": 95.0},
+        {"loco_id": "2ТЭ116-927", "section": "2", "buxa": "П2", "temp_c": 101.3},
+    ]
+</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 22: ОБЗОР ПРАКТИЧЕСКОЙ РАБОТЫ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Практическая работа 08</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Задача</h4>
+      <p>Написать pytest-тесты для структуры DAG <code>buxa_temp_monitor</code>, бизнес-логики классификации температуры и mock PostgreSQL.</p>
+      <h4 style="margin-top:10px;">Результат</h4>
+      <ul>
+        <li>Рабочий тест-сьют: 15+ тестов</li>
+        <li>Тесты проходят на чистом Python</li>
+        <li>Покрытие &ge; 75%</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Шаги выполнения</h4>
+      <ol>
+        <li>Структура проекта и pytest.ini</li>
+        <li>Установка зависимостей</li>
+        <li>DAG buxa_temp_monitor (бизнес-логика)</li>
+        <li>conftest.py с фикстурами</li>
+        <li>test_dag_structure.py</li>
+        <li>test_buxa_logic.py (параметризация)</li>
+        <li>test_db_mock.py (mock psycopg2)</li>
+        <li>pytest --cov отчёт</li>
+      </ol>
+    </div>
+  </div>
+  <div class="info-box" style="margin-top:10px;">
+    <strong>Платформа:</strong> Яндекс Облако — VM Ubuntu 22.04 или Managed Apache Airflow
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 23: ОБЗОР ЛАБОРАТОРНОЙ РАБОТЫ
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Лабораторная работа 08</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Задача</h4>
+      <p>Полный тест-сьют для пайплайна <code>buxa_temp_monitor</code> + настройка CI/CD в GitHub Actions.</p>
+      <h4 style="margin-top:10px;">Результат</h4>
+      <ul>
+        <li>25+ тестов, 8 тематических блоков</li>
+        <li>GitHub Actions конфиг (4 job-а)</li>
+        <li>Покрытие кода &ge; 85%</li>
+        <li>Pre-commit хуки</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Дополнительные задания</h4>
+      <ol>
+        <li><span class="hi-orange">A:</span> Тест производительности (10 000 показаний)</li>
+        <li><span class="hi-orange">B:</span> Property-based тестирование (hypothesis)</li>
+        <li><span class="hi-orange">C:</span> Snapshot-тесты для XCom-данных</li>
+      </ol>
+      <h4 style="margin-top:10px;">Схема БД</h4>
+      <p>PostgreSQL: <code>rzd_analytics</code><br>
+      Таблицы: <code>locomotives</code>, <code>sensor_readings</code>, <code>buxa_alerts</code>, <code>schedule_adherence</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     СЛАЙД 24: ИТОГОВЫЙ СЛАЙД
+══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Итоги модуля 08</h2>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <h4>DagBag и структура</h4>
+      <p>import_errors, task_ids, зависимости, расписание, catchup — всё это можно проверить без запуска Airflow.</p>
+    </div>
+    <div class="summary-item">
+      <h4>pytest и параметризация</h4>
+      <p>Фикстуры scope="session" для DagBag. @pytest.mark.parametrize для граничных значений показателей.</p>
+    </div>
+    <div class="summary-item">
+      <h4>unittest.mock</h4>
+      <p>@patch для PostgreSQL и REST API. MagicMock для TaskInstance. side_effect для последовательных ответов.</p>
+    </div>
+    <div class="summary-item">
+      <h4>XCom тесты</h4>
+      <p>Проверяем xcom_push с нужными ключами. Тестируем ValueError при None. Контролируем структуру передаваемых данных.</p>
+    </div>
+    <div class="summary-item">
+      <h4>CI/CD GitHub Actions</h4>
+      <p>4 job-а: Lint → Unit Tests → Coverage → Notify. Триггер на изменения в dags/** и tests/**.</p>
+    </div>
+    <div class="summary-item">
+      <h4>airflow tasks test</h4>
+      <p>Запуск одного таска локально без записи в метабазу. Удобно для интеграционной проверки перед деплоем в Яндекс Облако.</p>
+    </div>
+  </div>
+  <div class="info-box green" style="margin-top:14px;">
+    <strong>Следующий модуль:</strong> Модуль 09 — Мониторинг и алертинг. SLA, callbacks, интеграция с системами оповещения.
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+  function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll(".quiz-btn").forEach(function(b) { b.disabled = true; });
+    if (correct) {
+      btn.classList.add("correct");
+      btn.textContent += " ✓";
+    } else {
+      btn.classList.add("wrong");
+      btn.textContent += " ✗";
+      p.querySelectorAll("[data-correct=true]").forEach(function(b) {
+        b.classList.add("correct");
+      });
+    }
+  }
+
+  Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: true,
+    slideNumber: "c/t",
+    plugins: [RevealHighlight, RevealNotes],
+    transition: "slide"
+  });
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+
+

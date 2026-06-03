@@ -1,0 +1,1344 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Модуль 09 — Запуск задач в контейнерах | Курс Apache Airflow</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+  <style>
+    :root {
+      --accent1: #4472C4;
+      --accent2: #ED7D31;
+      --accent6: #70AD47;
+      --bg-dark: #1E2A3A;
+      --bg-mid: #F4F7FB;
+      --text: #1A1A2E;
+    }
+
+    .reveal { font-size: 24px; font-family: 'Segoe UI', Arial, sans-serif; color: var(--text); }
+    .reveal h1 { color: #4472C4; font-weight: 700; font-size: 1.8em; }
+    .reveal h2 { color: #4472C4; font-weight: 700; font-size: 1.35em; border-bottom: 3px solid #4472C4; padding-bottom: .25em; margin-bottom: .6em; }
+    .reveal h3 { color: #4472C4; font-weight: 700; font-size: 1.05em; }
+    .reveal section { padding: 0.5em 1.2em; }
+    .reveal ul { margin-left: 1.2em; }
+    .reveal li { margin-bottom: .35em; line-height: 1.55; }
+
+    .hi-orange { color: #ED7D31; font-weight: bold; }
+    .hi-green  { color: #70AD47; font-weight: bold; }
+
+    .discuss {
+      background: #fff8e7;
+      border-left: 5px solid #ED7D31;
+      padding: 12px 16px;
+      font-size: 0.82em;
+      border-radius: 6px;
+      margin: .6em 0;
+    }
+    .discuss strong { color: #ED7D31; }
+
+    .case-box {
+      background: #eef4fb;
+      border-left: 5px solid #4472C4;
+      padding: 12px 16px;
+      font-size: 0.8em;
+      border-radius: 6px;
+      margin: .6em 0;
+    }
+
+    .task-box {
+      background: #eafaf1;
+      border-left: 5px solid #70AD47;
+      padding: 12px 16px;
+      font-size: 0.8em;
+      border-radius: 6px;
+      margin: .6em 0;
+    }
+
+    .quiz-btn {
+      background: #4472C4;
+      color: #fff;
+      border: none;
+      padding: 7px 15px;
+      margin: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.72em;
+    }
+    .quiz-btn:hover { opacity: 0.85; }
+    .quiz-btn.correct { background: #70AD47; }
+    .quiz-btn.wrong   { background: #e74c3c; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .two-col.w6040 { grid-template-columns: 1.5fr 1fr; }
+
+    .arch-box {
+      border: 2px solid #4472C4;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f0f4fb;
+      font-size: 0.78em;
+    }
+    .arch-box h4 { color: #4472C4; margin: 0 0 6px 0; font-size: 1em; }
+
+    .reveal pre { font-size: 0.48em; width: 100%; box-shadow: none; background: #1E2A3A; border-radius: 8px; padding: .6em 1em; margin: .4em 0; }
+    .reveal pre code { max-height: 360px; ; font-family: 'Consolas','Courier New',monospace; line-height: 1.5; }
+    .reveal code:not(pre code) { background: #eef2fb; color: #4472C4; padding: .1em .35em; border-radius: 4px; font-size: .88em; }
+
+    .reveal table { font-size: 0.78em; width: 100%; border-collapse: collapse; margin: .4em 0; }
+    .reveal table th { background: #4472C4; color: #fff; padding: .45em .7em; text-align: left; }
+    .reveal table td { padding: .38em .7em; border-bottom: 1px solid #dce4f5; }
+    .reveal table tr:nth-child(even) td { background: #f4f7fb; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.75em;
+      font-weight: bold;
+      margin-right: 4px;
+    }
+    .badge-blue { background: #4472C4; color: #fff; }
+    .badge-orange { background: #ED7D31; color: #fff; }
+    .badge-green { background: #70AD47; color: #fff; }
+
+    .metric-row { display: flex; gap: 12px; justify-content: center; margin: .6em 0; }
+    .metric-card {
+      border: 2px solid #4472C4;
+      border-radius: 8px;
+      padding: 10px 18px;
+      text-align: center;
+      background: #f0f4fb;
+      min-width: 130px;
+    }
+    .metric-card .val { font-size: 1.5em; font-weight: 700; color: #4472C4; }
+    .metric-card .lbl { font-size: 0.65em; color: #555; }
+
+    .step-list { counter-reset: steps; list-style: none; margin-left: 0; }
+    .step-list li { counter-increment: steps; padding-left: 2em; position: relative; margin-bottom: .4em; }
+    .step-list li::before { content: counter(steps); position: absolute; left: 0; background: #4472C4; color: #fff; border-radius: 50%; width: 1.4em; height: 1.4em; text-align: center; line-height: 1.4em; font-size: .8em; font-weight: 700; }
+
+    .quiz-q { font-weight: 700; color: #4472C4; margin: .5em 0 .3em; font-size: 0.85em; }
+    .quiz-result { font-weight: 700; margin-top: .3em; font-size: .9em; min-height: 1.2em; }
+
+    .title-slide { background: linear-gradient(135deg, #1E2A3A 0%, #2c3e6b 100%); color: #fff !important; }
+    .title-slide h1 { color: #fff !important; border: none; }
+    .title-slide h2 { color: #ED7D31 !important; border: none; font-size: 1.1em; }
+    .title-slide p  { color: #b8cce4; }
+    .title-slide .badge-blue { background: rgba(255,255,255,0.15); }
+
+    .warning-box {
+      background: #fff3cd;
+      border-left: 5px solid #ffc107;
+      padding: 10px 14px;
+      font-size: 0.78em;
+      border-radius: 4px;
+      margin: .4em 0;
+    }
+
+    .pipeline-arrow { text-align: center; font-size: 1.2em; color: #4472C4; margin: 2px 0; }
+
+    .flow-step {
+      background: #f0f4fb;
+      border: 2px solid #4472C4;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin: 3px 0;
+      font-size: 0.78em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .flow-step .step-icon { font-size: 1.2em; }
+  /* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 1 — ТИТУЛЬНЫЙ
+══════════════════════════════════════════════ -->
+<section class="title-slide" data-background="#1E2A3A">
+  <h1>Модуль 09</h1>
+  <h2>Запуск задач в контейнерах</h2>
+  <div style="margin-top:1.2em;">
+    <span class="badge badge-blue">Apache Airflow 2.8+</span>
+    <span class="badge badge-orange">DockerOperator</span>
+    <span class="badge badge-orange">KubernetesPodOperator</span>
+    <span class="badge" style="background:#70AD47;color:#fff;">Yandex Cloud</span>
+  </div>
+  <p style="color:#7f9cbf; font-size:0.72em; margin-top:1.2em;">Продолжительность: 2 часа</p>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 2 — ПОВЕСТКА
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div class="two-col">
+    <div>
+      <h3>Теория</h3>
+      <ul>
+        <li>Зачем контейнеры в Airflow?</li>
+        <li><span class="hi-orange">DockerOperator</span>: параметры и конфигурация</li>
+        <li>Написание Dockerfile для ML-задач</li>
+        <li>Передача данных: <code>volumes</code> и <code>env vars</code></li>
+        <li><span class="hi-orange">KubernetesPodOperator</span></li>
+        <li>Yandex Container Registry</li>
+        <li>Ограничения ресурсов (<code>resource limits</code>)</li>
+        <li>Airflow on Kubernetes (KubeExecutor)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Практика и лаб. работа</h3>
+      <ul>
+        <li>Dockerfile для ML-модели прогноза отказов букс</li>
+        <li>Push образа в Yandex Container Registry</li>
+        <li>DAG с <code>DockerOperator</code> для ТЧЭ-15</li>
+        <li>Полный ML-пайплайн: extract → preprocess → predict → store</li>
+      </ul>
+      <div class="arch-box" style="margin-top:1em;">
+        <h4>Сценарий модуля</h4>
+        ML-модель прогнозирования перегрева букс локомотивов запускается как Docker-контейнер.
+        Предсказание: критическая температура &gt; 80°C за <span class="hi-orange">2 часа</span> до события.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 3 — ЗАЧЕМ КОНТЕЙНЕРЫ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Зачем контейнеры в Airflow?</h2>
+  <div class="two-col">
+    <div>
+      <h3>Проблемы без контейнеров</h3>
+      <ul>
+        <li>ML-модель требует TensorFlow 2.x, Airflow — Python 3.10 без TF</li>
+        <li>Конфликты зависимостей между задачами</li>
+        <li>Разные версии pandas/scikit-learn для разных DAG</li>
+        <li>Задача на R, Julia или C++ в Python-окружении</li>
+        <li>Невозможность воспроизвести среду при деплое</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Решение: DockerOperator</h3>
+      <div class="arch-box">
+        <h4>Принцип изоляции</h4>
+        <div class="flow-step"><span class="step-icon">📦</span><span>Каждая задача — отдельный контейнер</span></div>
+        <div class="flow-step"><span class="step-icon">🔒</span><span>Изолированное окружение с фиксированными версиями</span></div>
+        <div class="flow-step"><span class="step-icon">🚀</span><span>Воспроизводимые результаты на любом сервере</span></div>
+        <div class="flow-step"><span class="step-icon">📊</span><span>Масштабирование через Kubernetes</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="discuss" style="margin-top:0.8em;">
+    <strong>Вопрос:</strong> Какие задачи в аналитической платформе РЖД потребуют изолированного окружения?
+    Назовите минимум 3 примера из практики депо.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 4 — DOCKEROPERATOR: ПАРАМЕТРЫ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>DockerOperator: ключевые параметры</h2>
+  <table>
+    <thead>
+      <tr><th>Параметр</th><th>Тип</th><th>Описание</th><th>Пример значения</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>image</code></td><td>str</td><td>Имя или тег Docker-образа</td><td><code>registry.yandex.net/rzd-tceh15/buxa-predictor:v1.2</code></td></tr>
+      <tr><td><code>command</code></td><td>str</td><td>Команда внутри контейнера</td><td><code>python predict.py</code></td></tr>
+      <tr><td><code>environment</code></td><td>dict</td><td>Переменные окружения</td><td><code>{"TARGET_DATE": "{{ ds }}"}</code></td></tr>
+      <tr><td><code>mounts</code></td><td>list</td><td>Монтирование томов</td><td><code>[DockerMount(...)]</code></td></tr>
+      <tr><td><code>docker_url</code></td><td>str</td><td>URL Docker-демона</td><td><code>unix:///var/run/docker.sock</code></td></tr>
+      <tr><td><code>network_mode</code></td><td>str</td><td>Сетевой режим</td><td><code>bridge</code></td></tr>
+      <tr><td><code>auto_remove</code></td><td>bool</td><td>Удалить контейнер после завершения</td><td><code>True</code></td></tr>
+      <tr><td><code>mem_limit</code></td><td>str</td><td>Лимит оперативной памяти</td><td><code>"4g"</code></td></tr>
+      <tr><td><code>cpus</code></td><td>float</td><td>Количество CPU</td><td><code>2.0</code></td></tr>
+      <tr><td><code>xcom_all</code></td><td>bool</td><td>Передавать весь stdout в XCom</td><td><code>False</code></td></tr>
+      <tr><td><code>retrieve_output</code></td><td>bool</td><td>Читать результат из файла</td><td><code>True</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 5 — DOCKERFILE
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Dockerfile: структура для ML-задач</h2>
+  <div class="two-col">
+    <div>
+      <pre><code class="language-dockerfile"># Dockerfile для ML-модели прогноза отказов букс
+# ТЧЭ-15, Депо Новосибирск-Главный
+
+FROM python:3.11-slim
+
+# Метаданные образа
+LABEL maintainer="rzd-tceh15@rzd.ru"
+LABEL version="1.2"
+LABEL description="Buxa failure prediction model"
+
+# Рабочая директория
+WORKDIR /app
+
+# Установка зависимостей отдельным слоем (кэширование)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копирование модели и скриптов
+COPY models/buxa_rf_model.joblib ./models/
+COPY predict_buxa_failure.py .
+COPY utils/ ./utils/
+
+# Директории для данных (монтируются как volumes)
+RUN mkdir -p /app/data /app/output /app/logs
+
+# Переменные окружения по умолчанию
+ENV DEPOT_CODE=TCH-15
+ENV THRESHOLD_TEMP=80
+ENV LOG_LEVEL=INFO
+
+# Не запускать от root
+RUN useradd -m rzd_worker
+USER rzd_worker
+
+# Точка входа
+CMD ["python", "predict_buxa_failure.py"]</code></pre>
+    </div>
+    <div>
+      <div class="arch-box">
+        <h4>requirements.txt</h4>
+        <pre style="background:#fff;color:#1E2A3A;"><code class="language-text">scikit-learn==1.3.2
+pandas==2.1.0
+numpy==1.26.0
+joblib==1.3.2
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+loguru==0.7.2</code></pre>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <h4>Принципы многослойного образа</h4>
+        <ul>
+          <li>Зависимости — отдельный слой для кэша</li>
+          <li>Данные НЕ копируются в образ — монтируются</li>
+          <li>Секреты через env vars, не COPY</li>
+          <li>Минимальный базовый образ (<code>-slim</code>)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 6 — ПЕРЕДАЧА ДАННЫХ: ENV VARS
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Передача данных: переменные окружения</h2>
+  <div class="two-col">
+    <div>
+      <h3>Что передавать через env vars</h3>
+      <table>
+        <thead><tr><th>Параметр</th><th>Пример значения</th></tr></thead>
+        <tbody>
+          <tr><td>Дата обработки</td><td><code>{{ ds }}</code></td></tr>
+          <tr><td>Код объекта / партиции</td><td><code>OBJ-15</code></td></tr>
+          <tr><td>Пороговое значение</td><td><code>80</code></td></tr>
+          <tr><td>Тип / категория</td><td><code>TYPE_A</code></td></tr>
+          <tr><td>Строка подключения к БД</td><td>через Airflow Connection</td></tr>
+          <tr><td>URL API</td><td><code>http://api.internal.local/v1</code></td></tr>
+        </tbody>
+      </table>
+      <div class="warning-box" style="margin-top:8px;">
+        <strong>Не передавать через env vars:</strong> пароли в открытом виде, приватные ключи, токены.
+        Используйте Airflow Secrets Backend или Yandex Lockbox.
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-python">from airflow.providers.docker.operators.docker import (
+    DockerOperator,
+)
+
+predict_task = DockerOperator(
+    task_id="predict_buxa_failures",
+    image="registry.yandex.net/rzd-tceh15/"
+          "buxa-predictor:v1.2",
+    command="python predict_buxa_failure.py",
+    # Передача параметров через env vars
+    environment={
+        "TARGET_DATE":    "{{ ds }}",
+        "DEPOT_CODE":     "TCH-15",
+        "THRESHOLD_TEMP": "80",
+        "LOCO_SERIES":    "VL80S,EP2K,EP1M",
+        "DB_HOST":        "{{ conn.pg_rzd.host }}",
+        "DB_PORT":        "{{ conn.pg_rzd.port }}",
+        "DB_NAME":        "rzd_analytics",
+    },
+    # Секреты из Airflow Connections
+    secrets=[
+        Secret("env", "DB_PASSWORD",
+               "pg_rzd", "password"),
+    ],
+    docker_url="unix:///var/run/docker.sock",
+    auto_remove=True,
+)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 7 — ПЕРЕДАЧА ДАННЫХ: VOLUMES
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Передача данных: тома (volumes)</h2>
+  <div class="two-col">
+    <div>
+      <h3>Схема монтирования томов</h3>
+      <div class="arch-box">
+        <div class="flow-step"><span class="step-icon">🖥️</span><span><strong>Host:</strong> /data/input/</span></div>
+        <div class="pipeline-arrow">↕️ bind mount</div>
+        <div class="flow-step"><span class="step-icon">📦</span><span><strong>Container:</strong> /app/data/ (read-only)</span></div>
+        <div style="height:8px;"></div>
+        <div class="flow-step"><span class="step-icon">🖥️</span><span><strong>Host:</strong> /data/predictions/</span></div>
+        <div class="pipeline-arrow">↕️ bind mount</div>
+        <div class="flow-step"><span class="step-icon">📦</span><span><strong>Container:</strong> /app/output/ (read-write)</span></div>
+        <div style="height:8px;"></div>
+        <div class="flow-step"><span class="step-icon">🖥️</span><span><strong>Host:</strong> /models/</span></div>
+        <div class="pipeline-arrow">↕️ bind mount</div>
+        <div class="flow-step"><span class="step-icon">📦</span><span><strong>Container:</strong> /app/models/ (read-only)</span></div>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-python">from docker.types import Mount as DockerMount
+
+predict_task = DockerOperator(
+    task_id="predict_buxa_failures",
+    image="registry.yandex.net/rzd-tceh15/"
+          "buxa-predictor:v1.2",
+    mounts=[
+        # Входные данные датчиков (только чтение)
+        DockerMount(
+            source="/data/sensor_readings",
+            target="/app/data",
+            type="bind",
+            read_only=True,
+        ),
+        # Результаты прогноза (запись)
+        DockerMount(
+            source="/data/predictions",
+            target="/app/output",
+            type="bind",
+            read_only=False,
+        ),
+        # Файл модели (только чтение)
+        DockerMount(
+            source="/models/buxa",
+            target="/app/models",
+            type="bind",
+            read_only=True,
+        ),
+    ],
+    docker_url="unix:///var/run/docker.sock",
+    auto_remove=True,
+)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 8 — YANDEX CONTAINER REGISTRY
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Yandex Container Registry: работа с образами</h2>
+  <div class="two-col">
+    <div>
+      <h3>Процесс публикации образа</h3>
+      <pre><code class="language-bash"># 1. Аутентификация в Yandex Cloud
+yc container registry configure-docker
+
+# Или через IAM-токен
+docker login \
+  --username iam \
+  --password $(yc iam create-token) \
+  cr.yandex
+
+# 2. Создать реестр (один раз)
+yc container registry create \
+  --name rzd-tceh15-registry
+
+# 3. Сборка образа
+docker build -t \
+  cr.yandex/crp1abc23def/buxa-predictor:v1.2 .
+
+# 4. Push в реестр
+docker push \
+  cr.yandex/crp1abc23def/buxa-predictor:v1.2
+
+# 5. Проверка образа в реестре
+yc container image list \
+  --repository-name rzd-tceh15-registry/buxa-predictor</code></pre>
+    </div>
+    <div>
+      <div class="arch-box">
+        <h4>Структура тегирования образов</h4>
+        <pre style="background:#fff;color:#1E2A3A;font-size:0.85em;"><code>cr.yandex/{registry_id}/
+  buxa-predictor:v1.2
+  buxa-predictor:latest
+  schedule-extractor:v2.0
+  fuel-analyzer:v1.5
+  sensor-preprocessor:v3.1</code></pre>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <h4>Стратегия тегирования</h4>
+        <ul>
+          <li><code>:latest</code> — текущий стабильный</li>
+          <li><code>:v1.2</code> — зафиксированная версия</li>
+          <li><code>:v1.2-prod</code> — продакшн-сборка</li>
+          <li><code>:dev</code> — тестирование</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 9 — ОГРАНИЧЕНИЯ РЕСУРСОВ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Ограничения ресурсов (Resource Limits)</h2>
+  <div class="two-col">
+    <div>
+      <table>
+        <thead><tr><th>Параметр</th><th>DockerOperator</th><th>KubernetesPodOperator</th></tr></thead>
+        <tbody>
+          <tr><td>RAM лимит</td><td><code>mem_limit="4g"</code></td><td><code>limits.memory: 4Gi</code></td></tr>
+          <tr><td>RAM резерв</td><td><code>mem_reservation="2g"</code></td><td><code>requests.memory: 2Gi</code></td></tr>
+          <tr><td>CPU лимит</td><td><code>cpus=2.0</code></td><td><code>limits.cpu: "2"</code></td></tr>
+          <tr><td>CPU резерв</td><td>—</td><td><code>requests.cpu: "500m"</code></td></tr>
+          <tr><td>GPU</td><td><code>device_requests</code></td><td><code>nvidia.com/gpu: 1</code></td></tr>
+          <tr><td>Timeout</td><td><code>execution_timeout</code></td><td><code>active_deadline_seconds</code></td></tr>
+        </tbody>
+      </table>
+      <div class="warning-box" style="margin-top:8px;">
+        <strong>Типичная ситуация:</strong> ресурсоёмкая ML-задача потребляет до 8 GB RAM.
+        При параллельном запуске нескольких задач необходимо ограничить <code>max_active_tasks</code>.
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-python">from airflow.providers.docker.operators.docker import (
+    DockerOperator,
+)
+
+# Ограничение ресурсов для ML-задачи
+predict_task = DockerOperator(
+    task_id="predict_buxa_failures",
+    image="registry.yandex.net/rzd-tceh15/"
+          "buxa-predictor:v1.2",
+    # Лимиты памяти
+    mem_limit="6g",
+    mem_reservation="3g",
+    # Лимиты CPU (2 ядра)
+    cpus=2.0,
+    # Лимит времени выполнения (30 мин)
+    execution_timeout=timedelta(minutes=30),
+    # Запрет OOM-killer убивать контейнер
+    oom_kill_disable=False,
+    docker_url="unix:///var/run/docker.sock",
+    auto_remove=True,
+)
+
+# В DAG: ограничить параллелизм
+with DAG(
+    "buxa_failure_prediction",
+    concurrency=2,          # Макс. параллельных задач DAG
+    max_active_runs=1,      # Один активный запуск
+) as dag:
+    pass</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 10 — KUBERNETESPODOPERATOR
+══════════════════════════════════════════════ -->
+<section>
+  <h2>KubernetesPodOperator</h2>
+  <div class="two-col">
+    <div>
+      <h3>Преимущества над DockerOperator</h3>
+      <table>
+        <thead><tr><th>Критерий</th><th>DockerOperator</th><th>KubernetesPodOperator</th></tr></thead>
+        <tbody>
+          <tr><td>Масштабирование</td><td>Один сервер</td><td><span class="hi-green">Кластер нод</span></td></tr>
+          <tr><td>Изоляция</td><td>Процесс на хосте</td><td><span class="hi-green">Pod в namespace</span></td></tr>
+          <tr><td>Auto-scaling</td><td>Нет</td><td><span class="hi-green">HPA / Cluster Autoscaler</span></td></tr>
+          <tr><td>Самовосстановление</td><td>Нет</td><td><span class="hi-green">Retry policy</span></td></tr>
+          <tr><td>Prod-готовность</td><td>Dev/Small prod</td><td><span class="hi-green">Enterprise</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <pre><code class="language-python">from airflow.providers.cncf.kubernetes.operators.pod import (
+    KubernetesPodOperator,
+)
+from kubernetes.client import models as k8s
+
+predict_k8s = KubernetesPodOperator(
+    task_id="predict_buxa_k8s",
+    name="buxa-predictor-pod",
+    namespace="rzd-airflow",
+    image="cr.yandex/crp1abc23def/"
+          "buxa-predictor:v1.2",
+    cmds=["python", "predict_buxa_failure.py"],
+    env_vars=[
+        k8s.V1EnvVar(name="TARGET_DATE",
+                     value="{{ ds }}"),
+        k8s.V1EnvVar(name="DEPOT_CODE",
+                     value="TCH-15"),
+    ],
+    container_resources=k8s.V1ResourceRequirements(
+        requests={"memory": "2Gi", "cpu": "500m"},
+        limits={"memory": "6Gi", "cpu": "2"},
+    ),
+    image_pull_secrets=[
+        k8s.V1LocalObjectReference("yc-registry-secret")
+    ],
+    is_delete_operator_pod=True,
+    get_logs=True,
+)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 11 — AIRFLOW ON KUBERNETES
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Airflow on Kubernetes (KubernetesExecutor)</h2>
+  <div class="two-col w6040">
+    <div>
+      <div class="arch-box">
+        <h4>Архитектура KubernetesExecutor</h4>
+        <div class="flow-step"><span class="step-icon">🗓️</span><span><strong>Scheduler</strong> — создаёт Pod для каждой задачи</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">☸️</span><span><strong>Kubernetes API</strong> — управляет Pod-ами</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">📦</span><span><strong>Worker Pod</strong> — каждая задача = отдельный Pod</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">🗑️</span><span><strong>Pod завершён</strong> — удаляется автоматически</span></div>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <h4>Конфигурация airflow.cfg</h4>
+        <pre style="background:#fff;color:#1E2A3A;"><code>[kubernetes]
+namespace = rzd-airflow
+worker_container_repository = cr.yandex/crp1abc23def/airflow
+worker_container_tag = 2.8.0
+delete_worker_pods = True
+max_active_tasks_per_dag = 4</code></pre>
+      </div>
+    </div>
+    <div>
+      <h3>Деплой на Yandex Managed K8s</h3>
+      <pre><code class="language-bash"># Установка Airflow через Helm
+helm repo add apache-airflow \
+  https://airflow.apache.org
+
+helm install airflow apache-airflow/airflow \
+  --namespace rzd-airflow \
+  --create-namespace \
+  --set executor=KubernetesExecutor \
+  --set images.airflow.repository=\
+    cr.yandex/crp1abc23def/airflow \
+  --set images.airflow.tag=2.8.0 \
+  --set config.core.load_examples=False \
+  --set postgresql.enabled=true \
+  -f values-rzd.yaml
+
+# Проверка деплоя
+kubectl get pods -n rzd-airflow
+kubectl logs -n rzd-airflow \
+  deployment/airflow-scheduler</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 12 — ПРИМЕНЕНИЕ В РЖД: СЦЕНАРИЙ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Применение в РЖД: ML-модель прогноза отказов букс</h2>
+  <div class="two-col">
+    <div>
+      <h3>Постановка задачи ТЧЭ-15</h3>
+      <ul>
+        <li>Локомотивы: <span class="hi-orange">ВЛ80С, ЭП2К, ЭП1М, 2ТЭ116</span></li>
+        <li>Датчик температуры буксы — опрос каждые 30 сек</li>
+        <li>Критический порог: <span class="hi-orange">&gt; 80°C</span></li>
+        <li>Цель: предупреждение за <span class="hi-green">2 часа</span> до перегрева</li>
+        <li>Модель: Random Forest на исторических данных 2021–2023</li>
+        <li>Признаки: температура, скорость, ток тяги, перепад темп., моточасы</li>
+      </ul>
+      <div class="arch-box" style="margin-top:8px;">
+        <h4>Метрики модели</h4>
+        <div class="metric-row">
+          <div class="metric-card"><div class="val">94%</div><div class="lbl">Точность</div></div>
+          <div class="metric-card"><div class="val">91%</div><div class="lbl">Recall</div></div>
+          <div class="metric-card"><div class="val">0.96</div><div class="lbl">ROC AUC</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box">
+        <h4>Архитектура пайплайна</h4>
+        <div class="flow-step"><span class="step-icon">📡</span><span><strong>Сбор:</strong> данные ГЛОНАСС + датчики букс</span></div>
+        <div class="pipeline-arrow">↓ каждые 4 часа</div>
+        <div class="flow-step"><span class="step-icon">🐳</span><span><strong>Docker:</strong> предобработка, нормализация</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">🤖</span><span><strong>Docker:</strong> ML-прогноз (Random Forest)</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">🗄️</span><span><strong>PostgreSQL:</strong> сохранение прогнозов</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">🔔</span><span><strong>Alert:</strong> уведомление машиниста / ТЧЭ</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 13 — КОД: DOCKERFILE + DAG
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Код: Dockerfile и DAG с DockerOperator</h2>
+  <div class="two-col">
+    <div>
+      <h3>Dockerfile</h3>
+      <pre><code class="language-dockerfile"># Dockerfile для ML-модели прогноза отказов букс
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY predict_buxa_failure.py .
+CMD ["python", "predict_buxa_failure.py"]
+
+# requirements.txt:
+# scikit-learn==1.3.2
+# pandas==2.1.0
+# joblib==1.3.2</code></pre>
+    </div>
+    <div>
+      <h3>DAG с DockerOperator</h3>
+      <pre><code class="language-python">from airflow import DAG
+from airflow.providers.docker.operators.docker import (
+    DockerOperator,
+)
+from docker.types import Mount as DockerMount
+from datetime import datetime
+
+with DAG(
+    "buxa_failure_prediction",
+    schedule="0 */4 * * *",
+    start_date=datetime(2024, 3, 1),
+) as dag:
+
+    predict = DockerOperator(
+        task_id="predict_buxa_failures",
+        image="registry.yandex.net/rzd-tceh15/"
+              "buxa-predictor:v1.2",
+        command="python predict_buxa_failure.py",
+        environment={
+            "TARGET_DATE":    "{{ ds }}",
+            "DEPOT_CODE":     "TCH-15",
+            "THRESHOLD_TEMP": "80",
+        },
+        mounts=[
+            DockerMount(
+                source="/data/sensor_readings",
+                target="/app/data",
+                type="bind",
+            ),
+        ],
+        docker_url="unix:///var/run/docker.sock",
+        network_mode="bridge",
+        auto_remove=True,
+    )</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 14 — КОД: СКРИПТ ПРЕДСКАЗАНИЯ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Скрипт predict_buxa_failure.py</h2>
+  <pre><code class="language-python">#!/usr/bin/env python3
+"""
+Прогноз перегрева букс локомотивов ТЧЭ-15
+Модель: Random Forest (scikit-learn)
+Запускается как Docker-контейнер через DockerOperator
+"""
+import os
+import pandas as pd
+import joblib
+from datetime import datetime
+
+TARGET_DATE    = os.environ.get("TARGET_DATE", datetime.today().strftime("%Y-%m-%d"))
+DEPOT_CODE     = os.environ.get("DEPOT_CODE", "TCH-15")
+THRESHOLD_TEMP = float(os.environ.get("THRESHOLD_TEMP", 80))
+DATA_DIR       = "/app/data"
+OUTPUT_DIR     = "/app/output"
+MODEL_PATH     = "/app/models/buxa_rf_model.joblib"
+
+print(f"[INFO] Запуск прогноза: дата={TARGET_DATE}, депо={DEPOT_CODE}")
+
+# Загрузка данных датчиков
+df = pd.read_csv(f"{DATA_DIR}/sensor_readings_{TARGET_DATE.replace('-','')}.csv")
+print(f"[INFO] Загружено {len(df)} записей датчиков")
+
+# Признаки для модели
+FEATURE_COLS = [
+    "buxa_temp_celsius", "speed_kmh", "traction_current_a",
+    "temp_delta_30min",  "engine_hours", "ambient_temp_celsius",
+]
+X = df[FEATURE_COLS].fillna(df[FEATURE_COLS].median())
+
+# Загрузка модели и прогноз
+model = joblib.load(MODEL_PATH)
+df["failure_prob"] = model.predict_proba(X)[:, 1]
+df["failure_flag"] = (df["failure_prob"] > 0.7).astype(int)
+
+# Фильтрация критических случаев
+critical = df[df["failure_flag"] == 1].copy()
+print(f"[WARN] Критических прогнозов: {len(critical)}")
+
+# Сохранение результатов
+out_path = f"{OUTPUT_DIR}/predictions_{TARGET_DATE.replace('-','')}.csv"
+critical[[
+    "loco_number", "loco_series", "buxa_position",
+    "failure_prob", "buxa_temp_celsius", "timestamp",
+]].to_csv(out_path, index=False)
+print(f"[INFO] Прогнозы сохранены: {out_path}")
+
+# XCom: вывод JSON в stdout
+import json
+result = {"critical_count": len(critical), "output_file": out_path, "date": TARGET_DATE}
+print(json.dumps(result))  # Airflow читает последнюю строку stdout как XCom</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 15 — ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Сценарий:</strong> ML-модель прогнозирования отказов букс требует TensorFlow 2.x.
+    Основной Airflow использует Python 3.10 без TF. В модель нужно передать данные о рейсе:
+    дату, номер локомотива, серию, данные датчиков за последние 24 часа (CSV-файл ~50 MB).
+    <br><br>
+    <strong>Вопросы для обсуждения (10 мин):</strong>
+    <ul>
+      <li>Какие данные безопасно передавать через переменные окружения?</li>
+      <li>Что правильнее передать через volume-монтирование?</li>
+      <li>Как передать строку подключения к PostgreSQL без хранения пароля в коде?</li>
+      <li>Если контейнер упал — как получить информацию об ошибке?</li>
+    </ul>
+  </div>
+  <div class="arch-box" style="margin-top:0.8em;">
+    <h4>Подсказка: правило разделения</h4>
+    <ul>
+      <li><span class="hi-orange">Env vars</span>: параметры (даты, коды, пороги, флаги) — небольшие строки</li>
+      <li><span class="hi-green">Volumes</span>: данные (CSV, модели, конфиги) — файлы любого размера</li>
+      <li><span class="hi-orange">Secrets Backend</span>: пароли, токены, ключи — никогда в env vars напрямую</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 16 — КЕЙС ДЛЯ АНАЛИЗА
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Кейс для анализа</h2>
+  <div class="case-box">
+    <strong>Ситуация в ТЧЭ-15:</strong> Контейнер с ML-моделью прогноза букс потребляет до 8 GB RAM
+    при загрузке данных за 24 часа по всем локомотивам. На сервере Yandex Cloud 16 GB RAM.
+    Если два рейса DAG запустятся параллельно (локомотивы ВЛ80С и 2ТЭ116 обрабатываются одновременно),
+    суммарное потребление превысит 16 GB — сервер упадёт, задачи прервутся на середине.
+    <br><br>
+    <strong>Вопросы для анализа (группы по 3 чел., 15 мин):</strong>
+    <ul>
+      <li>Как ограничить параллелизм на уровне DAG и на уровне DockerOperator?</li>
+      <li>Можно ли разбить обработку по сериям локомотивов и обработать последовательно?</li>
+      <li>Какой тип инстанса Yandex Cloud выбрать для продакшн-деплоя?</li>
+      <li>Как настроить <code>mem_limit</code> чтобы при OOM контейнер падал сам, а не убивал ОС?</li>
+    </ul>
+  </div>
+  <div class="arch-box" style="margin-top:0.6em; font-size:0.78em;">
+    <strong>Варианты решения:</strong>
+    <code>max_active_tasks=1</code> в DAG |
+    <code>mem_limit="7g"</code> в DockerOperator |
+    пул <code>docker_pool</code> с 1 слотом |
+    разбивка на батчи по сериям локомотивов
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 17 — ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения 2</h2>
+  <div class="discuss">
+    <strong>Дилемма архитектора:</strong> Команда ТЧЭ-15 внедряет аналитическую платформу.
+    Сейчас Airflow работает на одной VM Ubuntu 22.04 в Yandex Cloud (16 vCPU, 32 GB RAM).
+    Планируется 15 ML-задач с контейнерами, суммарная нагрузка — до 80 GB RAM в пике.
+    <br><br>
+    <strong>DockerOperator vs KubernetesPodOperator — что выбрать для ТЧЭ-15?</strong>
+    <ul>
+      <li>DockerOperator: простота, быстрый старт, но один сервер</li>
+      <li>KubernetesPodOperator: сложнее настройка, зато масштабируется на кластер нод</li>
+      <li>Yandex Managed Service for Kubernetes: готовая инфраструктура, но стоимость</li>
+    </ul>
+    <br>
+    Обсудите критерии выбора: команда 3 DevOps-инженеров, бюджет ограничен, SLA 99.5%.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 18 — КВИЗ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Проверка знаний</h2>
+  <div style="font-size:0.82em;">
+
+    <div class="quiz-q">1. Параметр <code>image</code> в DockerOperator содержит:</div>
+    <div id="q1">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Путь к Dockerfile</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Имя или тег Docker-образа</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Команду для запуска</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Переменные окружения</button>
+    </div>
+    <div class="quiz-result" id="q1r"></div>
+
+    <div class="quiz-q">2. Данные объёмом 50 MB правильнее передавать в контейнер через:</div>
+    <div id="q2">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Переменные окружения (env vars)</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Volume-монтирование (mounts)</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">XCom</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Параметр command</button>
+    </div>
+    <div class="quiz-result" id="q2r"></div>
+
+    <div class="quiz-q">3. KubernetesPodOperator создаёт для каждой задачи:</div>
+    <div id="q3">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Docker-контейнер на хост-машине</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Отдельный Kubernetes Pod</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Виртуальную машину</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Процесс в Worker Airflow</button>
+    </div>
+    <div class="quiz-result" id="q3r"></div>
+
+    <div class="quiz-q">4. Пороговая температура буксы для критического сигнала в ТЧЭ-15:</div>
+    <div id="q4">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">60°C</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">70°C</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">80°C</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">100°C</button>
+    </div>
+    <div class="quiz-result" id="q4r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 19 — ЗАДАНИЕ ДЛЯ ГРУППЫ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Задание для работы в группах</h2>
+  <div class="task-box">
+    <strong>Задание (25 минут, группы по 3–4 человека):</strong>
+    <br><br>
+    Спроектируйте Dockerfile и структуру проекта для ML-модели прогнозирования отказов букс
+    локомотивов ТЧЭ-15. Модель получает данные датчиков и возвращает вероятность критического
+    перегрева на следующие 2 часа.
+    <br><br>
+    <strong>Ответьте на вопросы:</strong>
+    <ol>
+      <li>Какой базовый образ выбрать и почему? (<code>python:3.11</code>, <code>python:3.11-slim</code>, <code>ubuntu:22.04</code>)</li>
+      <li>Какие библиотеки включить в <code>requirements.txt</code>?</li>
+      <li>Как организовать загрузку модели (в образ или через volume)?</li>
+      <li>Как скрипт принимает входные данные — CSV, env var, stdin?</li>
+      <li>Как возвращать результат в Airflow (stdout JSON, файл на volume)?</li>
+    </ol>
+    <br>
+    Представьте схему и ключевые фрагменты Dockerfile и predict-скрипта (5 мин на группу).
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 20 — ПОЛНЫЙ DAG: ПАЙПЛАЙН ТЧЭ-15
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Полный ML-пайплайн прогноза букс ТЧЭ-15</h2>
+  <pre><code class="language-python">from airflow import DAG
+from airflow.providers.docker.operators.docker import DockerOperator
+from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+from docker.types import Mount as DockerMount
+from datetime import datetime, timedelta
+
+REGISTRY = "cr.yandex/crp1abc23def"
+DATA_MOUNT = DockerMount(source="/data/rzd", target="/app/data", type="bind")
+OUT_MOUNT  = DockerMount(source="/data/output", target="/app/output", type="bind")
+
+default_args = {
+    "owner":           "rzd-tceh15",
+    "retries":         2,
+    "retry_delay":     timedelta(minutes=5),
+    "execution_timeout": timedelta(minutes=45),
+}
+
+with DAG(
+    dag_id="buxa_failure_prediction_pipeline",
+    description="ML-пайплайн прогноза перегрева букс локомотивов ТЧЭ-15",
+    schedule="0 */4 * * *",
+    start_date=datetime(2024, 3, 1),
+    max_active_runs=1,
+    default_args=default_args,
+    tags=["rzd", "tceh15", "ml", "buxa"],
+) as dag:
+
+    # Шаг 1: Извлечение данных датчиков
+    extract = PythonOperator(
+        task_id="extract_sensor_data",
+        python_callable=extract_sensor_readings,
+        op_kwargs={"depot": "TCH-15", "date": "{{ ds }}"},
+    )
+
+    # Шаг 2: Предобработка в Docker-контейнере
+    preprocess = DockerOperator(
+        task_id="preprocess_sensor_data",
+        image=f"{REGISTRY}/sensor-preprocessor:v2.0",
+        command="python preprocess.py",
+        environment={"TARGET_DATE": "{{ ds }}", "DEPOT": "TCH-15"},
+        mounts=[DATA_MOUNT, OUT_MOUNT],
+        mem_limit="3g", cpus=1.0,
+        auto_remove=True,
+    )
+
+    # Шаг 3: ML-прогноз в Docker-контейнере
+    predict = DockerOperator(
+        task_id="predict_buxa_failures",
+        image=f"{REGISTRY}/buxa-predictor:v1.2",
+        command="python predict_buxa_failure.py",
+        environment={
+            "TARGET_DATE":    "{{ ds }}",
+            "DEPOT_CODE":     "TCH-15",
+            "THRESHOLD_TEMP": "80",
+        },
+        mounts=[OUT_MOUNT],
+        mem_limit="6g", cpus=2.0,
+        auto_remove=True,
+        retrieve_output=True,
+    )
+
+    # Шаг 4: Запись прогнозов в PostgreSQL
+    store = PostgresOperator(
+        task_id="store_predictions",
+        postgres_conn_id="pg_rzd_analytics",
+        sql="sql/insert_buxa_predictions.sql",
+    )
+
+    extract >> preprocess >> predict >> store</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 21 — СРАВНЕНИЕ ПОДХОДОВ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Сравнение подходов: выбор оператора</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Сценарий</th>
+        <th>Рекомендуемый оператор</th>
+        <th>Обоснование</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Разработка и тестирование ML-модели</td>
+        <td><span class="hi-orange">DockerOperator</span></td>
+        <td>Простота, быстрый старт, локальный Docker</td>
+      </tr>
+      <tr>
+        <td>Продакшн с одним сервером</td>
+        <td><span class="hi-orange">DockerOperator + resource limits</span></td>
+        <td>Контроль ресурсов, ограничение параллелизма</td>
+      </tr>
+      <tr>
+        <td>Масштабируемый продакшн</td>
+        <td><span class="hi-green">KubernetesPodOperator</span></td>
+        <td>Автомасштабирование, изоляция namespace</td>
+      </tr>
+      <tr>
+        <td>Лёгкие Python-задачи</td>
+        <td><span class="hi-green">PythonOperator</span></td>
+        <td>Нет накладных расходов контейнера</td>
+      </tr>
+      <tr>
+        <td>ML на GPU (прогноз по видео)</td>
+        <td><span class="hi-orange">KubernetesPodOperator + GPU node</span></td>
+        <td>GPU scheduling в K8s, resource limits для GPU</td>
+      </tr>
+      <tr>
+        <td>Managed Airflow в Яндекс Облаке</td>
+        <td><span class="hi-green">KubernetesPodOperator</span></td>
+        <td>Managed K8s + Yandex Container Registry</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="discuss" style="margin-top:0.8em;">
+    <strong>Рекомендация:</strong> начать с DockerOperator на VM, мигрировать на KubernetesPodOperator
+    при росте нагрузки свыше 10 параллельных ML-задач.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 22 — ОБЗОР ПРАКТИЧЕСКОЙ РАБОТЫ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Практическая работа: DockerOperator для ТЧЭ-15</h2>
+  <div class="two-col">
+    <div>
+      <h3>Задачи практики</h3>
+      <ol class="step-list">
+        <li>Подготовить Python-скрипт предсказания <code>predict_buxa_failure.py</code></li>
+        <li>Написать <code>Dockerfile</code> для ML-модели прогноза букс</li>
+        <li>Собрать образ и протестировать локально</li>
+        <li>Аутентифицироваться и сделать push в Yandex Container Registry</li>
+        <li>Написать DAG с <code>DockerOperator</code> для ТЧЭ-15</li>
+        <li>Настроить передачу данных через env vars и volumes</li>
+      </ol>
+    </div>
+    <div>
+      <div class="arch-box">
+        <h4>Используемые данные</h4>
+        <ul>
+          <li><code>locomotives.csv</code> — парк локомотивов ТЧЭ-15</li>
+          <li><code>sensor_readings.csv</code> — показания датчиков букс</li>
+          <li><code>trips.csv</code> — маршруты и рейсы</li>
+          <li><code>schedule_adherence.csv</code> — соблюдение расписания</li>
+        </ul>
+        <h4 style="margin-top:8px;">Схема БД</h4>
+        <code>rzd_analytics</code>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <h4>Параметры</h4>
+        <ul>
+          <li>Время: <span class="hi-orange">45–60 минут</span></li>
+          <li>Уровень: Средний</li>
+          <li>Платформа: Yandex Cloud VM Ubuntu 22.04</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 23 — ОБЗОР ЛАБОРАТОРНОЙ РАБОТЫ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Лабораторная работа: Полный ML-пайплайн ТЧЭ-15</h2>
+  <div class="two-col">
+    <div>
+      <h3>Пайплайн DAG <code>buxa_ml_pipeline</code></h3>
+      <div class="arch-box">
+        <div class="flow-step"><span class="step-icon">1️⃣</span><span><strong>extract_sensor_data</strong> — PythonOperator</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">2️⃣</span><span><strong>preprocess</strong> — DockerOperator (sensor-preprocessor)</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">3️⃣</span><span><strong>predict</strong> — DockerOperator (buxa-predictor)</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">4️⃣</span><span><strong>store_predictions</strong> — PostgresOperator</span></div>
+        <div class="pipeline-arrow">↓</div>
+        <div class="flow-step"><span class="step-icon">5️⃣</span><span><strong>generate_report</strong> — DockerOperator (report-generator)</span></div>
+      </div>
+    </div>
+    <div>
+      <h3>Задания повышенной сложности</h3>
+      <div class="task-box">
+        <ol>
+          <li><strong>Адаптивный порог:</strong> порог температуры 80°C заменить динамическим — вычисляется как среднее + 2σ по последним 30 дням для каждого локомотива</li>
+          <li><strong>Мультиконтейнерный параллелизм:</strong> запустить прогноз параллельно по сериям локомотивов (ВЛ80С, ЭП2К, 2ТЭ116) с агрегацией результатов</li>
+          <li><strong>Автоматическое обновление модели:</strong> если accuracy на последних 7 днях падает ниже 90% — автоматически запустить переобучение модели в контейнере</li>
+        </ol>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <h4>Параметры</h4>
+        <ul>
+          <li>Время: <span class="hi-orange">90–120 минут</span></li>
+          <li>Уровень: Повышенный</li>
+          <li>Python DAG: 80+ строк</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     СЛАЙД 24 — ИТОГОВЫЙ
+══════════════════════════════════════════════ -->
+<section>
+  <h2>Итоги модуля 09</h2>
+  <div class="two-col">
+    <div>
+      <h3>Что освоили</h3>
+      <ul>
+        <li><span class="hi-green">DockerOperator</span>: параметры image, command, environment, mounts, mem_limit, cpus</li>
+        <li>Написание <span class="hi-green">Dockerfile</span> для ML-задач (multi-layer build, slim images)</li>
+        <li>Передача данных: <span class="hi-orange">env vars</span> (параметры) vs <span class="hi-orange">volumes</span> (данные)</li>
+        <li><span class="hi-green">KubernetesPodOperator</span>: resource requests/limits, image pull secrets</li>
+        <li><span class="hi-green">Yandex Container Registry</span>: push/pull, теги, аутентификация</li>
+        <li>Ограничение ресурсов: <code>mem_limit</code>, <code>cpus</code>, <code>max_active_tasks</code></li>
+        <li>Airflow on Kubernetes: <code>KubernetesExecutor</code>, Helm-деплой</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Практическое применение</h3>
+      <div class="arch-box">
+        <ul>
+          <li>ML-модель работает в изолированном контейнере</li>
+          <li>Зависимости TF/sklearn не конфликтуют с Airflow</li>
+          <li>Масштабирование на Kubernetes при росте нагрузки</li>
+          <li>Версионирование моделей через теги образов</li>
+          <li>Предупреждение об инциденте заранее</li>
+        </ul>
+      </div>
+      <div class="metric-row" style="margin-top:10px;">
+        <div class="metric-card"><div class="val hi-green">7</div><div class="lbl">Тем изучено</div></div>
+        <div class="metric-card"><div class="val hi-orange">80°C</div><div class="lbl">Порог</div></div>
+        <div class="metric-card"><div class="val hi-green">2ч</div><div class="lbl">Упреждение</div></div>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center; font-size:0.8em; color:#888; margin-top:0.8em;">
+    Следующий модуль: <strong>Модуль 10 — Мониторинг и алертинг в Airflow</strong>
+  </p>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+  function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll(".quiz-btn").forEach(function(b) {
+      b.disabled = true;
+    });
+    if (correct) {
+      btn.classList.add("correct");
+      btn.textContent += " ✓";
+    } else {
+      btn.classList.add("wrong");
+      btn.textContent += " ✗";
+      p.querySelectorAll("[data-correct=true]").forEach(function(b) {
+        b.classList.add("correct");
+      });
+    }
+  }
+
+  Reveal.initialize({
+    hash:        true,
+    width:       1200,
+    height:      700,
+    margin:      0.04,
+    minScale:    0.2,
+    maxScale:    2.0,
+    center:      true,
+    slideNumber: "c/t",
+    plugins:     [RevealHighlight, RevealNotes],
+    transition:  "slide",
+  });
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+

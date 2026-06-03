@@ -1,0 +1,1310 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Модуль 12: Безопасность Airflow — Курс Apache Airflow</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+  <style>
+    .reveal { font-size: 24px; }
+
+    .reveal h1, .reveal h2, .reveal h3 { color: #4472C4; }
+
+    .hi-orange { color: #ED7D31; font-weight: bold; }
+    .hi-green  { color: #70AD47;  font-weight: bold; }
+
+    .discuss {
+      background: #fff8e7;
+      border-left: 5px solid #ED7D31;
+      padding: 12px 16px;
+      font-size: 0.82em;
+    }
+    .case-box {
+      background: #eef4fb;
+      border-left: 5px solid #4472C4;
+      padding: 12px 16px;
+      font-size: 0.8em;
+    }
+    .task-box {
+      background: #eafaf1;
+      border-left: 5px solid #70AD47;
+      padding: 12px 16px;
+      font-size: 0.8em;
+    }
+
+    .quiz-btn {
+      background: #4472C4;
+      color: #fff;
+      border: none;
+      padding: 7px 15px;
+      margin: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.72em;
+    }
+    .quiz-btn.correct { background: #70AD47; }
+    .quiz-btn.wrong   { background: #e74c3c; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .arch-box {
+      border: 2px solid #4472C4;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f0f4fb;
+      font-size: 0.78em;
+    }
+
+    .reveal pre            { font-size: 0.48em; width: 100%; box-shadow: none; }
+    .reveal pre code       { max-height: 360px; }
+    .reveal table          { font-size: 0.78em; }
+    .reveal table th       { background: #4472C4; color: #fff; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.72em;
+      font-weight: bold;
+      margin: 2px;
+    }
+    .badge-blue   { background: #4472C4; color: #fff; }
+    .badge-orange { background: #ED7D31; color: #fff; }
+    .badge-green  { background: #70AD47; color: #fff; }
+    .badge-red    { background: #e74c3c; color: #fff; }
+
+    .role-table td { text-align: center; padding: 6px 10px; }
+    .r  { color: #4472C4; font-weight: bold; }
+    .w  { color: #ED7D31; font-weight: bold; }
+    .x  { color: #70AD47; font-weight: bold; }
+    .no { color: #aaa; }
+
+    ul.tight li { margin-bottom: 4px; }
+  
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ========== СЛАЙД 1: ТИТУЛЬНЫЙ ========== -->
+<section>
+  <br>
+  <h1 style="font-size:1.3em;">Модуль 12</h1>
+  <h2 style="font-size:1.15em; color:#ED7D31;">Безопасность Apache Airflow</h2>
+  <hr style="border-color:#4472C4; width:60%;">
+  <p style="font-size:0.9em; color:#555;">
+    Защита данных и доступа в Apache Airflow<br>
+    <strong>RBAC &middot; Connections &middot; Секреты &middot; Аудит</strong><br>
+    Курс Apache Airflow
+  </p>
+  <p style="margin-top:24px;">
+    <span class="badge badge-blue">FAB / RBAC</span>
+    <span class="badge badge-orange">OAuth2 / LDAP</span>
+    <span class="badge badge-green">Yandex Lockbox</span>
+    <span class="badge badge-blue">Fernet Key</span>
+    <span class="badge badge-orange">TLS / HTTPS</span>
+    <span class="badge badge-green">Аудит лог</span>
+  </p>
+  <p style="font-size:0.72em; color:#aaa; margin-top:30px;">3 ч. &nbsp;|&nbsp; Яндекс Облако &middot; Managed Airflow</p>
+</section>
+
+<!-- ========== СЛАЙД 2: ПОВЕСТКА ========== -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div class="two-col">
+    <div>
+      <ol style="font-size:0.85em;" class="tight">
+        <li>Модель угроз для аналитической платформы</li>
+        <li>FAB-аутентификация: архитектура</li>
+        <li>OAuth2 и LDAP интеграция</li>
+        <li>RBAC: роли и права доступа</li>
+        <li>Secrets Backend — Yandex Lockbox</li>
+        <li>Fernet Key: шифрование at-rest</li>
+        <li>Безопасность Connections</li>
+        <li>HTTPS через nginx</li>
+        <li>Аудит-лог и мониторинг</li>
+        <li>Комплексное применение: пример</li>
+      </ol>
+    </div>
+    <div>
+      <div class="arch-box" style="margin-bottom:10px;">
+        <strong style="color:#4472C4;">Практическая работа</strong><br>
+        Настройка RBAC: создание ролей DataEngineer, DataAnalyst, DutyOperator. Назначение прав к DAG.
+      </div>
+      <div class="arch-box">
+        <strong style="color:#ED7D31;">Лабораторная работа</strong><br>
+        Интеграция Yandex Lockbox: миграция credentials PostgreSQL и ГЛОНАСС API из Connections в Lockbox.
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Вводный слайд. Объясните слушателям, почему безопасность критична в контексте ж/д инфраструктуры.
+  </aside>
+</section>
+
+<!-- ========== СЛАЙД 3: МОДЕЛЬ УГРОЗ ========== -->
+<section>
+  <h2>Модель угроз для аналитической платформы</h2>
+  <div class="two-col">
+    <div>
+      <table>
+        <thead>
+          <tr><th>Угроза</th><th>Последствие</th><th>Приоритет</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Компрометация credentials источников</td>
+            <td>Утечка данных</td>
+            <td><span class="badge badge-red">Критичный</span></td>
+          </tr>
+          <tr>
+            <td>Несанкционированный запуск DAG</td>
+            <td>Искажение расписания</td>
+            <td><span class="badge badge-red">Критичный</span></td>
+          </tr>
+          <tr>
+            <td>Перехват трафика веб-UI</td>
+            <td>Кража сессии</td>
+            <td><span class="badge badge-orange">Высокий</span></td>
+          </tr>
+          <tr>
+            <td>Избыточные права пользователей</td>
+            <td>Случайное удаление DAG</td>
+            <td><span class="badge badge-orange">Высокий</span></td>
+          </tr>
+          <tr>
+            <td>Открытый Fernet Key</td>
+            <td>Расшифровка паролей</td>
+            <td><span class="badge badge-orange">Высокий</span></td>
+          </tr>
+          <tr>
+            <td>Отсутствие аудита доступа</td>
+            <td>Невозможность расследования</td>
+            <td><span class="badge badge-blue">Средний</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="arch-box">
+        <strong>Защищаемые активы платформы:</strong>
+        <ul class="tight" style="margin-top:8px;">
+          <li>Credentials БД (PostgreSQL, Oracle)</li>
+          <li>API-ключи внешних систем</li>
+          <li>Бизнес-данные пайплайнов</li>
+          <li>Показания датчиков и телеметрия</li>
+          <li>Персональные данные</li>
+          <li>Конфигурация и расписания</li>
+        </ul>
+      </div>
+      <div class="discuss" style="margin-top:10px;">
+        <strong>Вопрос:</strong> Какие из угроз актуальны для сотрудников вашего депо прямо сейчас?
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 4: FAB-АУТЕНТИФИКАЦИЯ ========== -->
+<section>
+  <h2>FAB-аутентификация: архитектура</h2>
+  <p style="font-size:0.82em;">Flask AppBuilder (FAB) — фреймворк безопасности, встроенный в Airflow Webserver.</p>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong>Поддерживаемые методы AUTH_TYPE:</strong>
+        <ul class="tight" style="margin-top:8px;">
+          <li><span class="hi-orange">AUTH_DB</span> — локальная БД Airflow (по умолчанию)</li>
+          <li><span class="hi-orange">AUTH_LDAP</span> — корпоративный LDAP/AD</li>
+          <li><span class="hi-orange">AUTH_OAUTH</span> — OAuth2 / OpenID Connect</li>
+          <li><span class="hi-orange">AUTH_REMOTE_USER</span> — заголовок от прокси</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="margin-top:10px;">
+        <strong>Ключевые параметры webserver_config.py:</strong>
+        <ul class="tight" style="margin-top:6px;">
+          <li><code>AUTH_TYPE</code> — метод аутентификации</li>
+          <li><code>AUTH_USER_REGISTRATION</code> — авторегистрация</li>
+          <li><code>AUTH_USER_REGISTRATION_ROLE</code> — роль по умолчанию</li>
+          <li><code>AUTH_ROLES_MAPPING</code> — маппинг групп в роли</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box" style="text-align:center;">
+        <div style="background:#4472C4; color:#fff; padding:8px; border-radius:4px; margin-bottom:8px;">
+          Браузер пользователя
+        </div>
+        <div style="font-size:1.5em; color:#4472C4;">&#8595; HTTPS</div>
+        <div style="background:#ED7D31; color:#fff; padding:8px; border-radius:4px; margin-bottom:8px;">
+          Airflow Webserver (FAB)
+        </div>
+        <div style="font-size:1.5em; color:#4472C4;">&#8595; AUTH_OAUTH</div>
+        <div style="background:#70AD47; color:#fff; padding:8px; border-radius:4px; margin-bottom:8px;">
+          Keycloak / LDAP (IdP)
+        </div>
+        <div style="font-size:1.5em; color:#4472C4;">&#8595; Токен</div>
+        <div style="background:#4472C4; color:#fff; padding:8px; border-radius:4px;">
+          RBAC: роль &#8594; ресурсы
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 5: OAuth2 / LDAP ========== -->
+<section>
+  <h2>OAuth2 и LDAP интеграция</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.82em; font-weight:bold; color:#4472C4;">LDAP — для корпоративного AD РЖД:</p>
+      <pre><code class="language-python"># webserver_config.py — LDAP
+from flask_appbuilder.security.manager import AUTH_LDAP
+
+AUTH_TYPE = AUTH_LDAP
+AUTH_LDAP_SERVER = "ldap://ad.rzd.ru"
+AUTH_LDAP_USE_TLS = True
+AUTH_LDAP_SEARCH = "DC=rzd,DC=ru"
+AUTH_LDAP_BIND_USER = (
+    "CN=svc-airflow,OU=ServiceAccounts,DC=rzd,DC=ru"
+)
+AUTH_LDAP_BIND_PASSWORD = "{{ from Lockbox }}"
+AUTH_LDAP_UID_FIELD = "sAMAccountName"
+AUTH_LDAP_GROUP_FIELD = "memberOf"
+
+# Маппинг групп AD -> роли Airflow
+AUTH_ROLES_MAPPING = {
+    "CN=grp-airflow-engineers,"
+    "OU=Groups,DC=rzd,DC=ru": ["DataEngineer"],
+    "CN=grp-airflow-analysts,"
+    "OU=Groups,DC=rzd,DC=ru":  ["DataAnalyst"],
+    "CN=grp-tceh15-operators,"
+    "OU=Groups,DC=rzd,DC=ru":  ["DutyOperator"],
+    "CN=grp-airflow-managers,"
+    "OU=Groups,DC=rzd,DC=ru":  ["Manager"],
+}
+AUTH_ROLES_SYNC_AT_LOGIN = True
+AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION_ROLE = "Viewer"</code></pre>
+    </div>
+    <div>
+      <p style="font-size:0.82em; font-weight:bold; color:#4472C4;">OAuth2 — для Keycloak / Яндекс ID:</p>
+      <pre><code class="language-python"># webserver_config.py — OAuth2
+from flask_appbuilder.security.manager import AUTH_OAUTH
+
+AUTH_TYPE = AUTH_OAUTH
+OAUTH_PROVIDERS = [{
+    "name": "keycloak",
+    "icon": "fa-key",
+    "token_key": "access_token",
+    "remote_app": {
+        "client_id":  "airflow-tceh15",
+        "client_secret": "{{ Secret from Lockbox }}",
+        "server_metadata_url": (
+            "https://auth.rzd.ru/realms/tceh15"
+            "/.well-known/openid-configuration"
+        ),
+        "client_kwargs": {
+            "scope": "openid email profile groups"
+        },
+    },
+}]</code></pre>
+      <div class="arch-box" style="margin-top:8px; font-size:0.75em;">
+        <strong>Сравнение:</strong><br>
+        <span class="hi-orange">LDAP</span> — подходит при наличии корпоративного AD РЖД<br>
+        <span class="hi-green">OAuth2</span> — подходит для SSO и федеративной идентификации
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 6: RBAC ========== -->
+<section>
+  <h2>RBAC: роли и права доступа</h2>
+  <p style="font-size:0.82em;">Airflow использует ролевую модель Flask AppBuilder. Роли создаются через CLI, API или UI.</p>
+  <div class="two-col">
+    <div>
+      <table class="role-table">
+        <thead>
+          <tr>
+            <th>Роль</th>
+            <th>DAG</th>
+            <th>Variables</th>
+            <th>Connections</th>
+            <th>Logs</th>
+            <th>Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-blue">DataEngineer</span></td>
+            <td><span class="r">R</span>/<span class="w">W</span>/<span class="x">X</span></td>
+            <td><span class="r">R</span>/<span class="w">W</span></td>
+            <td><span class="r">R</span>/<span class="w">W</span></td>
+            <td><span class="r">R</span></td>
+            <td><span class="no">—</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-orange">DataAnalyst</span></td>
+            <td><span class="r">R</span>/<span class="x">X</span></td>
+            <td><span class="r">R</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="r">R</span></td>
+            <td><span class="no">—</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">DutyOperator</span></td>
+            <td><span class="r">R</span>/<span class="x">X</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="r">R</span></td>
+            <td><span class="no">—</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-blue">Manager</span></td>
+            <td><span class="r">R</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="r">R</span></td>
+            <td><span class="no">—</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red">ITAdmin</span></td>
+            <td><span class="r">R</span>/<span class="w">W</span>/<span class="x">X</span></td>
+            <td><span class="r">R</span>/<span class="w">W</span></td>
+            <td><span class="r">R</span>/<span class="w">W</span></td>
+            <td><span class="r">R</span></td>
+            <td><span class="w">W</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.7em; color:#888; margin-top:6px;">R — чтение, W — запись, X — запуск, — нет доступа</p>
+    </div>
+    <div>
+      <pre><code class="language-bash"># Создание кастомных ролей через CLI
+airflow roles create DataEngineer
+airflow roles create DataAnalyst
+airflow roles create DutyOperator
+airflow roles create Manager
+
+# Назначение ролей пользователям
+airflow users add-role -u ivanov_ae   -r DataEngineer
+airflow users add-role -u sidorova_mn -r DataAnalyst
+airflow users add-role -u petrov_vv   -r DutyOperator
+
+# Просмотр ролей и пользователей
+airflow roles list
+airflow users list
+
+# Включение DAG-level access control:
+# airflow.cfg -> [core]
+# access_control = True</code></pre>
+      <div class="arch-box" style="margin-top:8px; font-size:0.75em;">
+        <strong>DAG-level access control:</strong><br>
+        В описании DAG укажите <code>access_control</code>,
+        чтобы ограничить доступ к конкретному DAG по ролям.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 7: SECRETS BACKEND — YANDEX LOCKBOX ========== -->
+<section>
+  <h2>Secrets Backend — Yandex Lockbox</h2>
+  <p style="font-size:0.82em;">Secrets Backend хранит Variables и Connections во внешнем хранилище, а не в БД Airflow.</p>
+  <div class="two-col">
+    <div>
+      <div class="arch-box" style="margin-bottom:10px;">
+        <strong>Архитектура Yandex Lockbox:</strong>
+        <div style="text-align:center; margin-top:10px;">
+          <div style="background:#4472C4; color:#fff; padding:6px; border-radius:4px; margin-bottom:6px;">DAG / Operator</div>
+          <div style="color:#4472C4; font-size:0.85em;">&#8595; Variable.get() / BaseHook.get_connection()</div>
+          <div style="background:#ED7D31; color:#fff; padding:6px; border-radius:4px; margin:6px 0;">Airflow Secrets Manager</div>
+          <div style="color:#4472C4; font-size:0.85em;">&#8595; YC Service Account Key</div>
+          <div style="background:#70AD47; color:#fff; padding:6px; border-radius:4px; margin:6px 0;">Yandex Lockbox API</div>
+          <div style="color:#4472C4; font-size:0.85em;">&#8595; Encrypted secret</div>
+          <div style="background:#4472C4; color:#fff; padding:6px; border-radius:4px; margin-top:6px;">Секрет (пароль, ключ, токен)</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-ini"># airflow.cfg — секция [secrets]
+[secrets]
+backend = airflow.providers.yandex.secrets\
+          .lockbox.LockboxSecretBackend
+backend_kwargs = {
+  "folder_id": "b1gxxxxxxxxxxxxxxxxx",
+  "yc_sa_key_json_path": "/secrets/sa-key.json",
+  "connections_prefix": "airflow/connections",
+  "variables_prefix":   "airflow/variables",
+  "sep": "/"
+}</code></pre>
+      <pre><code class="language-bash"># Создание секрета в Lockbox (YC CLI)
+yc lockbox secret create \
+  --name airflow-pg-rzd \
+  --description "PostgreSQL rzd_analytics" \
+  --payload '[
+    {"key":"host",     "text_value":"pg.rzd-sib.ru"},
+    {"key":"port",     "text_value":"5432"},
+    {"key":"login",    "text_value":"airflow_svc"},
+    {"key":"password", "text_value":"s3cr3t!"},
+    {"key":"schema",   "text_value":"rzd_analytics"}
+  ]'</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 8: FERNET KEY ========== -->
+<section>
+  <h2>Fernet Key: шифрование at-rest</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box" style="margin-bottom:10px;">
+        <strong>Что шифрует Fernet Key?</strong>
+        <ul class="tight" style="margin-top:8px;">
+          <li>Пароли Connections в БД Airflow</li>
+          <li>Variables с пометкой <code>is_encrypted=True</code></li>
+          <li>Extra-поля Connections (JSON)</li>
+        </ul>
+      </div>
+      <div class="arch-box">
+        <strong>Принцип работы:</strong>
+        <ul class="tight" style="margin-top:8px;">
+          <li>Симметричное шифрование (AES-128-CBC + HMAC-SHA256)</li>
+          <li>Ключ генерируется один раз при установке</li>
+          <li>Хранится в <code>airflow.cfg</code> или env-переменной</li>
+          <li>Переменная: <code>AIRFLOW__CORE__FERNET_KEY</code></li>
+          <li><span class="hi-orange">Потеря ключа = потеря всех зашифрованных данных!</span></li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-python"># Генерация нового Fernet Key
+from cryptography.fernet import Fernet
+
+key = Fernet.generate_key()
+print(key.decode())
+# ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg=</code></pre>
+      <pre><code class="language-bash"># Добавление в Yandex Lockbox (рекомендуется)
+yc lockbox secret create \
+  --name airflow-fernet-key \
+  --payload '[{
+    "key": "fernet_key",
+    "text_value": "ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg="
+  }]'
+
+# Передача через переменную окружения при старте
+export AIRFLOW__CORE__FERNET_KEY=$(
+  yc lockbox payload get \
+    --name airflow-fernet-key \
+    --key fernet_key
+)</code></pre>
+      <div class="arch-box" style="font-size:0.75em; margin-top:8px;">
+        <span class="hi-green">Best practice:</span> никогда не коммитить Fernet Key в Git.
+        Использовать Secrets Manager или env-переменные.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 9: БЕЗОПАСНОСТЬ CONNECTIONS ========== -->
+<section>
+  <h2>Безопасность Connections</h2>
+  <p style="font-size:0.82em;">Connections — основной способ хранения credentials в Airflow.
+     Важно минимизировать количество credentials в БД.</p>
+  <div class="two-col">
+    <div>
+      <div class="arch-box" style="margin-bottom:10px;">
+        <strong>Иерархия поиска Connection:</strong>
+        <ol style="margin-top:8px;">
+          <li>Переменные окружения (<code>AIRFLOW_CONN_*</code>)</li>
+          <li>Secrets Backend (Yandex Lockbox)</li>
+          <li>БД Airflow (зашифровано Fernet)</li>
+        </ol>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Connection</th><th>Тип</th><th>Хранение</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>pg_analytics</td><td>postgres</td><td><span class="hi-green">Lockbox</span></td></tr>
+          <tr><td>external_api</td><td>http</td><td><span class="hi-green">Lockbox</span></td></tr>
+          <tr><td>oracle_dwh</td><td>oracle</td><td><span class="hi-green">Lockbox</span></td></tr>
+          <tr><td>s3_data</td><td>s3</td><td><span class="hi-green">Lockbox</span></td></tr>
+          <tr><td>smtp_mail</td><td>email</td><td><span class="hi-orange">Fernet DB</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <pre><code class="language-python"># Создание Connection через URI (env var)
+# conn_type://user:pass@host:port/schema
+import os
+os.environ["AIRFLOW_CONN_PG_RZD_ANALYTICS"] = (
+    "postgresql://airflow_svc:s3cr3t"
+    "@pg.rzd-sib.ru:5432/rzd_analytics"
+)
+
+# Создание через Airflow API (Python)
+from airflow.models import Connection
+from airflow import settings
+
+conn = Connection(
+    conn_id="glonass_api",
+    conn_type="http",
+    host="api.glonass-rzd.ru",
+    schema="https",
+    extra={
+        "Authorization": "Bearer {{ lockbox_token }}"
+    }
+)
+session = settings.Session()
+session.add(conn)
+session.commit()
+session.close()</code></pre>
+      <div class="arch-box" style="font-size:0.75em; margin-top:8px;">
+        <span class="hi-orange">Важно:</span> включить маскировку чувствительных полей.<br>
+        В <code>airflow.cfg</code>:
+        <code>hide_sensitive_variable_fields = True</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 10: HTTPS ЧЕРЕЗ NGINX ========== -->
+<section>
+  <h2>HTTPS через nginx: конфигурация</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box" style="margin-bottom:10px; text-align:center;">
+        <div style="background:#4472C4; color:#fff; padding:6px; border-radius:4px; margin-bottom:6px;">
+          Пользователь
+        </div>
+        <div style="font-size:0.85em;">&#8595; HTTPS :443 (TLS 1.2/1.3)</div>
+        <div style="background:#ED7D31; color:#fff; padding:6px; border-radius:4px; margin:6px 0;">
+          nginx (reverse proxy)<br>
+          <small>SSL termination</small>
+        </div>
+        <div style="font-size:0.85em;">&#8595; HTTP :8080 (localhost)</div>
+        <div style="background:#70AD47; color:#fff; padding:6px; border-radius:4px;">
+          Airflow Webserver
+        </div>
+      </div>
+      <div class="arch-box" style="font-size:0.75em;">
+        <strong>Сертификаты:</strong>
+        <ul class="tight">
+          <li>Let's Encrypt (certbot) — для public-facing</li>
+          <li>Yandex Certificate Manager — для YC</li>
+          <li>Корпоративный CA — для internal</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-nginx"># /etc/nginx/sites-available/airflow-tceh15
+server {
+    listen 443 ssl;
+    server_name airflow.tceh15.rzd-sib.ru;
+
+    ssl_certificate     /etc/ssl/tceh15/fullchain.pem;
+    ssl_certificate_key /etc/ssl/tceh15/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    # Security headers
+    add_header Strict-Transport-Security
+        "max-age=31536000" always;
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+
+    location / {
+        proxy_pass         http://127.0.0.1:8080;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For
+                           $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto https;
+        proxy_read_timeout 300s;
+    }
+}
+
+# Редирект HTTP -> HTTPS
+server {
+    listen 80;
+    server_name airflow.tceh15.rzd-sib.ru;
+    return 301 https://$server_name$request_uri;
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 11: АУДИТ ЛОГ ========== -->
+<section>
+  <h2>Аудит-лог и мониторинг доступа</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box" style="margin-bottom:10px;">
+        <strong>Что логирует Airflow (FAB Audit Log):</strong>
+        <ul class="tight" style="margin-top:8px;">
+          <li>Успешный и неудачный вход (login / login_failed)</li>
+          <li>Запуск DAG / Task (dag.trigger)</li>
+          <li>Изменение Variables / Connections</li>
+          <li>Создание / удаление пользователей</li>
+          <li>Изменение ролей (role.add / role.delete)</li>
+          <li>Просмотр Log-файлов задач</li>
+        </ul>
+      </div>
+      <div class="arch-box">
+        <strong>Таблицы в БД Airflow:</strong><br>
+        <code>log</code> — все события аудита<br>
+        <code>dag_run</code> — запуски DAG<br>
+        <code>task_instance</code> — выполнение задач
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-python"># Выгрузка аудит-лога для ТЧЭ-15
+import pandas as pd
+from sqlalchemy import create_engine
+
+engine = create_engine(
+    "postgresql://airflow:pass@pg.rzd-sib.ru/airflow"
+)
+
+query = """
+SELECT
+    l.dttm          AS event_time,
+    l.dag_id,
+    l.event,
+    l.owner         AS username,
+    l.extra
+FROM log l
+WHERE l.dttm >= NOW() - INTERVAL '7 days'
+  AND l.event IN (
+      'login_failed',
+      'dag.trigger',
+      'variable.edit',
+      'connection.edit'
+  )
+ORDER BY l.dttm DESC
+LIMIT 500;
+"""
+
+df = pd.read_sql(query, engine)
+print(df.to_string())
+
+# Алерт при login_failed > 5 за 10 минут
+failures = df[df["event"] == "login_failed"]
+if len(failures) > 5:
+    print("ALERT: Возможная brute-force атака!")</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 12: ПРИМЕНЕНИЕ В ТЧЭ-15 ========== -->
+<section>
+  <h2>Применение в ТЧЭ-15: комплексная конфигурация</h2>
+  <p style="font-size:0.82em;">Безопасная конфигурация Airflow для депо Новосибирск-Главный:
+     разграничение доступа по ролям, защита credentials АСУП, TLS.</p>
+  <div class="two-col">
+    <div>
+      <div class="arch-box" style="font-size:0.78em;">
+        <strong>Роли ТЧЭ-15 и кто их использует:</strong>
+        <table style="margin-top:8px; width:100%;">
+          <thead>
+            <tr><th>Роль</th><th>Кто</th><th>Основные права</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-blue">DataEngineer</span></td>
+              <td>Иванов А.Е.</td>
+              <td>Полный доступ к DAG, Variables, Connections</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-orange">DataAnalyst</span></td>
+              <td>Сидорова М.Н.</td>
+              <td>Просмотр DAG, запуск, чтение Logs</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">DutyOperator</span></td>
+              <td>Петров В.В.</td>
+              <td>Просмотр и ручной запуск разрешённых DAG</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue">Manager</span></td>
+              <td>Начальник депо</td>
+              <td>Только просмотр DAG и отчётов</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">ITAdmin</span></td>
+              <td>ИТ-служба</td>
+              <td>Полный административный доступ</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box" style="font-size:0.78em;">
+        <strong>Ключевые DAG ТЧЭ-15 и access_control:</strong>
+        <table style="margin-top:8px; width:100%;">
+          <thead>
+            <tr><th>DAG</th><th>Доступные роли</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>locomotive_telemetry</code></td>
+              <td>DataEngineer, DutyOperator</td>
+            </tr>
+            <tr>
+              <td><code>schedule_adherence</code></td>
+              <td>DataEngineer, DataAnalyst, Manager</td>
+            </tr>
+            <tr>
+              <td><code>maintenance_planning</code></td>
+              <td>DataEngineer, DataAnalyst</td>
+            </tr>
+            <tr>
+              <td><code>fuel_consumption</code></td>
+              <td>DataEngineer, DataAnalyst, Manager</td>
+            </tr>
+            <tr>
+              <td><code>glonass_ingestion</code></td>
+              <td>DataEngineer</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="arch-box" style="margin-top:8px; font-size:0.75em;">
+        <span class="hi-green">Итог:</span> принцип наименьших привилегий —
+        каждый пользователь видит только то, что нужно для его работы.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 13: КОД — webserver_config.py ========== -->
+<section>
+  <h2>Код: webserver_config.py — RBAC + OAuth2 для ТЧЭ-15</h2>
+  <pre><code class="language-python"># webserver_config.py — RBAC + OAuth2 для ТЧЭ-15
+from flask_appbuilder.security.manager import AUTH_OAUTH
+
+AUTH_TYPE = AUTH_OAUTH
+AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION_ROLE = "Viewer"
+
+OAUTH_PROVIDERS = [{
+    "name": "keycloak",
+    "icon": "fa-key",
+    "token_key": "access_token",
+    "remote_app": {
+        "client_id": "airflow-tceh15",
+        "client_secret": "{{ Secret from Lockbox }}",
+        "server_metadata_url":
+            "https://auth.rzd.ru/realms/tceh15/.well-known/openid-configuration",
+        "api_base_url": "https://auth.rzd.ru/realms/tceh15/",
+        "client_kwargs": {"scope": "openid email profile"},
+    },
+}]
+
+# airflow.cfg — Yandex Lockbox secrets backend
+# [secrets]
+# backend = airflow.providers.yandex.secrets.lockbox.LockboxSecretBackend
+# backend_kwargs = {"folder_id": "b1g...", "yc_sa_key_json_path": "/secrets/sa-key.json"}
+
+# Создание ролей через CLI:
+# airflow roles create DataEngineer
+# airflow roles create DutyOperator
+# airflow users add-role -u ivanov -r DataEngineer</code></pre>
+</section>
+
+<!-- ========== СЛАЙД 14: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1 ========== -->
+<section>
+  <h2>&#10067; Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Тема:</strong> Fernet key и production-безопасность<br><br>
+    Fernet key хранится в <code>airflow.cfg</code> в открытом виде на сервере.
+    Насколько это приемлемо для production-системы ТЧЭ-15, обрабатывающей
+    критически важные данные о движении поездов, показаниях ТСКБМ
+    и координатах ГЛОНАСС?<br><br>
+    <strong>Подсказки для обсуждения:</strong>
+    <ul>
+      <li>Кто имеет доступ к файловой системе сервера Airflow?</li>
+      <li>Что произойдёт, если сервер будет скомпрометирован?</li>
+      <li>Как хранить Fernet Key безопасно в среде Яндекс Облака?</li>
+    </ul>
+  </div>
+  <aside class="notes">
+    Дать 5-7 минут на обсуждение в парах. Ожидаемый ответ: использовать переменную
+    окружения AIRFLOW__CORE__FERNET_KEY, значение которой подгружается из Yandex Lockbox
+    при старте контейнера.
+  </aside>
+</section>
+
+<!-- ========== СЛАЙД 15: КЕЙС ДЛЯ АНАЛИЗА ========== -->
+<section>
+  <h2>&#128269; Кейс для анализа</h2>
+  <div class="case-box">
+    <strong>Сценарий:</strong> Сотрудник ТЧЭ-15 был уволен.
+    Нужно немедленно отозвать его доступ к Airflow,
+    всем Variables и Connections. Опишите пошаговый процесс.
+    Как автоматизировать через LDAP?<br><br>
+    <strong>Задание группам:</strong>
+    <ol>
+      <li>Какие действия выполнить в Airflow UI / CLI?</li>
+      <li>Какие действия в Yandex Lockbox (ротация секретов)?</li>
+      <li>Какие действия в корпоративном AD / Keycloak?</li>
+      <li>Как настроить LDAP, чтобы блокировка в AD = отзыв доступа в Airflow?</li>
+      <li>Как проверить через аудит-лог, что доступ действительно закрыт?</li>
+    </ol>
+  </div>
+  <aside class="notes">
+    Работа в группах по 3-4 человека, 10 минут. Затем общее обсуждение решений.
+  </aside>
+</section>
+
+<!-- ========== СЛАЙД 16: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2 ========== -->
+<section>
+  <h2>&#10067; Вопрос для обсуждения 2</h2>
+  <div class="discuss">
+    <strong>Тема:</strong> Принцип наименьших привилегий vs. удобство работы<br><br>
+    Как соблюсти баланс: аналитик должен иметь доступ к данным для построения
+    отчётов, но не должен иметь возможности изменить DAG или credentials.
+    Опишите ролевую модель.<br><br>
+    <strong>Вопросы для группы:</strong>
+    <ul>
+      <li>Какие конкретные права нужны роли DataAnalyst для работы с данными РЖД?</li>
+      <li>Нужен ли аналитику доступ к Logs задач? К каким именно?</li>
+      <li>Как дать доступ к конкретным DAG (fuel_consumption, schedule_adherence),
+          но скрыть glonass_ingestion?</li>
+      <li>Что такое DAG-level access control в Airflow 2.x?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 17: КВИЗ ========== -->
+<section>
+  <h2>Проверка знаний</h2>
+  <div style="font-size:0.85em;">
+    <p><strong>Вопрос 1.</strong> Роль <code>Viewer</code> в Airflow позволяет:</p>
+    <div id="q1">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Редактировать DAG</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Запускать задачи</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Только просматривать</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Управлять пользователями</button>
+    </div>
+
+    <p style="margin-top:18px;"><strong>Вопрос 2.</strong> Fernet key используется для:</p>
+    <div id="q2">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Аутентификации пользователей</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Шифрования Connections и Variables в БД</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Подписи JWT-токенов</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Шифрования HTTPS-трафика</button>
+    </div>
+
+    <p style="margin-top:18px;"><strong>Вопрос 3.</strong> Secrets Backend позволяет:</p>
+    <div id="q3">
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Ускорить выполнение DAG</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Хранить credentials вне БД Airflow</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Автоматически создавать пользователей</button>
+      <button class="quiz-btn" onclick="checkAnswer(this,false)">Настраивать HTTPS для веб-сервера</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 18: ЗАДАНИЕ ДЛЯ ГРУППЫ ========== -->
+<section>
+  <h2>&#128101; Задание для группы</h2>
+  <div class="task-box">
+    Составьте матрицу RBAC для ТЧЭ-15: 5 ролей (DataEngineer, DataAnalyst,
+    DutyOperator, Manager, ITAdmin) x 5 ресурсов (DAG, Variables, Connections, Logs, Admin).
+    Отметьте права R/W/X/— для каждой пары. 25 мин.<br><br>
+    <strong>Дополнительно:</strong>
+    <ul>
+      <li>Укажите, какие DAG ТЧЭ-15 должны быть доступны только DutyOperator.</li>
+      <li>Как ограничить DataAnalyst от просмотра credentials в Connections?</li>
+      <li>Нужен ли Manager доступ к Logs задач? Обоснуйте.</li>
+    </ul>
+    <br>
+    <em>Оформите на листе или в общем документе команды.</em>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 19: ОБЗОР ПРАКТИЧЕСКОЙ РАБОТЫ ========== -->
+<section>
+  <h2>Практическая работа: Настройка RBAC</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong>Цель:</strong> создать систему разграничения доступа для ТЧЭ-15 в Airflow.<br><br>
+        <strong>Задачи:</strong>
+        <ol class="tight">
+          <li>Создать роли: <code>DataEngineer</code>, <code>DataAnalyst</code>, <code>DutyOperator</code></li>
+          <li>Назначить права доступа к ресурсам через CLI и REST API</li>
+          <li>Создать тестовых пользователей депо (Иванов, Сидорова, Петров)</li>
+          <li>Настроить <code>access_control</code> для DAG <code>locomotive_telemetry</code></li>
+          <li>Проверить: аналитик не видит Connections и Variables</li>
+          <li>Экспортировать конфигурацию ролей в JSON</li>
+        </ol>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box">
+        <strong>Данные для практики:</strong>
+        <ul class="tight">
+          <li><code>locomotives.csv</code> — парк локомотивов ТЧЭ-15</li>
+          <li><code>sensor_readings.csv</code> — показания датчиков</li>
+          <li><code>trips.csv</code> — рейсы и маршруты</li>
+          <li><code>schedule_adherence.csv</code> — соблюдение графика</li>
+        </ul>
+        <br>
+        <strong>Инструменты:</strong>
+        <ul class="tight">
+          <li>Airflow CLI (<code>airflow roles</code>, <code>airflow users</code>)</li>
+          <li>Airflow REST API v1</li>
+          <li>Python-скрипт автоматизации</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="margin-top:8px; font-size:0.75em;">
+        Подробные инструкции: <code>module_12/practice/README.md</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 20: ОБЗОР ЛАБОРАТОРНОЙ РАБОТЫ ========== -->
+<section>
+  <h2>Лабораторная работа: Интеграция Yandex Lockbox</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong>Цель:</strong> мигрировать credentials из БД Airflow в Yandex Lockbox.<br><br>
+        <strong>Задачи:</strong>
+        <ol class="tight">
+          <li>Создать сервисный аккаунт YC с правами на Lockbox</li>
+          <li>Создать секреты: PostgreSQL <code>rzd_analytics</code> и ГЛОНАСС API</li>
+          <li>Установить <code>apache-airflow-providers-yandex</code></li>
+          <li>Настроить <code>LockboxSecretBackend</code> в <code>airflow.cfg</code></li>
+          <li>Мигрировать существующие Connections из БД</li>
+          <li>Написать DAG, использующий Lockbox-credentials</li>
+          <li>Верифицировать: старые Connections в БД больше не нужны</li>
+          <li>Настроить ротацию секретов по расписанию</li>
+        </ol>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box">
+        <strong>PostgreSQL схема:</strong> <code>rzd_analytics</code><br><br>
+        Таблицы:
+        <ul class="tight">
+          <li><code>locomotives</code> — реестр тягового состава</li>
+          <li><code>sensor_readings</code> — телеметрия с датчиков</li>
+          <li><code>trips</code> — рейсы и маршруты</li>
+          <li><code>schedule_adherence</code> — соблюдение графика</li>
+          <li><code>maintenance_log</code> — журнал ТО</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <strong>Задания повышенной сложности:</strong>
+        <ul class="tight">
+          <li>Ротация Fernet Key без простоя</li>
+          <li>Динамические secrets (short-lived tokens)</li>
+          <li>CI/CD pipeline с управлением secrets</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="margin-top:8px; font-size:0.75em;">
+        Подробные инструкции: <code>module_12/lab/README.md</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 21: DAG-LEVEL ACCESS CONTROL ========== -->
+<section>
+  <h2>DAG-level Access Control в Airflow 2.x</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.82em;">Начиная с Airflow 2.0 можно ограничить доступ
+         к конкретному DAG через параметр <code>access_control</code>:</p>
+      <pre><code class="language-python"># dags/locomotive_telemetry.py
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime
+
+dag = DAG(
+    dag_id="locomotive_telemetry",
+    description="Сбор телеметрии локомотивов ТЧЭ-15",
+    schedule_interval="*/15 * * * *",
+    start_date=datetime(2024, 1, 1),
+    catchup=False,
+    access_control={
+        "DataEngineer": {
+            "can_dag_read",
+            "can_dag_edit"
+        },
+        "DutyOperator": {
+            "can_dag_read",
+            "can_dag_edit"
+        },
+        "DataAnalyst": {
+            "can_dag_read"
+        },
+        "Manager": {
+            "can_dag_read"
+        },
+    },
+    tags=["telemetry", "tceh15", "security"],
+)</code></pre>
+    </div>
+    <div>
+      <div class="arch-box" style="margin-bottom:10px;">
+        <strong>Права DAG-level:</strong>
+        <table style="margin-top:8px; width:100%;">
+          <thead>
+            <tr><th>Право</th><th>Описание</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>can_dag_read</code></td>
+              <td>Просмотр DAG, логов, графиков</td>
+            </tr>
+            <tr>
+              <td><code>can_dag_edit</code></td>
+              <td>Запуск, пауза, очистка Run</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="arch-box" style="font-size:0.75em;">
+        <span class="hi-orange">Важно:</span> DAG-level права работают поверх глобальных RBAC-ролей.
+        Пользователь с ролью <code>Viewer</code> не запустит DAG,
+        даже если прописан в <code>access_control</code>.
+      </div>
+      <div class="arch-box" style="margin-top:8px; font-size:0.75em;">
+        <span class="hi-green">Best practice ТЧЭ-15:</span> для оперативных DAG
+        (реакция на инцидент) предоставлять <code>can_dag_edit</code>
+        роли <code>DutyOperator</code>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 22: КОМПЛЕКСНАЯ СХЕМА ========== -->
+<section>
+  <h2>Комплексная схема безопасности Airflow</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; font-size:0.78em;">
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Аутентификация</strong>
+      <ul class="tight" style="margin-top:8px;">
+        <li>OAuth2 / Keycloak</li>
+        <li>LDAP / Active Directory</li>
+        <li>MFA для Admin UI</li>
+        <li>Session timeout: 8 ч.</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Авторизация</strong>
+      <ul class="tight" style="margin-top:8px;">
+        <li>RBAC: 5 ролей</li>
+        <li>DAG-level access_control</li>
+        <li>Принцип min privileges</li>
+        <li>Ролевой маппинг из AD</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Хранение секретов</strong>
+      <ul class="tight" style="margin-top:8px;">
+        <li>Yandex Lockbox (основное)</li>
+        <li>Fernet Key (шифрование БД)</li>
+        <li>Env variables (K8s Secrets)</li>
+        <li>Ротация каждые 90 дней</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <strong style="color:#ED7D31;">Транспорт</strong>
+      <ul class="tight" style="margin-top:8px;">
+        <li>HTTPS / TLS 1.2+</li>
+        <li>nginx reverse proxy</li>
+        <li>HSTS заголовки</li>
+        <li>IP allowlist сети</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <strong style="color:#ED7D31;">Мониторинг</strong>
+      <ul class="tight" style="margin-top:8px;">
+        <li>FAB Audit Log</li>
+        <li>Алерты login_failed</li>
+        <li>SIEM интеграция</li>
+        <li>Ежедневные отчёты</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <strong style="color:#70AD47;">Соответствие</strong>
+      <ul class="tight" style="margin-top:8px;">
+        <li>152-ФЗ (персданные)</li>
+        <li>ГОСТ Р ИСО/МЭК 27001</li>
+        <li>Внутренний регламент ИБ</li>
+        <li>Политики и приказы организации</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ========== СЛАЙД 23: ИТОГОВЫЙ ========== -->
+<section>
+  <h2>Итоги модуля 12</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong>Что изучили:</strong>
+        <ul class="tight" style="margin-top:8px;">
+          <li><span class="hi-green">FAB-аутентификация</span> — AUTH_DB, LDAP, OAuth2</li>
+          <li><span class="hi-green">RBAC</span> — роли, права, DAG-level control</li>
+          <li><span class="hi-green">Yandex Lockbox</span> — внешнее хранилище секретов</li>
+          <li><span class="hi-green">Fernet Key</span> — шифрование at-rest</li>
+          <li><span class="hi-green">Безопасность Connections</span> — иерархия поиска</li>
+          <li><span class="hi-green">HTTPS / nginx</span> — защита транспорта</li>
+          <li><span class="hi-green">Аудит-лог</span> — мониторинг и расследование</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box" style="margin-bottom:10px;">
+        <strong>Применение на практике:</strong>
+        <ul class="tight" style="margin-top:8px;">
+          <li>Роли DataEngineer / DataAnalyst / DutyOperator</li>
+          <li>Credentials источников только через Lockbox</li>
+          <li>TLS для веб-интерфейса</li>
+          <li>Автоматическое отключение уволенных через LDAP</li>
+          <li>Аудит всех запусков DAG</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="background:#eafaf1; border-color:#70AD47;">
+        <strong>Следующий модуль — Модуль 13:</strong><br>
+        Мониторинг и алертинг Airflow.<br>
+        Prometheus, Grafana, Flower, StatsD —
+        наблюдаемость аналитической платформы.
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:18px; font-size:0.78em; color:#888; text-align:center;">
+    Курс Apache Airflow &middot; Модуль 12 &middot; Безопасность
+  </p>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+
+<script>
+  function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll(".quiz-btn").forEach(function(b) {
+      b.disabled = true;
+    });
+    if (correct) {
+      btn.classList.add("correct");
+      btn.textContent += " ✓";
+    } else {
+      btn.classList.add("wrong");
+      btn.textContent += " ✗";
+      p.querySelectorAll("[data-correct=true]").forEach(function(b) {
+        b.classList.add("correct");
+      });
+    }
+  }
+
+  Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: true,
+    slideNumber: "c/t",
+    plugins: [RevealHighlight, RevealNotes],
+    transition: "slide"
+  });
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+

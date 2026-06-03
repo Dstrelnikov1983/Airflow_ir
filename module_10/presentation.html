@@ -1,0 +1,1041 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Модуль 10: Практика использования Airflow | Курс Apache Airflow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; }
+.reveal { font-size: 24px; }
+.reveal h1, .reveal h2, .reveal h3 { color: #4472C4; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green  { color: #70AD47;  font-weight: bold; }
+.hi-red    { color: #e74c3c;  font-weight: bold; }
+
+/* Блоки */
+.discuss   { background: #fff8e7; border-left: 5px solid #ED7D31; padding: 12px 16px; margin: 8px 0; text-align: left; font-size: 0.82em; border-radius: 0 8px 8px 0; }
+.case-box  { background: #eef4fb; border-left: 5px solid #4472C4; padding: 12px 16px; margin: 8px 0; text-align: left; font-size: 0.80em; border-radius: 0 8px 8px 0; }
+.task-box  { background: #eafaf1; border-left: 5px solid #70AD47; padding: 12px 16px; margin: 8px 0; text-align: left; font-size: 0.80em; border-radius: 0 8px 8px 0; }
+.warn-box  { background: #fff3e0; border-left: 5px solid #ED7D31; padding: 10px 15px; border-radius: 0 8px 8px 0; font-size: 0.78em; margin: 6px 0; }
+.good-box  { background: #eafaf1; border-left: 5px solid #70AD47; padding: 10px 15px; border-radius: 0 8px 8px 0; font-size: 0.78em; margin: 6px 0; }
+.bad-box   { background: #fdecea; border-left: 5px solid #e74c3c; padding: 10px 15px; border-radius: 0 8px 8px 0; font-size: 0.78em; margin: 6px 0; }
+
+/* Quiz */
+.quiz-btn  { background: #4472C4; color: #fff; border: none; padding: 7px 15px; margin: 4px; cursor: pointer; border-radius: 4px; font-size: 0.72em; transition: background 0.2s; }
+.quiz-btn:hover   { background: #2d5699; }
+.quiz-btn.correct { background: #70AD47; }
+.quiz-btn.wrong   { background: #e74c3c; }
+.quiz-result { font-size: 0.75em; margin-top: 6px; min-height: 20px; font-weight: bold; }
+.quiz-block { background: #eef4fb; border-radius: 10px; padding: 14px; margin: 8px 0; text-align: left; }
+.quiz-q { font-weight: bold; color: #4472C4; margin-bottom: 8px; font-size: 0.82em; }
+
+/* Сетки */
+.two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; align-items: start; }
+
+/* Код */
+.reveal pre { font-size: 0.48em; width: 100%; box-shadow: none; }
+.reveal pre code { max-height: 360px; }
+.reveal code { background: #f6f8fa; padding: 2px 5px; border-radius: 3px; }
+
+/* Карточки */
+.arch-box   { border: 2px solid #4472C4; border-radius: 6px; padding: 10px; background: #f0f4fb; font-size: 0.78em; }
+.tag        { display: inline-block; background: #4472C4; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin: 2px; }
+.tag-orange { background: #ED7D31; }
+.tag-green  { background: #70AD47; }
+.metric     { background: #4472C4; color: #fff; padding: 14px; border-radius: 10px; text-align: center; }
+.metric .val { font-size: 2em; font-weight: bold; color: #ED7D31; }
+
+/* Специфика модуля */
+.ap-num  { display: inline-block; background: #e74c3c; color: #fff; width: 22px; height: 22px; border-radius: 50%; text-align: center; font-size: 0.75em; line-height: 22px; font-weight: bold; margin-right: 6px; flex-shrink: 0; }
+.ap-row  { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; font-size: 0.78em; border-bottom: 1px solid #f0e0e0; }
+.checklist li { list-style: none; padding: 4px 0; font-size: 0.78em; }
+.checklist li::before { content: "✔ "; color: #70AD47; font-weight: bold; }
+.checklist-warn li::before { content: "⚠ "; color: #ED7D31; font-weight: bold; }
+
+/* DAG-граф */
+.dag-flow { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap; margin: 8px 0; }
+.dag-box  { border: 2px solid #4472C4; border-radius: 8px; padding: 7px 11px; background: #f0f4fb; font-size: 0.68em; text-align: center; }
+.dag-box.ok   { border-color: #70AD47; background: #eafaf1; }
+.dag-box.warn { border-color: #ED7D31; background: #fff8e7; }
+.dag-box.fail { border-color: #e74c3c; background: #fdecea; }
+.dag-arr  { color: #4472C4; font-size: 1.1em; }
+
+.title-logo  { font-size: 2.8em; margin-bottom: 10px; }
+.subtitle    { color: #ED7D31; font-size: 1.05em; font-weight: bold; }
+.company-badge { display: inline-block; background: linear-gradient(135deg, #4472C4, #2d5699); color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 0.9em; margin-top: 10px; }
+.agenda-item { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 0.80em; border-bottom: 1px solid #eee; }
+.agenda-num  { background: #4472C4; color: #fff; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold; flex-shrink: 0; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
+.summary-item { background: #f0f4fb; border-left: 4px solid #4472C4; padding: 10px; border-radius: 0 8px 8px 0; font-size: 0.78em; }
+.summary-item .si-title { font-weight: bold; color: #4472C4; margin-bottom: 4px; }
+.next-badge  { display: inline-block; background: #70AD47; color: #fff; padding: 5px 15px; border-radius: 15px; font-size: 0.8em; margin: 3px; }
+.reveal table { font-size: 0.78em; }
+.reveal table th { background: #4472C4; color: #fff; }
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 1: ТИТУЛЬНЫЙ                                          -->
+<!-- ============================================================ -->
+<section>
+  <div class="title-logo">🚂</div>
+  <h2>Практика использования Airflow</h2>
+  <p class="subtitle">Production-ready пайплайны данных</p>
+  <div class="company-badge">Модуль 10 &nbsp;|&nbsp; 2 часа</div>
+  <br>
+  <p style="font-size:0.78em;color:#555;">
+    Курс: <strong>Практикум по анализу и моделированию данных</strong><br></p>
+  <p style="font-size:0.7em;color:#888;margin-top:14px;">Apache Airflow · Best Practices · Production Readiness · Яндекс Облако</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 2: ПОВЕСТКА                                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>Повестка занятия</h2>
+  <div class="agenda-item"><span class="agenda-num">1</span> Идемпотентность DAG-задач — принципы и реализация</div>
+  <div class="agenda-item"><span class="agenda-num">2</span> Атомарность задач — правило одной ответственности</div>
+  <div class="agenda-item"><span class="agenda-num">3</span> Обработка ошибок: retries, callbacks, SLA</div>
+  <div class="agenda-item"><span class="agenda-num">4</span> Антипаттерны Airflow — топ-7 с разбором</div>
+  <div class="agenda-item"><span class="agenda-num">5</span> ELT vs ETL — выбор архитектуры пайплайна</div>
+  <div class="agenda-item"><span class="agenda-num">6</span> Connections best practice — безопасное управление доступами</div>
+  <div class="agenda-item"><span class="agenda-num">7</span> Документирование DAG: doc_md, tags, logging</div>
+  <div class="agenda-item"><span class="agenda-num">8</span> Production-ready DAG locomotive_monitoring_pipeline</div>
+  <div class="agenda-item"><span class="agenda-num">9</span> Code review, кейсы, дискуссии, квиз, групповые задания</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 3: КОНТЕКСТ — ПЛАТФОРМА ТЧЭ-15                       -->
+<!-- ============================================================ -->
+<section>
+  <h2>Аналитическая платформа ТЧЭ-15</h2>
+  <p style="font-size:0.78em;">Западно-Сибирская дирекция тяги. Депо Новосибирск-Главный.</p>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Подвижной состав</strong><br><br>
+        <b>Электровозы:</b> ВЛ80С, ЭП2К, ЭП1М<br>
+        <b>Тепловозы:</b> 2ТЭ116, 2ТЭ25КМ «Витязь», ЧМЭ3<br>
+        <b>МВПС:</b> ЭС2Г «Ласточка», ЭД4М
+      </div>
+      <div class="arch-box" style="margin-top:10px;">
+        <strong style="color:#4472C4;">Датчики и системы</strong><br><br>
+        ГЛОНАСС/GPS · Температура букс (°C)<br>
+        Тяговый ток/напряжение КС · Расход ДТ<br>
+        Счётчик моточасов · ТСКБМ · САУТ
+      </div>
+    </div>
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Цели АСУ ТП</strong><br><br>
+        График движения: план / факт / опоздания<br>
+        Расход топлива и э/энергии на поездо-км<br>
+        Техническое состояние локомотивов<br>
+        OTD грузовых перевозок<br>
+        Планирование ТО-1, ТО-2, ТР-1, ТР-2, КР
+      </div>
+      <div class="arch-box" style="margin-top:10px;">
+        <strong style="color:#4472C4;">Платформа</strong><br><br>
+        Яндекс Облако<br>
+        Managed Airflow или VM Ubuntu 22.04<br>
+        PostgreSQL · S3 Object Storage<br>
+        Схема БД: <code>rzd_analytics</code>
+      </div>
+    </div>
+  </div>
+  <p class="hi-green" style="font-size:0.78em;margin-top:8px;">Airflow оркестрирует весь пайплайн: сбор телеметрии → расчёт KPI → отчёт руководству депо.</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 4: ИДЕМПОТЕНТНОСТЬ                                    -->
+<!-- ============================================================ -->
+<section>
+  <h2>Идемпотентность DAG-задач</h2>
+  <p style="font-size:0.80em;"><strong>Определение:</strong> задача идемпотентна, если её повторное выполнение за <em>тот же интервал</em> даёт идентичный результат без дублей и потерь.</p>
+  <div class="two-col">
+    <div>
+      <div class="bad-box"><strong>Плохо: INSERT без проверки</strong>
+<pre><code class="language-sql">-- Каждый retry добавляет строки!
+INSERT INTO trips (trip_date, loco_id, km)
+VALUES ('{{ ds }}', 'VL80-001', 312.5);
+</code></pre>
+      </div>
+      <div class="bad-box" style="margin-top:8px;"><strong>Плохо: DELETE + INSERT (риск потери)</strong>
+<pre><code class="language-sql">-- Между DELETE и INSERT данных нет!
+DELETE FROM kpi_daily WHERE kpi_date = '{{ ds }}';
+INSERT INTO kpi_daily ...;
+</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="good-box"><strong>Хорошо: UPSERT (ON CONFLICT)</strong>
+<pre><code class="language-sql">-- Повторный запуск — тот же результат
+INSERT INTO kpi_daily
+    (kpi_date, loco_id, otd_pct, updated_at)
+SELECT
+    '{{ ds }}', loco_id,
+    AVG(on_time::int) * 100,
+    now()
+FROM trips
+WHERE trip_date = '{{ ds }}'
+GROUP BY loco_id
+ON CONFLICT (kpi_date, loco_id)
+DO UPDATE SET
+    otd_pct    = EXCLUDED.otd_pct,
+    updated_at = EXCLUDED.updated_at;
+</code></pre>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:0.75em;margin-top:6px;"><span class="tag">Правило ТЧЭ-15</span> Повторный запуск пайплайна за ту же дату не должен создавать дубли в <code>trips</code>, <code>kpi_daily</code>, <code>sensor_readings</code>.</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 5: АТОМАРНОСТЬ ЗАДАЧ                                  -->
+<!-- ============================================================ -->
+<section>
+  <h2>Атомарность задач</h2>
+  <p style="font-size:0.80em;"><strong>Принцип:</strong> каждая задача делает <em>одно</em> логически завершённое действие. При падении — перезапускается только она, не весь DAG.</p>
+  <div class="two-col">
+    <div>
+      <div class="bad-box">
+        <strong>Антипаттерн — монолит</strong>
+        <ul style="font-size:0.85em;margin:6px 0;">
+          <li>Загружает телеметрию всех локомотивов</li>
+          <li>Считает расход топлива</li>
+          <li>Считает OTD по поездкам</li>
+          <li>Обновляет статус ТО</li>
+          <li>Отправляет отчёт начальнику депо</li>
+        </ul>
+        Если упала отправка отчёта — весь пересчёт повторяется.
+      </div>
+    </div>
+    <div>
+      <div class="good-box">
+        <strong>Атомарный DAG для ТЧЭ-15</strong>
+        <div class="dag-flow" style="flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px;">
+          <div class="dag-box ok">extract_telemetry</div>
+          <span class="dag-arr">↓</span>
+          <div class="dag-box ok">calc_fuel_consumption</div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <span class="dag-arr">&darr;</span>
+            <div class="dag-box ok">calc_otd_kpi</div>
+          </div>
+          <span class="dag-arr">↓</span>
+          <div class="dag-box ok">update_maintenance_status</div>
+          <span class="dag-arr">↓</span>
+          <div class="dag-box ok">send_depot_report</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="hi-orange" style="font-size:0.78em;">При падении <code>send_depot_report</code> данные уже в БД. Перезапускается только отправка.</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 6: RETRY, CALLBACKS, SLA                              -->
+<!-- ============================================================ -->
+<section>
+  <h2>Обработка ошибок: retries / callbacks / SLA</h2>
+  <div class="two-col">
+    <div>
+<pre><code class="language-python">from datetime import timedelta
+import logging
+
+def alert_duty_engineer(context):
+    """Оповещение дежурного инженера ТЧЭ-15."""
+    ti  = context["task_instance"]
+    dag = context["dag"]
+    exc = context.get("exception", "?")
+    logging.error(
+        "[RZD ALERT] DAG=%s Task=%s FAILED: %s",
+        dag.dag_id, ti.task_id, exc
+    )
+    # Отправить в Telegram-бот депо или email
+
+def sla_miss_handler(dag, task_list,
+                     blocking_task_list,
+                     slas, blocking_tis):
+    logging.warning(
+        "[SLA MISS] DAG=%s Tasks=%s",
+        dag.dag_id, task_list
+    )
+
+default_args = {
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
+    "retry_exponential_backoff": True,
+    "max_retry_delay": timedelta(hours=1),
+    "on_failure_callback": alert_duty_engineer,
+    "execution_timeout": timedelta(hours=2),
+}
+</code></pre>
+    </div>
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Параметры retry для ТЧЭ-15</strong><br><br>
+        <table style="font-size:0.85em;width:100%;">
+          <tr><th>Параметр</th><th>Значение</th></tr>
+          <tr><td>retries</td><td>3</td></tr>
+          <tr><td>retry_delay</td><td>5 мин</td></tr>
+          <tr><td>exponential_backoff</td><td>True</td></tr>
+          <tr><td>max_retry_delay</td><td>1 час</td></tr>
+          <tr><td>execution_timeout</td><td>2 часа</td></tr>
+        </table>
+      </div>
+      <div class="arch-box" style="margin-top:10px;">
+        <strong style="color:#4472C4;">SLA пайплайна</strong><br><br>
+        extract_telemetry → 15 мин<br>
+        calc_fuel → 25 мин<br>
+        calc_otd → 25 мин<br>
+        send_report → 30 мин<br>
+        <span class="hi-orange">Нарушение SLA → алерт дежурному</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 7: АНТИПАТТЕРНЫ AIRFLOW — ТОП-7                       -->
+<!-- ============================================================ -->
+<section>
+  <h2>Антипаттерны Airflow — Топ-7</h2>
+  <div class="ap-row"><span class="ap-num">1</span><div><strong>Код уровня модуля при парсинге</strong> — подключение к БД/API на верхнем уровне DAG-файла. Scheduler парсит файлы каждые N секунд.</div></div>
+  <div class="ap-row"><span class="ap-num">2</span><div><strong>Credentials в коде</strong> — пароли, токены, строки подключения в py-файле или переменных окружения в DAG.</div></div>
+  <div class="ap-row"><span class="ap-num">3</span><div><strong>Монолитный callable</strong> — одна функция делает extract + transform + load + уведомление. Нет атомарности.</div></div>
+  <div class="ap-row"><span class="ap-num">4</span><div><strong>Non-idempotent writes</strong> — INSERT без ON CONFLICT. Каждый retry создаёт дубли в <code>kpi_daily</code> или <code>trips</code>.</div></div>
+  <div class="ap-row"><span class="ap-num">5</span><div><strong>catchup=True без ограничений</strong> — при первом деплое Airflow создаёт сотни исторических runs, перегружает систему.</div></div>
+  <div class="ap-row"><span class="ap-num">6</span><div><strong>XCom для больших данных</strong> — передача DataFrame или CSV через XCom. XCom хранится в БД метаданных.</div></div>
+  <div class="ap-row"><span class="ap-num">7</span><div><strong>Жёстко заданные даты</strong> — <code>start_date=datetime.now()</code> или <code>execution_date</code> в коде без использования <code>{{ ds }}</code>.</div></div>
+  <p class="hi-orange" style="font-size:0.78em;margin-top:8px;">Каждый из этих паттернов встречается в реальных production-пайплайнах. Разберём каждый с примером кода.</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 8: ДЕТАЛИ АНТИПАТТЕРНОВ 1-2                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Антипаттерны 1–2: парсинг и credentials</h2>
+  <div class="two-col">
+    <div>
+      <div class="bad-box">
+        <strong>АП-1: код при парсинге</strong>
+<pre><code class="language-python">import psycopg2
+
+# Выполняется при КАЖДОМ парсинге!
+# Scheduler парсит файлы каждые 30 сек.
+# При недоступности БД — Scheduler падает.
+DB = psycopg2.connect(
+    "host=10.0.1.20 dbname=rzd_analytics"
+    " user=airflow password=secret"
+)
+
+with DAG("loco_kpi", ...) as dag:
+    ...
+</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="good-box">
+        <strong>Исправление: Hook внутри callable</strong>
+<pre><code class="language-python">from airflow.providers.postgres.hooks.postgres \
+    import PostgresHook
+
+# Connection хранится в Airflow UI
+# Admin → Connections → rzd_postgres
+# Пароль — только там, не в коде!
+
+def extract_trips(**ctx):
+    hook = PostgresHook(
+        postgres_conn_id="rzd_postgres"
+    )
+    rows = hook.get_records(
+        "SELECT * FROM trips WHERE date=%s",
+        (ctx["ds"],)
+    )
+    return len(rows)
+</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="warn-box">
+    <strong>Для ТЧЭ-15:</strong> все подключения к PostgreSQL (rzd_analytics), S3 (телеметрия), Telegram-боту депо — только через Airflow Connections. Никаких паролей в git-репозитории.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 9: ELT vs ETL                                        -->
+<!-- ============================================================ -->
+<section>
+  <h2>ELT vs ETL: выбор архитектуры пайплайна</h2>
+  <div class="two-col">
+    <div class="arch-box">
+      <strong style="color:#ED7D31;">ETL — трансформация до загрузки</strong><br>
+      <em>Extract → Transform → Load</em><br><br>
+      Трансформация в Python (Airflow Worker):<br>
+      — Расчёт расхода топлива в pandas<br>
+      — Агрегация OTD в Python<br>
+      — Загрузка готовых строк в PostgreSQL<br><br>
+      <strong>Минусы:</strong> большой XCom или temp-файлы, нагрузка на worker, повторный расчёт при retry
+    </div>
+    <div class="arch-box">
+      <strong style="color:#70AD47;">ELT — трансформация в БД</strong><br>
+      <em>Extract → Load (raw) → Transform (SQL)</em><br><br>
+      Данные телеметрии → <code>sensor_raw</code><br>
+      Трансформация SQL прямо в PostgreSQL:<br>
+      — OTD = AVG(on_time_pct) через SELECT<br>
+      — Расход топлива — оконные функции SQL<br>
+      — KPI — материализованные представления<br><br>
+      <strong>Плюсы:</strong> UPSERT легко, масштабируется, идемпотентно
+    </div>
+  </div>
+  <div class="good-box" style="margin-top:10px;">
+    <strong>Рекомендация (Яндекс Облако):</strong> ELT через PostgreSQL.
+    Airflow — оркестратор, <em>не</em> вычислительный движок.
+    Тяжёлые агрегации — SQL-запросы внутри PostgresHook.run().
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 10: CONNECTIONS BEST PRACTICE                        -->
+<!-- ============================================================ -->
+<section>
+  <h2>Connections Best Practice</h2>
+  <div class="three-col">
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Создание Connection</strong><br>
+      Admin → Connections → Add Connection<br><br>
+      <code>Conn Id:</code> <code>rzd_postgres</code><br>
+      <code>Conn Type:</code> Postgres<br>
+      <code>Host:</code> 10.0.1.20<br>
+      <code>Schema:</code> rzd_analytics<br>
+      <code>Login:</code> airflow<br>
+      <code>Password:</code> *** (в UI)<br>
+      <code>Port:</code> 5432
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Яндекс Lockbox</strong><br>
+      Secrets Backend для Airflow<br><br>
+<pre style="font-size:0.7em;"><code class="language-bash">yc lockbox secret create \
+  --name airflow-rzd-pg \
+  --payload '[{
+    "key":"password",
+    "textValue":"секрет"
+  }]'
+</code></pre>
+      В airflow.cfg:<br>
+      <code>backend = LockboxSecretBackend</code>
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Именование Connections</strong><br><br>
+      <code>rzd_postgres</code> — основная БД<br>
+      <code>rzd_s3</code> — Object Storage<br>
+      <code>rzd_telegram_bot</code> — Telegram API<br>
+      <code>rzd_glonass_api</code> — ГЛОНАСС API<br><br>
+      <span class="hi-orange">Единый префикс rzd_<br>для всех connections</span>
+    </div>
+  </div>
+  <div class="warn-box" style="margin-top:8px;">
+    Никогда не используйте <code>Variable.get("password")</code> для хранения паролей.
+    Variables не шифруются по умолчанию. Только Connections или Secrets Backend.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 11: ДОКУМЕНТИРОВАНИЕ DAG                              -->
+<!-- ============================================================ -->
+<section>
+  <h2>Документирование DAG: doc_md, tags, logging</h2>
+  <div class="two-col">
+    <div>
+<pre><code class="language-python">DAG_DOC = """
+## locomotive_monitoring_pipeline
+
+**Назначение:** мониторинг локомотивного парка
+ТЧЭ-15 депо Новосибирск-Главный.
+
+**Расписание:** каждые 2 часа (`0 */2 * * *`)
+
+**Источники:**
+- `sensor_readings` — телеметрия локомотивов
+- `schedule_adherence` — графиковые данные
+- ГЛОНАСС/GPS координаты
+
+**Результат:**
+- `kpi_daily` — расчётные KPI
+- `maintenance_alerts` — уведомления о ТО
+- Отчёт начальнику депо (email/Telegram)
+
+**Идемпотентность:** UPSERT по
+(loco_id, kpi_date).
+
+**SLA:** весь пайплайн — 30 минут.
+**Ответственный:** Отдел АСУ ТЧЭ-15
+"""
+
+@dag(
+    doc_md=DAG_DOC,
+    tags=["rzd", "tceh-15", "production"],
+    ...
+)
+def locomotive_monitoring_pipeline():
+    ...
+</code></pre>
+    </div>
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Теги для ТЧЭ-15</strong><br><br>
+        <span class="tag">rzd</span>
+        <span class="tag tag-orange">tceh-15</span>
+        <span class="tag tag-green">production</span><br>
+        <span class="tag">monitoring</span>
+        <span class="tag tag-orange">telemetry</span><br>
+        <span class="tag tag-green">kpi</span>
+        <span class="tag">maintenance</span>
+      </div>
+      <div class="arch-box" style="margin-top:10px;">
+        <strong style="color:#4472C4;">Структурированное логирование</strong><br><br>
+<pre style="font-size:0.75em;"><code class="language-python">import logging
+log = logging.getLogger(__name__)
+
+def extract_telemetry(**ctx):
+    ds = ctx["ds"]
+    log.info(
+      "Загрузка телеметрии за %s", ds
+    )
+    # ...
+    log.info(
+      "Загружено %d записей", row_count
+    )
+</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 12: PRODUCTION-READY DAG — КОД                       -->
+<!-- ============================================================ -->
+<section>
+  <h2>Production-ready DAG ТЧЭ-15</h2>
+<pre><code class="language-python"># locomotive_monitoring_pipeline.py — production-ready DAG РЖД ТЧЭ-15
+from airflow.decorators import dag, task
+from airflow.models import Variable
+from datetime import datetime, timedelta
+import logging
+
+def alert_duty_engineer(context):
+    """Callback при падении задачи."""
+    task_id = context["task_instance"].task_id
+    dag_id  = context["dag"].dag_id
+    logging.error(f"[RZD ALERT] DAG={dag_id} Task={task_id} FAILED")
+    # Отправить в Telegram дежурному инженеру ТЧЭ-15
+
+@dag(
+    schedule="0 */2 * * *",
+    start_date=datetime(2024, 3, 1),
+    catchup=False,
+    default_args={
+        "retries": 3,
+        "retry_delay": timedelta(minutes=5),
+        "retry_exponential_backoff": True,
+        "on_failure_callback": alert_duty_engineer,
+    },
+    doc_md="""
+    ## Пайплайн мониторинга локомотивов ТЧЭ-15
+    Каждые 2 часа: телеметрия → KPI → отчёт.
+    **Идемпотентность:** UPSERT по (loco_id, kpi_date).
+    **Ответственный:** Отдел АСУ ТЧЭ-15
+    """,
+    tags=["rzd", "tceh-15", "production"],
+)
+def locomotive_monitoring_pipeline():
+
+    @task
+    def extract(ds=None):
+        """Извлекает данные телеметрии из rzd_analytics за дату ds."""
+        return Variable.get("depot_code")   # Код депо из Airflow Variables
+
+    @task
+    def transform(depot: str):
+        """Рассчитывает KPI: OTD%, расход топлива, перегревы букс."""
+        return {"depot": depot, "otd_pct": 94.5, "fuel_avg": 312.0}
+
+    @task
+    def load(data: dict, ds=None):
+        """UPSERT результатов в kpi_daily — идемпотентно!"""
+        print(f"UPSERT for {ds}: {data}")
+
+    d = extract()
+    t = transform(d)
+    load(t)
+
+dag_instance = locomotive_monitoring_pipeline()
+</code></pre>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 13: АРХИТЕКТУРА ПАЙПЛАЙНА ТЧЭ-15                     -->
+<!-- ============================================================ -->
+<section>
+  <h2>Архитектура production-пайплайна ТЧЭ-15</h2>
+  <p style="font-size:0.78em;">Сборка пайплайна: приём данных → обработка телеметрии → расчёт KPI → отчёт руководству</p>
+  <div class="dag-flow" style="flex-direction:column;align-items:center;gap:4px;">
+    <div class="dag-box ok">extract_telemetry<br><small>sensor_readings ← PostgreSQL</small></div>
+    <span class="dag-arr">↓</span>
+    <div class="dag-box ok">check_data_quality<br><small>BranchPythonOperator</small></div>
+    <div style="display:flex;gap:20px;align-items:flex-start;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <span class="dag-arr">↓</span>
+        <div class="dag-box warn">send_no_data_alert<br><small>Telegram → дежурный</small></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <span class="dag-arr">↓</span>
+        <div style="border:2px dashed #4472C4;border-radius:8px;padding:6px;background:#f0f4fb;">
+          <div style="font-size:0.65em;color:#4472C4;margin-bottom:4px;">kpi_group (параллельно)</div>
+          <div style="display:flex;gap:6px;">
+            <div class="dag-box ok">calc_otd_kpi<br><small>OTD%</small></div>
+            <div class="dag-box ok">calc_fuel_kpi<br><small>л/поездо-км</small></div>
+            <div class="dag-box ok">calc_maint_alerts<br><small>ТО-план</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="dag-arr">↓</span>
+    <div class="dag-box ok">send_depot_report<br><small>Email начальнику депо</small></div>
+    <span class="dag-arr">↓</span>
+    <div class="dag-box ok">end</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 14: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Сценарий:</strong> Пайплайн <code>locomotive_monitoring_pipeline</code> вставляет дубли в таблицу <code>trips</code> при повторном запуске за ту же дату. Дежурный инженер перезапускает упавшие задачи вручную через Airflow UI.<br><br>
+    <strong>Вопросы для обсуждения:</strong>
+    <ol style="margin:8px 0;">
+      <li>Как сделать задачу <code>load_trips</code> идемпотентной?</li>
+      <li>Какой подход выбрать для таблицы <code>trips</code>: DELETE+INSERT или UPSERT? Почему?</li>
+      <li>Как убедиться, что после ручного перезапуска данные в <code>kpi_daily</code> корректны?</li>
+    </ol>
+    <br>
+    <em>Подсказка: подумайте о natural key таблицы trips — что однозначно идентифицирует поездку?</em>
+  </div>
+  <p style="font-size:0.72em;color:#888;margin-top:10px;">Время на обсуждение: 5 минут. Поделитесь ответом со всей группой.</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 15: КЕЙС ДЛЯ АНАЛИЗА                                 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Кейс для анализа</h2>
+  <div class="case-box">
+    <strong>Ситуация:</strong> Пайплайн <code>locomotive_monitoring_pipeline</code> в ТЧЭ-15 работает 2 недели. Метабаза Airflow (PostgreSQL) выросла до 40 ГБ. Планировщик стал медленнее — tasks висят в статусе <code>queued</code> по 5 минут вместо 30 секунд.<br><br>
+    <strong>Симптомы:</strong>
+    <ul>
+      <li>График Airflow UI загружается медленно</li>
+      <li>Таблица <code>dag_run</code> содержит 180 000 строк</li>
+      <li>XCom-таблица содержит объекты по 50 МБ (передача DataFrame через XCom)</li>
+      <li>Scheduler CPU — 95% постоянно</li>
+    </ul>
+    <strong>Вопросы:</strong>
+    <ol>
+      <li>Какие антипаттерны привели к этому состоянию?</li>
+      <li>Какие команды/параметры помогут диагностировать проблему?</li>
+      <li>Как исправить ситуацию без остановки production?</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 16: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Вопрос для обсуждения 2</h2>
+  <div class="discuss">
+    <strong>Сценарий:</strong> DAG <code>locomotive_monitoring_pipeline</code> в депо Новосибирск-Главный выполняет 47 задач подряд и занимает 2 часа. Одна задача обрабатывает телеметрию всех локомотивов парка сразу: ВЛ80С, ЭП2К, ЭП1М, 2ТЭ116, ЧМЭ3 — в одном Python callable.<br><br>
+    <strong>Вопросы для обсуждения:</strong>
+    <ol>
+      <li>Является ли 47 задач в одном DAG проблемой? По каким критериям оценивать?</li>
+      <li>Как разбить монолитный callable на атомарные компоненты, не потеряв целостность пайплайна?</li>
+      <li>Стоит ли разделить пайплайн по типам тяги (электровозы / тепловозы / МВПС) на отдельные DAG?</li>
+    </ol>
+  </div>
+  <p style="font-size:0.72em;color:#888;margin-top:10px;">Время на обсуждение: 5 минут.</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 17: КВИЗ                                              -->
+<!-- ============================================================ -->
+<section>
+  <h2>Квиз — проверим знания</h2>
+  <div class="quiz-block">
+    <div class="quiz-q">В1: Идемпотентный DAG при повторном запуске за ту же дату:</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Дублирует данные в trips</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Даёт тот же результат без дублей</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Падает с ошибкой уникальности</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Пропускает все задачи автоматически</button>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">В2: on_failure_callback вызывается:</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">При каждом retry</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">После исчерпания всех попыток retry</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Только при ошибке сети</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">При нарушении SLA</button>
+  </div>
+  <div class="quiz-block">
+    <div class="quiz-q">В3: Антипаттерн «тяжёлые операции в DAG-файле» означает:</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">DAG содержит много задач</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,true)" data-correct="true">Код подключается к БД при парсинге, до запуска задач</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">DAG работает дольше 1 часа</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">В callable используется pandas</button>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 18: ЗАДАНИЕ ДЛЯ ГРУППЫ                               -->
+<!-- ============================================================ -->
+<section>
+  <h2>Задание для группы</h2>
+  <div class="task-box">
+    <strong>Code review — найдите 5 антипаттернов</strong><br><br>
+    Вам дан DAG <code>loco_bad_pipeline.py</code> для пайплайна ТЧЭ-15. Он работает — Airflow не выдаёт синтаксических ошибок. Однако содержит <strong>5 антипаттернов</strong>.<br><br>
+    <strong>Для каждого антипаттерна:</strong>
+    <ol>
+      <li>Укажите строку кода и название антипаттерна</li>
+      <li>Опишите последствие для production-среды ТЧЭ-15</li>
+      <li>Предложите конкретное исправление с примером кода</li>
+    </ol>
+    <br>
+    <strong>Дополнительно:</strong> добавьте <code>retry</code>, <code>on_failure_callback</code>, <code>doc_md</code> для исправленной версии.<br><br>
+    <em>Время: 25 минут. Результат — исправленный DAG-файл.</em>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 19: ОБЗОР ПРАКТИЧЕСКОЙ РАБОТЫ                        -->
+<!-- ============================================================ -->
+<section>
+  <h2>Практическая работа 10</h2>
+  <p style="font-size:0.80em;"><strong>Тема:</strong> Анализ и исправление антипаттернов в DAG пайплайна ТЧЭ-15</p>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="si-title">Что делаем</div>
+      Получаем DAG <code>loco_bad_pipeline.py</code> с 5 антипаттернами.
+      Анализируем, описываем последствия, пишем исправленную версию.
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Данные</div>
+      locomotives.csv, sensor_readings.csv,<br>
+      trips.csv, schedule_adherence.csv<br>
+      Схема: <code>rzd_analytics</code>
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Ключевые навыки</div>
+      Чтение и анализ DAG-кода<br>
+      PostgresHook, UPSERT, doc_md<br>
+      on_failure_callback, catchup=False
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Результат</div>
+      Исправленный DAG <code>loco_good_pipeline.py</code><br>
+      Таблица антипаттернов с обоснованием<br>
+      Успешный запуск в Airflow UI
+    </div>
+  </div>
+  <p style="font-size:0.75em;margin-top:8px;">Платформа: Яндекс Облако · Managed Airflow 2.7+ · PostgreSQL rzd_analytics</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 20: ОБЗОР ЛАБОРАТОРНОЙ РАБОТЫ                        -->
+<!-- ============================================================ -->
+<section>
+  <h2>Лабораторная работа 10</h2>
+  <p style="font-size:0.80em;"><strong>Тема:</strong> Production-ready DAG <code>locomotive_monitoring_pipeline</code> для ТЧЭ-15</p>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="si-title">Что разрабатываем</div>
+      Полный пайплайн: телеметрия → KPI → отчёт.
+      UPSERT, callbacks, SLA, TaskGroup,
+      BranchPythonOperator, документирование.
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Схема БД rzd_analytics</div>
+      <code>locomotives</code> — парк локомотивов<br>
+      <code>sensor_readings</code> — телеметрия<br>
+      <code>trips</code> — поездки<br>
+      <code>kpi_daily</code> — KPI<br>
+      <code>maintenance_alerts</code> — ТО
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Best practices</div>
+      catchup=False · max_active_runs=1<br>
+      retries=3, exponential_backoff<br>
+      UPSERT везде · PostgresHook<br>
+      doc_md + tags + logging
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Задания +</div>
+      Задание 1: SqlSensor — ожидание данных<br>
+      Задание 2: Яндекс Lockbox — секреты<br>
+      Задание 3: unit-тесты для callable
+    </div>
+  </div>
+  <p style="font-size:0.75em;margin-top:8px;">
+    <span class="next-badge">60–90 мин</span>
+    <span class="next-badge">Продвинутый уровень</span>
+    <span class="next-badge">PostgreSQL + Airflow 2.7+</span>
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 21: PRODUCTION CHECKLIST                              -->
+<!-- ============================================================ -->
+<section>
+  <h2>Production Checklist</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.82em;font-weight:bold;color:#4472C4;margin-bottom:6px;">DAG-параметры</p>
+      <ul class="checklist">
+        <li><code>catchup=False</code> установлен</li>
+        <li><code>max_active_runs=1</code> установлен</li>
+        <li><code>start_date</code> — фиксированная дата</li>
+        <li><code>retries=3</code>, <code>retry_delay</code> настроены</li>
+        <li><code>retry_exponential_backoff=True</code></li>
+        <li><code>execution_timeout</code> задан</li>
+        <li><code>on_failure_callback</code> определён</li>
+        <li><code>sla_miss_callback</code> определён</li>
+        <li><code>doc_md</code> и <code>tags</code> заполнены</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size:0.82em;font-weight:bold;color:#4472C4;margin-bottom:6px;">Код и безопасность</p>
+      <ul class="checklist">
+        <li>Нет credentials в коде</li>
+        <li>Все соединения через PostgresHook</li>
+        <li>UPSERT вместо INSERT</li>
+        <li>Нет XCom для больших данных</li>
+        <li>Нет кода уровня модуля при парсинге</li>
+        <li>Каждая задача атомарна</li>
+        <li>Логирование через <code>log.info/error</code></li>
+      </ul>
+      <p style="font-size:0.82em;font-weight:bold;color:#4472C4;margin-bottom:6px;margin-top:10px;">Тестирование</p>
+      <ul class="checklist">
+        <li><code>airflow tasks test</code> прошёл</li>
+        <li>Повторный запуск — нет дублей в БД</li>
+        <li>Unit-тест на пустые данные</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 22: АНТИПАТТЕРН 6-7 ДЕТАЛИ                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Антипаттерны 6–7: XCom и даты</h2>
+  <div class="two-col">
+    <div>
+      <div class="bad-box">
+        <strong>АП-6: XCom для DataFrame</strong>
+<pre><code class="language-python">@task
+def extract():
+    # DataFrame 50 МБ → XCom → метабаза!
+    df = pd.read_csv("telemetry.csv")
+    return df.to_json()  # ← в БД метаданных!
+
+@task
+def transform(json_data):
+    df = pd.read_json(json_data)
+    # ...
+</code></pre>
+        Метабаза растёт, Scheduler замедляется.
+      </div>
+    </div>
+    <div>
+      <div class="good-box">
+        <strong>Исправление: через S3 или БД</strong>
+<pre><code class="language-python">@task
+def extract(ds=None):
+    # Загружаем в PostgreSQL напрямую
+    hook = PostgresHook("rzd_postgres")
+    # Возвращаем только счётчик!
+    return row_count  # ← маленькое значение
+
+@task
+def transform(row_count: int, ds=None):
+    # Читаем из БД, не из XCom
+    hook = PostgresHook("rzd_postgres")
+    hook.run("""
+        INSERT INTO kpi_daily ...
+        SELECT ... FROM sensor_readings
+        WHERE date = %(ds)s
+        ON CONFLICT ... DO UPDATE SET ...
+    """, parameters={"ds": ds})
+</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="bad-box" style="margin-top:8px;">
+    <strong>АП-7: жёсткие даты в коде</strong>
+    <code>WHERE date = '2024-01-15'</code> — не работает при backfill.
+    Используйте: <code>WHERE date = '{{ ds }}'</code> или <code>ctx["ds"]</code>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 23: ИТОГОВЫЙ СЛАЙД                                   -->
+<!-- ============================================================ -->
+<section>
+  <h2>Итоги модуля 10</h2>
+  <div class="three-col">
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Идемпотентность</strong><br>
+      UPSERT через <code>ON CONFLICT DO UPDATE</code> для всех целевых таблиц
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Атомарность</strong><br>
+      Каждая задача — одно действие. Разделение по сущностям или KPI
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Retry + Callbacks</strong><br>
+      3 попытки, exponential backoff, alert ответственному дежурному
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Антипаттерны</strong><br>
+      Топ-7 знаем, умеем находить и исправлять в реальном DAG
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">ELT + Connections</strong><br>
+      Трансформация в PostgreSQL. Секреты — только в Connections / Lockbox
+    </div>
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Документирование</strong><br>
+      <code>doc_md</code>, <code>tags</code>, структурированный logging — DAG читаем командой
+    </div>
+  </div>
+  <p class="hi-green" style="font-size:0.82em;margin-top:12px;">Production-ready DAG — это предсказуемый, наблюдаемый и поддерживаемый пайплайн.</p>
+  <p style="font-size:0.72em;color:#888;">Следующий модуль: Мониторинг Airflow · Метрики · Alerting · SLA-отчёты</p>
+</section>
+
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+function checkAnswer(btn, correct) {
+  var p = btn.parentElement;
+  p.querySelectorAll(".quiz-btn").forEach(function(b) { b.disabled = true; });
+  if (correct) {
+    btn.classList.add("correct");
+    btn.textContent += " ✓";
+  } else {
+    btn.classList.add("wrong");
+    btn.textContent += " ✗";
+    p.querySelectorAll("[data-correct=true]").forEach(function(b) {
+      b.classList.add("correct");
+    });
+  }
+}
+
+Reveal.initialize({
+  hash: true,
+  width: 1200,
+  height: 700,
+  margin: 0.04,
+  minScale: 0.2,
+  maxScale: 2.0,
+  center: true,
+  slideNumber: "c/t",
+  plugins: [RevealHighlight, RevealNotes],
+  transition: "slide"
+});
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+
+

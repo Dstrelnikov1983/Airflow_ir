@@ -1,0 +1,1227 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Модуль 06: Потоки обработки | Курс Apache Airflow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; }
+.reveal h1,.reveal h2,.reveal h3 { color: #4472C4; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green  { color: #70AD47;  font-weight: bold; }
+
+/* ---- утилиты ---- */
+.discuss {
+  background:#fff8e7; border-left:5px solid #ED7D31;
+  padding:15px 20px; margin:8px 0; text-align:left;
+  font-size:0.85em; border-radius:0 8px 8px 0;
+}
+.case-box {
+  background:#eef4fb; border-left:5px solid #4472C4;
+  padding:15px 20px; margin:8px 0; text-align:left;
+  font-size:0.82em; border-radius:0 8px 8px 0;
+}
+.task-box {
+  background:#eafaf1; border-left:5px solid #70AD47;
+  padding:15px 20px; margin:8px 0; text-align:left;
+  font-size:0.82em; border-radius:0 8px 8px 0;
+}
+.warning-box {
+  background:#fff3e0; border-left:5px solid #ED7D31;
+  padding:10px 15px; border-radius:0 8px 8px 0;
+  font-size:0.78em; margin:6px 0;
+}
+.info-box {
+  background:#eef4fb; border-left:5px solid #4472C4;
+  padding:10px 15px; border-radius:0 8px 8px 0;
+  font-size:0.78em; margin:6px 0;
+}
+.two-col {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:20px; align-items:start;
+}
+.three-col {
+  display:grid; grid-template-columns:1fr 1fr 1fr;
+  gap:14px; align-items:start;
+}
+.arch-box {
+  border:2px solid #4472C4; border-radius:8px;
+  padding:12px; margin:5px; background:#f0f4fb; font-size:0.8em;
+}
+.arch-box.orange { border-color:#ED7D31; background:#fff8e7; }
+.arch-box.green  { border-color:#70AD47; background:#eafaf1; }
+.arch-box.red    { border-color:#e74c3c; background:#fdf2f2; }
+
+/* ---- теги ---- */
+.tag {
+  display:inline-block; background:#4472C4; color:#fff;
+  padding:3px 10px; border-radius:12px; font-size:0.7em; margin:2px;
+}
+
+/* ---- заголовок ---- */
+.title-logo { font-size:3em; margin-bottom:10px; }
+.subtitle    { color:#ED7D31; font-size:1.1em; font-weight:bold; }
+.company-badge {
+  display:inline-block;
+  background:linear-gradient(135deg,#4472C4,#2d5699);
+  color:#fff; padding:8px 20px; border-radius:20px;
+  font-size:0.9em; margin-top:10px;
+}
+
+/* ---- повестка ---- */
+.agenda-item {
+  display:flex; align-items:center; gap:10px;
+  padding:6px 0; font-size:0.82em; border-bottom:1px solid #eee;
+}
+.agenda-num {
+  background:#4472C4; color:#fff; width:26px; height:26px;
+  border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:0.8em; font-weight:bold; flex-shrink:0;
+}
+
+/* ---- граф-схемы ---- */
+.dep-flow {
+  display:flex; align-items:center;
+  justify-content:center; gap:6px; flex-wrap:wrap; margin:10px 0;
+}
+.dep-node {
+  border:2px solid #4472C4; border-radius:8px;
+  padding:8px 14px; background:#f0f4fb;
+  font-size:0.72em; text-align:center; min-width:80px;
+}
+.dep-node.orange { border-color:#ED7D31; background:#fff8e7; font-weight:bold; }
+.dep-node.green  { border-color:#70AD47; background:#eafaf1; }
+.dep-node.red    { border-color:#e74c3c; background:#fdf2f2; }
+.dep-node.gray   { border-color:#95a5a6; background:#f8f9fa; color:#7f8c8d; }
+.dep-arrow { color:#ED7D31; font-size:1.3em; font-weight:bold; }
+.dep-arrow-v { color:#ED7D31; font-size:1.3em; text-align:center; line-height:1.2; }
+
+/* ---- квиз ---- */
+.quiz-btn {
+  background:#4472C4; color:#fff; border:none;
+  padding:8px 18px; margin:5px; cursor:pointer;
+  border-radius:5px; font-size:0.78em; transition:background 0.2s;
+}
+.quiz-btn:hover  { background:#2d5699; }
+.quiz-btn.correct { background:#70AD47; }
+.quiz-btn.wrong   { background:#e74c3c; }
+.quiz-block {
+  background:#eef4fb; border-radius:10px;
+  padding:15px; margin:8px 0; text-align:left;
+}
+.quiz-q {
+  font-weight:bold; color:#4472C4;
+  margin-bottom:8px; font-size:0.82em;
+}
+
+/* ---- итог ---- */
+.summary-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; margin:10px 0;
+}
+.summary-item {
+  background:#f0f4fb; border-left:4px solid #4472C4;
+  padding:10px; border-radius:0 8px 8px 0; font-size:0.78em;
+}
+.summary-item .si-title { font-weight:bold; color:#4472C4; margin-bottom:4px; }
+.next-badge {
+  display:inline-block; background:#70AD47; color:#fff;
+  padding:5px 15px; border-radius:15px; font-size:0.8em; margin:3px;
+}
+
+/* ---- код ---- */
+.reveal pre { font-size:0.48em; width:100%; box-shadow:none; }
+.reveal code { background:#f6f8fa; padding:2px 5px; border-radius:3px; }
+
+/* ---- badge ---- */
+.badge-row { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0; }
+.badge {
+  display:inline-block; padding:4px 12px;
+  border-radius:12px; font-size:0.7em; font-weight:bold;
+}
+.badge-blue  { background:#4472C4; color:#fff; }
+.badge-orange{ background:#ED7D31; color:#fff; }
+.badge-green { background:#70AD47; color:#fff; }
+.badge-red   { background:#e74c3c; color:#fff; }
+.badge-gray  { background:#7f8c8d; color:#fff; }
+
+/* ---- ветвление схема ---- */
+.branch-diagram {
+  display:flex; flex-direction:column; align-items:center;
+  gap:6px; margin:10px 0;
+}
+.branch-row {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.branch-arrow-down {
+  color:#ED7D31; font-size:1.2em; text-align:center;
+}
+.branch-label {
+  font-size:0.65em; color:#888; font-style:italic;
+}
+
+/* ---- таблица ---- */
+.op-table { width:100%; border-collapse:collapse; font-size:0.72em; }
+.op-table th { background:#4472C4; color:#fff; padding:7px 10px; text-align:left; }
+.op-table td { padding:6px 10px; border-bottom:1px solid #e0e0e0; }
+.op-table tr:nth-child(even) td { background:#f6f9ff; }
+
+/* ---- секция TaskGroup ---- */
+.tg-box {
+  border:2px dashed #4472C4; border-radius:10px;
+  padding:10px 14px; margin:6px 0; background:#f7f9fe;
+  font-size:0.75em;
+}
+.tg-title {
+  font-weight:bold; color:#4472C4; font-size:0.9em;
+  margin-bottom:6px; border-bottom:1px solid #ccd9f0; padding-bottom:4px;
+}
+.tg-inner {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.tg-task {
+  background:#fff; border:1px solid #4472C4; border-radius:6px;
+  padding:4px 10px; font-size:0.85em;
+}
+
+/* ---- dynamic mapping ---- */
+.dm-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; margin:10px 0;
+}
+.dm-card {
+  background:#eef4fb; border:1px solid #4472C4;
+  border-radius:8px; padding:8px; text-align:center; font-size:0.72em;
+}
+.dm-card .dm-title { font-weight:bold; color:#4472C4; margin-bottom:4px; }
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 1: ТИТУЛЬНЫЙ                                          -->
+<!-- ============================================================ -->
+<section>
+  <div class="title-logo">🔀</div>
+  <h2 style="font-size:1.3em;">Модуль 6: Потоки обработки</h2>
+  <p class="subtitle">Условное выполнение, группировка задач и динамическое маппирование</p>
+  <hr style="border-color:#4472C4; margin:15px auto; width:60%;">
+  <p style="font-size:0.7em; color:#888; margin-top:20px;">
+    Продолжительность модуля: <strong>2 часа</strong> &nbsp;|&nbsp;
+    Яндекс Облако &nbsp;|&nbsp; Apache Airflow 2.8
+  </p>
+  <div style="margin-top:10px;">
+    <span class="tag">BranchPythonOperator</span>
+    <span class="tag">ShortCircuitOperator</span>
+    <span class="tag">TaskGroup</span>
+    <span class="tag">Dynamic Task Mapping</span>
+    <span class="tag">expand()</span>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 2: ПОВЕСТКА                                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div class="agenda-item"><div class="agenda-num">1</div><div><strong>Условное выполнение в ETL</strong> — зачем нужно ветвление в пайплайнах данных</div></div>
+  <div class="agenda-item"><div class="agenda-num">2</div><div><strong>BranchPythonOperator</strong> — механизм работы, возврат task_id</div></div>
+  <div class="agenda-item"><div class="agenda-num">3</div><div><strong>ShortCircuitOperator</strong> — полная остановка пайплайна</div></div>
+  <div class="agenda-item"><div class="agenda-num">4</div><div><strong>Паттерны ветвления</strong> — схемы если/иначе, множественное, слияние</div></div>
+  <div class="agenda-item"><div class="agenda-num">5</div><div><strong>TaskGroup</strong> — группировка и вложенность задач</div></div>
+  <div class="agenda-item"><div class="agenda-num">6</div><div><strong>Dynamic Task Mapping</strong> — expand() для параллельной обработки</div></div>
+  <div class="agenda-item"><div class="agenda-num">7</div><div><strong>Применение на практике</strong> — сквозной пример потока обработки</div></div>
+  <div class="agenda-item"><div class="agenda-num">8</div><div><strong>Практика: кейсы, вопросы, квиз, групповые задания</strong></div></div>
+  <p style="font-size:0.65em; color:#888; margin-top:12px;">
+    Материалы: <code>ore_processing_flow.py</code> &nbsp;|&nbsp; <code>mine_sections_parallel.py</code>
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 3: УСЛОВНОЕ ВЫПОЛНЕНИЕ — ЗАЧЕМ НУЖНО                 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Условное выполнение в ETL-пайплайнах</h2>
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:0.9em; color:#ED7D31;">Реальность производственных данных</h3>
+      <ul style="font-size:0.78em;">
+        <li>Данные <span class="hi-orange">не всегда одинаковые</span> — записи бывают валидными и невалидными</li>
+        <li>Процесс переходит в <span class="hi-orange">разные режимы</span>: нормальный, предупреждение, ошибка</li>
+        <li>Некоторые задачи нужно выполнять <span class="hi-green">только при определённых условиях</span></li>
+        <li>Лишние вычисления = потраченные ресурсы облака</li>
+      </ul>
+      <div class="info-box" style="margin-top:10px;">
+        <strong>Принцип:</strong> DAG должен <em>реагировать</em> на данные, а не просто выполнять фиксированный сценарий.
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.9em; color:#4472C4;">Типичные примеры условий</h3>
+      <div class="arch-box" style="margin-bottom:8px;">
+        <strong>Проверка качества данных</strong><br>
+        Метрика &lt; порога → отправить алерт<br>
+        Метрика ≥ порога → стандартная обработка
+      </div>
+      <div class="arch-box orange" style="margin-bottom:8px;">
+        <strong>Состояние объекта</strong><br>
+        Значение &gt; порога → создать заявку<br>
+        Норма → пропустить создание заявки
+      </div>
+      <div class="arch-box green">
+        <strong>Данные за период есть?</strong><br>
+        Нет данных → остановить расчёт метрик<br>
+        Есть данные → рассчитать показатели
+      </div>
+    </div>
+  </div>
+  <div class="discuss">
+    💬 <strong>Вопрос аудитории:</strong> Какие ещё условия в производственных данных вы можете придумать? Где ещё нужно «разветвляться»?
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 4: BranchPythonOperator — КАК РАБОТАЕТ               -->
+<!-- ============================================================ -->
+<section>
+  <h2>BranchPythonOperator</h2>
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:0.9em;">Механизм работы</h3>
+      <ul style="font-size:0.78em;">
+        <li>Принимает Python-функцию как аргумент <code>python_callable</code></li>
+        <li>Функция <span class="hi-orange">возвращает task_id</span> (строку) или <span class="hi-orange">список task_id</span></li>
+        <li>Airflow запускает только указанные задачи</li>
+        <li>Остальные задачи получают статус <span class="hi-orange">SKIPPED</span></li>
+        <li>Нижестоящие задачи (downstream) тоже пропускаются</li>
+      </ul>
+      <div class="warning-box" style="margin-top:10px;">
+        ⚠️ <strong>Важно:</strong> Задача, объединяющая ветки (join), должна иметь <code>trigger_rule="none_failed_min_one_success"</code> или <code>"one_success"</code>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.9em;">Что возвращает функция</h3>
+      <div class="arch-box" style="margin-bottom:8px; font-size:0.75em;">
+        <strong>Одна ветка:</strong><br>
+        <code>return "task_alert"</code>
+      </div>
+      <div class="arch-box orange" style="margin-bottom:8px; font-size:0.75em;">
+        <strong>Несколько веток:</strong><br>
+        <code>return ["task_alert", "task_log"]</code>
+      </div>
+      <div class="arch-box green" style="font-size:0.75em;">
+        <strong>Динамический выбор:</strong><br>
+        <code>return branches[status]</code>
+      </div>
+      <table class="op-table" style="margin-top:10px;">
+        <tr><th>Статус задачи</th><th>Значение</th></tr>
+        <tr><td>SUCCESS</td><td>Выбранная ветка выполнена</td></tr>
+        <tr><td>SKIPPED</td><td>Не выбранные ветки</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 5: КОД BranchPythonOperator для Руда+                -->
+<!-- ============================================================ -->
+<section>
+  <h2>BranchPythonOperator: качество руды</h2>
+  <pre><code class="language-python">
+from airflow import DAG
+from airflow.operators.python import BranchPythonOperator, PythonOperator
+from airflow.operators.empty import EmptyOperator
+from datetime import datetime
+
+def check_ore_quality(**context):
+    """Ветвление по содержанию железа (Fe%) в руде."""
+    # Получаем показатель Fe% из XCom предыдущей задачи
+    fe_percent = context["ti"].xcom_pull(task_ids="extract_ore_data", key="fe_percent")
+
+    if fe_percent is None:
+        # Данные не получены — останавливаем поток
+        return "no_data_alert"
+    elif fe_percent &lt; 55.0:
+        # Критически низкое содержание Fe — авария
+        return "critical_alert_branch"
+    elif fe_percent &lt; 60.0:
+        # Пониженное содержание Fe — предупреждение
+        return "warning_alert_branch"
+    else:
+        # Нормальное качество руды
+        return "normal_processing"
+
+with DAG("ore_quality_branch", start_date=datetime(2024, 1, 1), schedule="@hourly") as dag:
+
+    extract_data    = PythonOperator(task_id="extract_ore_data",    python_callable=lambda: None)
+    branch          = BranchPythonOperator(task_id="quality_branch", python_callable=check_ore_quality)
+    normal_proc     = PythonOperator(task_id="normal_processing",   python_callable=lambda: None)
+    warning_alert   = PythonOperator(task_id="warning_alert_branch", python_callable=lambda: None)
+    critical_alert  = PythonOperator(task_id="critical_alert_branch", python_callable=lambda: None)
+    no_data_alert   = PythonOperator(task_id="no_data_alert",       python_callable=lambda: None)
+    finalize        = EmptyOperator(task_id="finalize",
+                                    trigger_rule="none_failed_min_one_success")
+
+    extract_data >> branch >> [normal_proc, warning_alert, critical_alert, no_data_alert]
+    [normal_proc, warning_alert, critical_alert, no_data_alert] >> finalize
+  </code></pre>
+  <div class="badge-row" style="margin-top:8px;">
+    <span class="badge badge-green">Fe% ≥ 60 → normal_processing</span>
+    <span class="badge badge-orange">Fe% 55–60 → warning_alert_branch</span>
+    <span class="badge badge-red">Fe% &lt; 55 → critical_alert_branch</span>
+    <span class="badge badge-gray">нет данных → no_data_alert</span>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 6: ShortCircuitOperator                               -->
+<!-- ============================================================ -->
+<section>
+  <h2>ShortCircuitOperator</h2>
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:0.9em;">Когда использовать</h3>
+      <ul style="font-size:0.78em;">
+        <li>Когда нужно <span class="hi-orange">полностью остановить</span> все нижестоящие задачи</li>
+        <li>Нет «ветки-альтернативы» — только «продолжить» или «стоп»</li>
+        <li>Python-функция возвращает <code>True</code> или <code>False</code></li>
+        <li>При <code>False</code> — все downstream-задачи получают <span class="hi-orange">SKIPPED</span></li>
+        <li>Параметр <code>ignore_downstream_trigger_rules</code> управляет поведением</li>
+      </ul>
+      <div class="info-box" style="margin-top:10px;">
+        <strong>Отличие от Branch:</strong> ShortCircuit не выбирает между вариантами — он просто «отключает» весь остальной DAG.
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.9em;">Пример: проверка наличия данных</h3>
+      <pre><code class="language-python">
+from airflow.operators.python import ShortCircuitOperator
+
+def shift_data_exists(**context):
+    """
+    Проверяем, есть ли данные
+    за текущую смену из шахты.
+    Если нет — останавливаем DAG.
+    """
+    shift_id = context["ti"].xcom_pull(
+        task_ids="get_shift_info",
+        key="shift_id"
+    )
+    records = query_db(shift_id)
+    return len(records) &gt; 0
+
+check_shift = ShortCircuitOperator(
+    task_id="check_shift_data",
+    python_callable=shift_data_exists,
+    ignore_downstream_trigger_rules=False,
+)
+      </code></pre>
+      <div class="arch-box green" style="font-size:0.73em; margin-top:6px;">
+        <strong>True</strong> → расчёт метрик, отчёты, загрузка в хранилище<br>
+        <strong>False</strong> → все задачи SKIPPED, DAG завершён
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 7: ПАТТЕРНЫ ВЕТВЛЕНИЯ — СХЕМЫ                        -->
+<!-- ============================================================ -->
+<section>
+  <h2>Паттерны ветвления</h2>
+  <div class="three-col">
+    <!-- Паттерн 1 -->
+    <div class="arch-box" style="text-align:center;">
+      <div style="font-weight:bold; color:#4472C4; font-size:0.8em; margin-bottom:8px;">Если / Иначе</div>
+      <div class="dep-node" style="margin:0 auto 4px;">Проверка</div>
+      <div class="dep-arrow-v">▼</div>
+      <div class="dep-node orange" style="margin:0 auto 4px; font-size:0.65em;">Branch</div>
+      <div style="display:flex; gap:6px; justify-content:center; margin:4px 0;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+          <span class="branch-label">True</span>
+          <div class="dep-node green" style="font-size:0.62em; padding:4px 8px;">Задача A</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+          <span class="branch-label">False</span>
+          <div class="dep-node gray" style="font-size:0.62em; padding:4px 8px;">Задача B</div>
+        </div>
+      </div>
+      <div class="dep-arrow-v">▼</div>
+      <div class="dep-node" style="margin:0 auto; font-size:0.65em;">Finalize</div>
+    </div>
+    <!-- Паттерн 2 -->
+    <div class="arch-box orange" style="text-align:center;">
+      <div style="font-weight:bold; color:#ED7D31; font-size:0.8em; margin-bottom:8px;">Множественное ветвление</div>
+      <div class="dep-node" style="margin:0 auto 4px;">Проверка метрики</div>
+      <div class="dep-arrow-v">▼</div>
+      <div class="dep-node orange" style="margin:0 auto 4px; font-size:0.65em;">Branch</div>
+      <div style="display:flex; gap:4px; justify-content:center; margin:4px 0; flex-wrap:wrap;">
+        <div class="dep-node green" style="font-size:0.58em; padding:3px 6px;">Норма</div>
+        <div class="dep-node" style="font-size:0.58em; padding:3px 6px; border-color:#ED7D31; background:#fff8e7;">Warn</div>
+        <div class="dep-node red" style="font-size:0.58em; padding:3px 6px;">Крит</div>
+      </div>
+      <div class="dep-arrow-v">▼</div>
+      <div class="dep-node" style="margin:0 auto; font-size:0.65em;">Finalize</div>
+    </div>
+    <!-- Паттерн 3 -->
+    <div class="arch-box green" style="text-align:center;">
+      <div style="font-weight:bold; color:#70AD47; font-size:0.8em; margin-bottom:8px;">Слияние веток</div>
+      <div style="display:flex; gap:6px; justify-content:center; margin-bottom:4px;">
+        <div class="dep-node" style="font-size:0.62em; padding:4px 8px;">Ветка 1</div>
+        <div class="dep-node" style="font-size:0.62em; padding:4px 8px;">Ветка 2</div>
+      </div>
+      <div class="dep-arrow-v">▼ ▼</div>
+      <div class="dep-node green" style="margin:4px auto; font-size:0.65em; padding:5px 10px;">
+        Join<br><span style="font-size:0.8em; color:#888;">trigger_rule=<br>none_failed_min_one_success</span>
+      </div>
+      <div class="dep-arrow-v">▼</div>
+      <div class="dep-node" style="margin:0 auto; font-size:0.65em;">Итог</div>
+    </div>
+  </div>
+  <div class="warning-box" style="margin-top:10px;">
+    ⚠️ <strong>Ключевое правило слияния:</strong> задача-финалайзер после ветвления <em>всегда</em> должна иметь нестандартный <code>trigger_rule</code>, иначе она тоже станет SKIPPED.
+  </div>
+  <div class="discuss">
+    💬 <strong>Обсудим:</strong> Почему задача finalize с дефолтным <code>trigger_rule="all_success"</code> тоже пропускается, если часть веток SKIPPED?
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 8: TaskGroup — ГРУППИРОВКА ЗАДАЧ                      -->
+<!-- ============================================================ -->
+<section>
+  <h2>TaskGroup: организация сложных DAG</h2>
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:0.9em;">Что даёт TaskGroup</h3>
+      <ul style="font-size:0.78em;">
+        <li>Логическая <span class="hi-orange">группировка</span> связанных задач</li>
+        <li>Визуальное <span class="hi-green">сворачивание</span> в Airflow UI</li>
+        <li>Позволяет задавать зависимости <span class="hi-orange">между группами</span>, а не между отдельными задачами</li>
+        <li>Поддерживаются <span class="hi-green">вложенные</span> TaskGroup</li>
+        <li>Уникальный <code>group_id</code> — задачи внутри именуются <code>group_id.task_id</code></li>
+      </ul>
+      <div class="info-box" style="margin-top:10px;">
+        <strong>Без TaskGroup:</strong> DAG с 30+ задачами превращается в нечитаемую «макаронину». TaskGroup наводит порядок.
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.9em;">Структура в Airflow UI</h3>
+      <div class="tg-box">
+        <div class="tg-title">📦 data_collection</div>
+        <div class="tg-inner">
+          <div class="tg-task">read_sensors</div>
+          <div class="tg-task">read_gps</div>
+          <div class="tg-task">read_video</div>
+        </div>
+      </div>
+      <div class="tg-box" style="border-color:#ED7D31; background:#fff8e7;">
+        <div class="tg-title" style="color:#ED7D31;">🔬 quality_analysis</div>
+        <div class="tg-inner">
+          <div class="tg-task">validate_data</div>
+          <div class="tg-task">calc_metric_a</div>
+          <div class="tg-task">calc_metric_b</div>
+        </div>
+      </div>
+      <div class="tg-box" style="border-color:#70AD47; background:#eafaf1;">
+        <div class="tg-title" style="color:#70AD47;">📊 reporting</div>
+        <div class="tg-inner">
+          <div class="tg-task">gen_report</div>
+          <div class="tg-task">send_alert</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 9: КОД TaskGroup для Руда+                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>TaskGroup: код для Руда+</h2>
+  <pre><code class="language-python">
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.utils.task_group import TaskGroup
+from datetime import datetime
+
+with DAG("ore_taskgroup_demo", start_date=datetime(2024, 1, 1), schedule="@daily") as dag:
+
+    # ── Группа 1: Сбор данных ──────────────────────────────────────────
+    with TaskGroup(group_id="data_collection") as tg_collect:
+        read_sensors = PythonOperator(task_id="read_sensors",    python_callable=lambda: None)
+        read_gps     = PythonOperator(task_id="read_gps",        python_callable=lambda: None)
+        read_video   = PythonOperator(task_id="read_video",      python_callable=lambda: None)
+
+    # ── Группа 2: Анализ качества ─────────────────────────────────────
+    with TaskGroup(group_id="quality_analysis") as tg_quality:
+        validate_fe   = PythonOperator(task_id="validate_fe",   python_callable=lambda: None)
+        calc_moisture = PythonOperator(task_id="calc_moisture",  python_callable=lambda: None)
+        calc_sulfur   = PythonOperator(task_id="calc_sulfur",   python_callable=lambda: None)
+        # Внутри группы: validate_fe первым
+        validate_fe >> [calc_moisture, calc_sulfur]
+
+    # ── Группа 3: Отчётность ──────────────────────────────────────────
+    with TaskGroup(group_id="reporting") as tg_report:
+
+        # Вложенная группа для уведомлений
+        with TaskGroup(group_id="notifications") as tg_notify:
+            send_email = PythonOperator(task_id="send_email",  python_callable=lambda: None)
+            send_sms   = PythonOperator(task_id="send_sms",    python_callable=lambda: None)
+
+        gen_report = PythonOperator(task_id="gen_report", python_callable=lambda: None)
+        gen_report >> tg_notify
+
+    # ── Зависимости между группами ────────────────────────────────────
+    tg_collect >> tg_quality >> tg_report
+  </code></pre>
+  <div class="badge-row">
+    <span class="badge badge-blue">data_collection.read_sensors</span>
+    <span class="badge badge-orange">quality_analysis.validate_fe</span>
+    <span class="badge badge-green">reporting.notifications.send_email</span>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 10: Dynamic Task Mapping — expand()                   -->
+<!-- ============================================================ -->
+<section>
+  <h2>Dynamic Task Mapping</h2>
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:0.9em;">Проблема без динамического маппирования</h3>
+      <div class="arch-box" style="font-size:0.75em;">
+        <strong>12 однотипных объектов — 12 одинаковых задач?</strong><br><br>
+        process_item_1 >> store_1<br>
+        process_item_2 >> store_2<br>
+        process_item_3 >> store_3<br>
+        <em>... (и так 12 раз)</em>
+      </div>
+      <div class="warning-box" style="margin-top:8px;">
+        ⚠️ Код дублируется, трудно поддерживать, добавление нового объекта требует правки DAG
+      </div>
+      <h3 style="font-size:0.9em; margin-top:10px; color:#70AD47;">Решение: expand()</h3>
+      <ul style="font-size:0.78em;">
+        <li>Задача создаётся динамически для <span class="hi-green">каждого элемента</span> списка</li>
+        <li>Список определяется <span class="hi-orange">во время выполнения</span> (runtime)</li>
+        <li>Задачи выполняются <span class="hi-green">параллельно</span></li>
+        <li>Доступно с Airflow 2.3+</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="font-size:0.9em;">Как работает expand()</h3>
+      <div class="dep-flow" style="flex-direction:column; gap:4px;">
+        <div class="dep-node orange" style="width:180px;">process_item.expand(item=[...])</div>
+        <div class="dep-arrow-v">▼</div>
+        <div style="display:flex; gap:8px;">
+          <div class="dep-node green" style="font-size:0.65em;">Элемент-1</div>
+          <div class="dep-node green" style="font-size:0.65em;">Элемент-2</div>
+          <div class="dep-node green" style="font-size:0.65em;">Элемент-3</div>
+        </div>
+        <div class="dep-arrow-v">▼ ▼ ▼</div>
+        <div class="dep-node" style="width:180px; font-size:0.75em;">store_results (XCom list)</div>
+      </div>
+      <div class="info-box" style="margin-top:10px; font-size:0.73em;">
+        <strong>Каждая mapped-задача</strong> получает свой элемент через параметр и выполняется в отдельном worker-процессе
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 11: КОД expand() для участков шахты                  -->
+<!-- ============================================================ -->
+<section>
+  <h2>expand(): параллельная обработка элементов</h2>
+  <pre><code class="language-python">
+from airflow import DAG
+from airflow.decorators import task
+from datetime import datetime
+
+MINE_SECTIONS = ["Блок-1", "Блок-2", "Блок-3"]
+
+with DAG("mine_sections_expand", start_date=datetime(2024, 1, 1), schedule="@hourly") as dag:
+
+    @task
+    def get_sections() -> list[str]:
+        """Возвращает список активных участков из БД."""
+        # В реальной задаче — запрос к MES-системе
+        return ["Блок-1", "Блок-2", "Блок-3"]
+
+    @task
+    def process_section(section: str) -> dict:
+        """
+        Обрабатывает данные одного участка шахты.
+        Вызывается параллельно для каждого section.
+        """
+        print(f"Обработка участка: {section}")
+        # Читаем данные датчиков, считаем KPI
+        ore_volume   = read_ore_volume(section)
+        fe_percent   = read_fe_percent(section)
+        machine_oee  = calc_oee(section)
+        return {
+            "section": section,
+            "ore_volume": ore_volume,
+            "fe_percent": fe_percent,
+            "oee": machine_oee,
+        }
+
+    @task
+    def aggregate_results(results: list[dict]) -> None:
+        """Собирает результаты всех участков и загружает в MES."""
+        for r in results:
+            print(f"{r['section']}: Fe={r['fe_percent']}%, OEE={r['oee']}%")
+        save_to_mes(results)
+
+    # Динамическое маппирование: process_section запустится 3 раза параллельно
+    sections  = get_sections()
+    processed = process_section.expand(section=sections)
+    aggregate_results(processed)
+  </code></pre>
+  <div class="badge-row">
+    <span class="badge badge-blue">expand(section=sections)</span>
+    <span class="badge badge-green">3 задачи параллельно</span>
+    <span class="badge badge-orange">результаты собираются в список</span>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 12: partial() с expand() — фиксированные аргументы   -->
+<!-- ============================================================ -->
+<section>
+  <h2>partial() + expand(): гибкое маппирование</h2>
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:0.9em;">Зачем нужен partial()</h3>
+      <ul style="font-size:0.78em;">
+        <li>Часть аргументов задачи — <span class="hi-green">фиксированные</span> (одинаковы для всех)</li>
+        <li>Другая часть — <span class="hi-orange">динамические</span> (разные для каждого элемента)</li>
+        <li><code>partial()</code> фиксирует неизменяемые аргументы</li>
+        <li><code>expand()</code> перебирает динамические</li>
+      </ul>
+      <div class="info-box" style="margin-top:10px; font-size:0.75em;">
+        <strong>Аналогия:</strong> partial — это «шаблон», expand — это «цикл по данным»
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.9em;">Код: расчёт KPI с фиксированным порогом</h3>
+      <pre><code class="language-python">
+from airflow.decorators import task
+
+@task
+def calc_kpi(
+    section: str,
+    fe_threshold: float,
+    shift: str,
+) -> dict:
+    """
+    Фиксированные: fe_threshold, shift
+    Динамический: section
+    """
+    data = read_section_data(section, shift)
+    status = "OK" if data["fe"] &gt;= fe_threshold else "WARN"
+    return {"section": section, "status": status}
+
+sections = ["Блок-1", "Блок-2", "Блок-3"]
+
+# partial() фиксирует общие параметры
+# expand() задаёт разные section для каждой копии
+results = calc_kpi.partial(
+    fe_threshold=60.0,
+    shift="day",
+).expand(section=sections)
+      </code></pre>
+    </div>
+  </div>
+  <div class="warning-box">
+    ⚠️ <strong>Ограничение:</strong> все аргументы <code>expand()</code> должны быть сериализуемы (JSON). Объекты, классы, lambda — не поддерживаются.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 13: СХЕМА ПОТОКА РУДА+ — ВЕТВЛЕНИЕ И ДИНАМИКА        -->
+<!-- ============================================================ -->
+<section>
+  <h2>Применение в Руда+: схема потока обработки</h2>
+  <div style="font-size:0.78em;">
+    <!-- Верхний уровень -->
+    <div class="dep-flow">
+      <div class="dep-node">get_active_sections<br><span style="font-size:0.8em; color:#888;">["Блок-1","Блок-2","Блок-3"]</span></div>
+      <div class="dep-arrow">→</div>
+      <div class="dep-node orange"><strong>collect_data</strong><br><span style="font-size:0.8em;">expand(section=...)</span></div>
+      <div class="dep-arrow">→</div>
+      <div class="dep-node orange"><strong>quality_branch</strong><br><span style="font-size:0.8em;">BranchPythonOperator</span></div>
+    </div>
+    <!-- Ветки ветвления -->
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin:8px 0;">
+      <div style="text-align:center;">
+        <div class="dep-node green" style="font-size:0.7em; margin:0 auto;">normal_processing</div>
+        <div style="font-size:0.6em; color:#70AD47; margin-top:2px;">Fe% ≥ 60</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="dep-node" style="font-size:0.7em; margin:0 auto; border-color:#f39c12; background:#fff9e6;">warn_processing</div>
+        <div style="font-size:0.6em; color:#f39c12; margin-top:2px;">55 ≤ Fe% &lt; 60</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="dep-node red" style="font-size:0.7em; margin:0 auto;">critical_alert</div>
+        <div style="font-size:0.6em; color:#e74c3c; margin-top:2px;">Fe% &lt; 55</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="dep-node gray" style="font-size:0.7em; margin:0 auto;">no_data_alert</div>
+        <div style="font-size:0.6em; color:#888; margin-top:2px;">нет данных</div>
+      </div>
+    </div>
+    <!-- Нижний уровень -->
+    <div class="dep-flow">
+      <div class="dep-node" style="font-size:0.75em;">finalize<br><span style="font-size:0.8em; color:#888;">trigger_rule=none_failed_min_one_success</span></div>
+      <div class="dep-arrow">→</div>
+      <div class="dep-node orange" style="font-size:0.75em;">reporting<br><span style="font-size:0.8em;">TaskGroup</span></div>
+      <div class="dep-arrow">→</div>
+      <div class="dep-node green" style="font-size:0.75em;">update_mes<br><span style="font-size:0.8em;">MES API</span></div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:8px;">
+    <div class="arch-box" style="font-size:0.72em;">
+      <strong>TaskGroup: data_collection</strong><br>
+      read_sensors → read_gps → read_video
+    </div>
+    <div class="arch-box green" style="font-size:0.72em;">
+      <strong>Dynamic Mapping: по участкам</strong><br>
+      expand(section=active_sections)
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 14: ПОЛНЫЙ КОД DAG ore_processing_flow.py             -->
+<!-- ============================================================ -->
+<section>
+  <h2>ore_processing_flow.py — полный DAG</h2>
+  <pre><code class="language-python">
+from airflow import DAG
+from airflow.decorators import task
+from airflow.operators.python import BranchPythonOperator
+from airflow.operators.empty import EmptyOperator
+from airflow.utils.task_group import TaskGroup
+from datetime import datetime
+
+def branch_by_quality(**context):
+    fe = context["ti"].xcom_pull(task_ids="collect_data", key="avg_fe_percent")
+    if fe is None:   return "no_data_alert"
+    if fe &lt; 55.0:   return "critical_alert"
+    if fe &lt; 60.0:   return "warning_alert"
+    return "normal_processing"
+
+with DAG("ore_processing_flow", start_date=datetime(2024, 1, 1),
+         schedule="@hourly", catchup=False) as dag:
+
+    @task
+    def get_sections() -> list[str]:
+        return ["Блок-1", "Блок-2", "Блок-3"]
+
+    # --- TaskGroup: сбор данных (expand по участкам) ------------------
+    with TaskGroup("data_collection") as tg_collect:
+        @task
+        def collect_data(section: str) -> dict:
+            fe = read_sensors(section)
+            context_obj = get_airflow_context()
+            context_obj["ti"].xcom_push(key="avg_fe_percent", value=fe)
+            return {"section": section, "fe": fe}
+
+        collected = collect_data.expand(section=get_sections())
+
+    # --- Ветвление по качеству ----------------------------------------
+    quality_check = BranchPythonOperator(
+        task_id="quality_branch",
+        python_callable=branch_by_quality,
+    )
+
+    normal_proc    = EmptyOperator(task_id="normal_processing")
+    warning_alert  = EmptyOperator(task_id="warning_alert")
+    critical_alert = EmptyOperator(task_id="critical_alert")
+    no_data_alert  = EmptyOperator(task_id="no_data_alert")
+
+    finalize = EmptyOperator(
+        task_id="finalize",
+        trigger_rule="none_failed_min_one_success",
+    )
+
+    # --- TaskGroup: отчётность ----------------------------------------
+    with TaskGroup("reporting") as tg_report:
+        @task
+        def gen_report(): pass
+        @task
+        def send_notifications(): pass
+        gen_report() >> send_notifications()
+
+    # --- Зависимости --------------------------------------------------
+    tg_collect >> quality_check
+    quality_check >> [normal_proc, warning_alert, critical_alert, no_data_alert]
+    [normal_proc, warning_alert, critical_alert, no_data_alert] >> finalize
+    finalize >> tg_report
+  </code></pre>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 15: КЕЙС — 12 ПДМ, ПАРАЛЛЕЛЬНЫЙ РАСЧЁТ KPI          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Кейс: 12 ПДМ, параллельный расчёт KPI</h2>
+  <div class="case-box">
+    <strong>Ситуация:</strong> В шахте предприятия «Руда+» работают <span class="hi-orange">12 погрузочно-доставочных машин (ПДМ)</span>. Каждый час нужно рассчитывать KPI для каждой машины: OEE, часовая производительность (т/ч), расход топлива. Как избежать написания 12 одинаковых задач в DAG?
+  </div>
+  <div class="two-col" style="margin-top:10px;">
+    <div>
+      <h3 style="font-size:0.88em; color:#e74c3c;">❌ Плохой подход</h3>
+      <pre><code class="language-python">
+calc_pdm_1  = PythonOperator(task_id="calc_pdm_1",  ...)
+calc_pdm_2  = PythonOperator(task_id="calc_pdm_2",  ...)
+# ... ещё 10 строк ...
+calc_pdm_12 = PythonOperator(task_id="calc_pdm_12", ...)
+      </code></pre>
+      <ul style="font-size:0.72em;">
+        <li>Дублирование кода × 12</li>
+        <li>Добавление ПДМ-13 = правка DAG</li>
+        <li>Трудно поддерживать</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="font-size:0.88em; color:#70AD47;">✅ Правильный подход: expand()</h3>
+      <pre><code class="language-python">
+@task
+def get_active_pdm() -&gt; list[str]:
+    return query_active_machines()  # из БД
+
+@task
+def calc_pdm_kpi(machine_id: str) -&gt; dict:
+    oee  = calc_oee(machine_id)
+    prod = calc_productivity(machine_id)
+    fuel = calc_fuel(machine_id)
+    return {"id": machine_id, "oee": oee,
+            "productivity": prod, "fuel": fuel}
+
+machines = get_active_pdm()
+kpi_list = calc_pdm_kpi.expand(machine_id=machines)
+      </code></pre>
+    </div>
+  </div>
+  <div class="task-box" style="margin-top:8px;">
+    <strong>Задание для обсуждения:</strong> Что произойдёт, если парк машин изменится с 12 до 15? Нужно ли менять код DAG?
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 16: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1                         -->
+<!-- ============================================================ -->
+<section>
+  <h2>❓ Вопрос для обсуждения 1</h2>
+  <div class="discuss" style="font-size:1em; padding:20px 25px; margin-bottom:20px;">
+    <strong style="font-size:1.1em; color:#ED7D31;">Как BranchPythonOperator влияет на статус пропущенных задач? Это проблема?</strong>
+  </div>
+  <div class="two-col" style="margin-top:10px;">
+    <div>
+      <h3 style="font-size:0.88em;">Что происходит со SKIPPED-задачами</h3>
+      <ul style="font-size:0.78em;">
+        <li>Задачи, которые не были выбраны ветвлением, получают статус <span class="hi-orange">SKIPPED</span></li>
+        <li>SKIPPED — не ошибка, но влияет на downstream-задачи</li>
+        <li>Задача с <code>trigger_rule="all_success"</code> (дефолт) тоже станет SKIPPED</li>
+        <li>Это <span class="hi-orange">не баг</span>, а задуманное поведение Airflow</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="font-size:0.88em;">Как это решить</h3>
+      <div class="arch-box" style="font-size:0.75em; margin-bottom:6px;">
+        <code>trigger_rule="none_failed_min_one_success"</code><br>
+        Задача запустится, если хотя бы одна вышестоящая успешна и ни одна не упала
+      </div>
+      <div class="arch-box orange" style="font-size:0.75em;">
+        <code>trigger_rule="one_success"</code><br>
+        Запускается, как только одна вышестоящая задача успешна
+      </div>
+    </div>
+  </div>
+  <div class="discuss" style="margin-top:10px;">
+    💬 <strong>Для обсуждения:</strong> В каком случае статус SKIPPED у задачи-финалайзера может быть <em>желательным</em> поведением? Приведите пример из контекста Руда+.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 17: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2                         -->
+<!-- ============================================================ -->
+<section>
+  <h2>❓ Вопрос для обсуждения 2</h2>
+  <div class="discuss" style="font-size:1em; padding:20px 25px; margin-bottom:20px;">
+    <strong style="font-size:1.1em; color:#ED7D31;">Dynamic Task Mapping — в чём ограничения при работе с большим числом элементов?</strong>
+  </div>
+  <div class="three-col" style="margin-top:10px;">
+    <div class="arch-box">
+      <div class="tg-title">Масштаб</div>
+      <ul style="font-size:0.72em; padding-left:14px;">
+        <li>Каждый mapped-экземпляр — отдельная задача в БД Airflow</li>
+        <li>При expand(1000+) растёт нагрузка на metadata DB</li>
+        <li>Параметр <code>max_map_length=1024</code> (дефолт)</li>
+      </ul>
+    </div>
+    <div class="arch-box orange">
+      <div class="tg-title" style="color:#ED7D31;">Производительность</div>
+      <ul style="font-size:0.72em; padding-left:14px;">
+        <li>Слишком много параллельных задач = перегрузка workers</li>
+        <li>Нужно настраивать <code>pool</code> и <code>max_active_tasks</code></li>
+        <li>Мониторить очереди в Celery/Kubernetes</li>
+      </ul>
+    </div>
+    <div class="arch-box green">
+      <div class="tg-title" style="color:#70AD47;">XCom и данные</div>
+      <ul style="font-size:0.72em; padding-left:14px;">
+        <li>XCom хранится в metadata DB (ограничение размера)</li>
+        <li>Большие данные → использовать S3/Object Storage</li>
+        <li>Результаты expand собираются в список через XCom</li>
+      </ul>
+    </div>
+  </div>
+  <div class="discuss" style="margin-top:10px;">
+    💬 <strong>Для обсуждения:</strong> Как бы вы организовали обработку данных с 500+ датчиков в шахте через Dynamic Task Mapping? Какие ограничения нужно учесть?
+  </div>
+  <div class="info-box" style="margin-top:8px; font-size:0.72em;">
+    <strong>Совет для Руда+:</strong> Группируйте датчики по участкам (3–5 участков), а внутри участка обрабатывайте все датчики в одной задаче. Это баланс между параллелизмом и нагрузкой.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 18: КВИЗ                                              -->
+<!-- ============================================================ -->
+<section>
+  <h2>🧠 Квиз: проверяем понимание</h2>
+
+  <div class="quiz-block">
+    <div class="quiz-q">В1. Что возвращает функция в BranchPythonOperator, если нужно запустить ДВЕ ветки одновременно?</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В1')">Строку с именем задачи</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'correct','В1')">Список из двух task_id</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В1')">True / False</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В1')">Словарь с параметрами</button>
+    <div id="quiz-result-В1"></div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="quiz-q">В2. Как TaskGroup отображает полное имя задачи в Airflow UI?</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В2')">Только task_id</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'correct','В2')">group_id.task_id</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В2')">dag_id.task_id</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В2')">task_id[group_id]</button>
+    <div id="quiz-result-В2"></div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="quiz-q">В3. Метод expand() в Dynamic Task Mapping создаёт задачи...</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В3')">При написании DAG (статически)</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В3')">При запуске Airflow Scheduler</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'correct','В3')">Во время выполнения DAG Run (runtime)</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'wrong','В3')">При каждом импорте DAG</button>
+    <div id="quiz-result-В3"></div>
+  </div>
+
+  <script>
+    function checkAnswer(btn, result, qid) {
+      const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+      btns.forEach(b => b.disabled = true);
+      const resEl = document.getElementById('quiz-result-' + qid);
+      if (result === 'correct') {
+        btn.classList.add('correct');
+        resEl.innerHTML = '<span style="color:#70AD47;">✅ Верно!</span>';
+      } else {
+        btn.classList.add('wrong');
+        resEl.innerHTML = '<span style="color:#e74c3c;">❌ Неверно. Попробуйте найти правильный ответ.</span>';
+        btns.forEach(b => b.disabled = false);
+        btn.disabled = true;
+      }
+    }
+  </script>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 19: ЗАДАНИЕ ДЛЯ ГРУППЫ                               -->
+<!-- ============================================================ -->
+<section>
+  <h2>👥 Задание для группы</h2>
+  <div class="task-box" style="font-size:0.88em; margin-bottom:12px;">
+    <strong>Задача:</strong> Спроектировать поток обработки данных для <span class="hi-orange">3 участков шахты</span> с ветвлением по типам аномалий на оборудовании.
+  </div>
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:0.85em; color:#4472C4;">Условия задания (15 минут)</h3>
+      <ol style="font-size:0.75em;">
+        <li>Данные собираются со всех трёх участков (<strong>expand</strong>)</li>
+        <li>Для каждого участка проверяется вибрация ПДМ (<strong>BranchPythonOperator</strong>):
+          <ul style="margin-top:4px;">
+            <li>Вибрация &lt; 5 мм/с → норма → расчёт KPI</li>
+            <li>5–10 мм/с → предупреждение → уведомление механику</li>
+            <li>&gt; 10 мм/с → критично → остановить машину + уведомление</li>
+          </ul>
+        </li>
+        <li>Все задачи сбора данных объединены в <strong>TaskGroup</strong></li>
+        <li>Итоговый отчёт формируется независимо от результата ветвления</li>
+      </ol>
+      <div class="info-box" style="margin-top:8px; font-size:0.72em;">
+        <strong>Подсказка:</strong> Нарисуйте схему DAG на бумаге до написания кода. Определите trigger_rule для финального узла.
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.85em; color:#ED7D31;">Результат работы группы</h3>
+      <div class="arch-box" style="font-size:0.72em; margin-bottom:6px;">
+        <strong>1. Схема DAG</strong><br>
+        Нарисовать граф с узлами и ветками (можно на доске или в draw.io)
+      </div>
+      <div class="arch-box orange" style="font-size:0.72em; margin-bottom:6px;">
+        <strong>2. Псевдокод</strong><br>
+        Написать структуру DAG: TaskGroup, Branch, expand — без деталей реализации
+      </div>
+      <div class="arch-box green" style="font-size:0.72em;">
+        <strong>3. Презентация (3 мин)</strong><br>
+        Каждая группа рассказывает о своём решении, объясняет выбор trigger_rule
+      </div>
+      <div class="badge-row" style="margin-top:8px;">
+        <span class="badge badge-blue">Группа 1: Блок-1, Блок-2, Блок-3</span>
+        <span class="badge badge-orange">Группа 2: Ствол-Север, Ствол-Юг + 1 блок</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 20: ИТОГОВЫЙ                                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Итоги модуля 6</h2>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="si-title">🔀 BranchPythonOperator</div>
+      Ветвление по значению данных. Возвращает task_id или список. Невыбранные ветки → SKIPPED. Финалайзер требует нестандартного trigger_rule.
+    </div>
+    <div class="summary-item">
+      <div class="si-title">⛔ ShortCircuitOperator</div>
+      Полная остановка пайплайна при False. Используется когда альтернативной ветки нет — только «продолжить» или «стоп».
+    </div>
+    <div class="summary-item">
+      <div class="si-title">📦 TaskGroup</div>
+      Логическая группировка задач в Airflow UI. Поддерживает вложенность. Упрощает задание зависимостей между блоками логики.
+    </div>
+    <div class="summary-item">
+      <div class="si-title">⚡ Dynamic Task Mapping</div>
+      expand() создаёт задачи во время выполнения. partial() + expand() — фиксированные и динамические аргументы. Параллельная обработка элементов.
+    </div>
+  </div>
+  <div class="dep-flow" style="margin:14px 0;">
+    <div class="dep-node orange">ore_processing_flow.py</div>
+    <div class="dep-arrow">→</div>
+    <div class="dep-node green">mine_sections_parallel.py</div>
+    <div class="dep-arrow">→</div>
+    <div class="dep-node">Лабораторная работа 06</div>
+  </div>
+  <div style="margin-top:12px;">
+    <p style="font-size:0.75em; color:#666;">Следующий модуль:</p>
+    <span class="next-badge">Модуль 7: XCom и обмен данными между задачами</span>
+    <span class="next-badge">Модуль 8: Hooks и Connections</span>
+  </div>
+  <div style="margin-top:12px; font-size:0.65em; color:#aaa;">
+    Яндекс Облако &nbsp;|&nbsp; Apache Airflow 2.8 &nbsp;|&nbsp; Практикум по анализу и моделированию данных
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1200, height: 700, margin: 0.04, minScale: 0.2, maxScale: 2.0,
+    hash: true,
+    slideNumber: true,
+    transition: 'slide',
+    plugins: [ RevealHighlight, RevealNotes ],
+    highlight: { highlightOnLoad: true }
+  });
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+
+
+

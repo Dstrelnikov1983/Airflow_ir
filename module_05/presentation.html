@@ -1,0 +1,1296 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Модуль 05: Зависимости задач в Airflow | Курс Apache Airflow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; }
+.reveal h1,.reveal h2,.reveal h3 { color: #4472C4; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green  { color: #70AD47;  font-weight: bold; }
+
+/* ---- утилиты ---- */
+.discuss {
+  background:#fff8e7; border-left:5px solid #ED7D31;
+  padding:15px 20px; margin:8px 0; text-align:left;
+  font-size:0.85em; border-radius:0 8px 8px 0;
+}
+.case-box {
+  background:#eef4fb; border-left:5px solid #4472C4;
+  padding:15px 20px; margin:8px 0; text-align:left;
+  font-size:0.82em; border-radius:0 8px 8px 0;
+}
+.task-box {
+  background:#eafaf1; border-left:5px solid #70AD47;
+  padding:15px 20px; margin:8px 0; text-align:left;
+  font-size:0.82em; border-radius:0 8px 8px 0;
+}
+.warning-box {
+  background:#fff3e0; border-left:5px solid #ED7D31;
+  padding:10px 15px; border-radius:0 8px 8px 0;
+  font-size:0.78em; margin:6px 0;
+}
+.two-col {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:20px; align-items:start;
+}
+.arch-box {
+  border:2px solid #4472C4; border-radius:8px;
+  padding:12px; margin:5px; background:#f0f4fb; font-size:0.8em;
+}
+.arch-box.orange { border-color:#ED7D31; background:#fff8e7; }
+.arch-box.green  { border-color:#70AD47; background:#eafaf1; }
+
+/* ---- теги ---- */
+.tag {
+  display:inline-block; background:#4472C4; color:#fff;
+  padding:3px 10px; border-radius:12px; font-size:0.7em; margin:2px;
+}
+
+/* ---- заголовок ---- */
+.title-logo { font-size:3em; margin-bottom:10px; }
+.subtitle    { color:#ED7D31; font-size:1.1em; font-weight:bold; }
+.company-badge {
+  display:inline-block;
+  background:linear-gradient(135deg,#4472C4,#2d5699);
+  color:#fff; padding:8px 20px; border-radius:20px;
+  font-size:0.9em; margin-top:10px;
+}
+
+/* ---- повестка ---- */
+.agenda-item {
+  display:flex; align-items:center; gap:10px;
+  padding:6px 0; font-size:0.82em; border-bottom:1px solid #eee;
+}
+.agenda-num {
+  background:#4472C4; color:#fff; width:26px; height:26px;
+  border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:0.8em; font-weight:bold; flex-shrink:0;
+}
+
+/* ---- граф-схемы ---- */
+.dep-flow {
+  display:flex; align-items:center;
+  justify-content:center; gap:6px; flex-wrap:wrap; margin:10px 0;
+}
+.dep-node {
+  border:2px solid #4472C4; border-radius:8px;
+  padding:8px 14px; background:#f0f4fb;
+  font-size:0.72em; text-align:center; min-width:80px;
+}
+.dep-node.orange { border-color:#ED7D31; background:#fff8e7; font-weight:bold; }
+.dep-node.green  { border-color:#70AD47; background:#eafaf1; }
+.dep-node.sensor { border-color:#9b59b6; background:#f5eef8; }
+.dep-arrow { color:#ED7D31; font-size:1.3em; font-weight:bold; }
+.dep-arrow-v { color:#ED7D31; font-size:1.3em; text-align:center; line-height:1.2; }
+
+/* ---- сетки ---- */
+.concept-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; margin:10px 0;
+}
+.concept-card {
+  background:#f0f4fb; border:1px solid #4472C4;
+  border-radius:8px; padding:10px; text-align:center; font-size:0.75em;
+}
+.concept-card .icon  { font-size:1.6em; margin-bottom:4px; }
+.concept-card .cname { font-weight:bold; color:#4472C4; margin-bottom:3px; }
+
+/* ---- таблица ---- */
+.op-table { width:100%; border-collapse:collapse; font-size:0.72em; }
+.op-table th { background:#4472C4; color:#fff; padding:7px 10px; text-align:left; }
+.op-table td { padding:6px 10px; border-bottom:1px solid #e0e0e0; }
+.op-table tr:nth-child(even) td { background:#f6f9ff; }
+
+/* ---- квиз ---- */
+.quiz-btn {
+  background:#4472C4; color:#fff; border:none;
+  padding:8px 18px; margin:5px; cursor:pointer;
+  border-radius:5px; font-size:0.78em; transition:background 0.2s;
+}
+.quiz-btn:hover  { background:#2d5699; }
+.quiz-btn.correct { background:#70AD47; }
+.quiz-btn.wrong   { background:#e74c3c; }
+.quiz-block {
+  background:#eef4fb; border-radius:10px;
+  padding:15px; margin:8px 0; text-align:left;
+}
+.quiz-q {
+  font-weight:bold; color:#4472C4;
+  margin-bottom:8px; font-size:0.82em;
+}
+#quiz-result-1,#quiz-result-2,#quiz-result-3 {
+  margin-top:6px; font-size:0.8em; font-weight:bold; min-height:1.2em;
+}
+
+/* ---- итог ---- */
+.summary-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; margin:10px 0;
+}
+.summary-item {
+  background:#f0f4fb; border-left:4px solid #4472C4;
+  padding:10px; border-radius:0 8px 8px 0; font-size:0.78em;
+}
+.summary-item .si-title { font-weight:bold; color:#4472C4; margin-bottom:4px; }
+.next-badge {
+  display:inline-block; background:#70AD47; color:#fff;
+  padding:5px 15px; border-radius:15px; font-size:0.8em; margin:3px;
+}
+
+/* ---- код ---- */
+.reveal pre { font-size:0.50em; width:100%; box-shadow:none; }
+.reveal code { background:#f6f8fa; padding:2px 5px; border-radius:3px; }
+
+/* ---- диаграмма паттернов ---- */
+.pattern-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:16px; margin:8px 0;
+}
+.pattern-card {
+  background:#f8f9fa; border:1px solid #ccc;
+  border-radius:8px; padding:12px;
+}
+.pattern-title {
+  font-weight:bold; color:#4472C4;
+  font-size:0.78em; margin-bottom:8px;
+}
+
+/* ---- badge ---- */
+.badge-row { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0; }
+.badge {
+  display:inline-block; padding:4px 12px;
+  border-radius:12px; font-size:0.7em; font-weight:bold;
+}
+.badge-blue  { background:#4472C4; color:#fff; }
+.badge-orange{ background:#ED7D31; color:#fff; }
+.badge-green { background:#70AD47; color:#fff; }
+.badge-gray  { background:#7f8c8d; color:#fff; }
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 1: ТИТУЛЬНЫЙ                                          -->
+<!-- ============================================================ -->
+<section>
+  <div class="title-logo">🔗</div>
+  <h2 style="font-size:1.3em;">Модуль 5: Зависимости задач в Airflow</h2>
+  <p class="subtitle">Практикум по анализу и моделированию данных</p>
+  <hr style="border-color:#4472C4; margin:15px auto; width:60%;">
+  <p style="font-size:0.7em; color:#888; margin-top:20px;">
+    Продолжительность модуля: <strong>2 часа</strong> &nbsp;|&nbsp;
+    Яндекс Облако &nbsp;|&nbsp; Apache Airflow 2.8
+  </p>
+  <div style="margin-top:10px;">
+    <span class="tag">Dependencies</span>
+    <span class="tag">Sensors</span>
+    <span class="tag">Fan-out/Fan-in</span>
+    <span class="tag">ExternalTaskSensor</span>
+    <span class="tag">poke/reschedule</span>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 2: ПОВЕСТКА                                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div style="max-width:720px; margin:0 auto;">
+    <div class="agenda-item"><div class="agenda-num">1</div><span>🔗 Зачем нужны зависимости — граф выполнения задач</span></div>
+    <div class="agenda-item"><div class="agenda-num">2</div><span>📝 Синтаксис: операторы <code>&gt;&gt;</code> / <code>&lt;&lt;</code> и методы API</span></div>
+    <div class="agenda-item"><div class="agenda-num">3</div><span>🌐 Паттерны: линейный, fan-out, fan-in, diamond</span></div>
+    <div class="agenda-item"><div class="agenda-num">4</div><span>📡 Сенсоры: FileSensor, TimeSensor, SqlSensor</span></div>
+    <div class="agenda-item"><div class="agenda-num">5</div><span>🔄 ExternalTaskSensor и TriggerDagRunOperator</span></div>
+    <div class="agenda-item"><div class="agenda-num">6</div><span>⚡ Режимы сенсора: poke vs reschedule</span></div>
+    <div class="agenda-item"><div class="agenda-num">7</div><span>🏭 Полный пайплайн с зависимостями (сквозной пример)</span></div>
+    <div class="agenda-item"><div class="agenda-num">8</div><span>💬 Обсуждения, квиз, групповые задания</span></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 3: ЗАЧЕМ НУЖНЫ ЗАВИСИМОСТИ                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>Зависимости задач — зачем они нужны?</h2>
+  <div class="two-col" style="margin-top:10px;">
+    <div>
+      <p style="font-size:0.8em;">Без зависимостей задачи выполняются <span class="hi-orange">хаотично и одновременно</span>. Это приводит к:</p>
+      <ul style="font-size:0.75em; text-align:left;">
+        <li>Обработке данных до их появления</li>
+        <li>Гонкам состояний (race conditions)</li>
+        <li>Некорректным агрегатам и KPI</li>
+        <li>Сложной отладке сбоев</li>
+      </ul>
+      <div class="warning-box" style="margin-top:10px;">
+        <strong>Пример:</strong> нельзя считать агрегат до того, как загружены все исходные данные из источников.
+      </div>
+    </div>
+    <div>
+      <p style="font-size:0.78em; font-weight:bold; color:#4472C4;">Граф зависимостей DAG (DAG — Directed Acyclic Graph)</p>
+      <div class="dep-flow" style="flex-direction:column; gap:4px;">
+        <div class="dep-node orange">collect_data</div>
+        <div class="dep-arrow-v">↓</div>
+        <div style="display:flex; gap:20px; justify-content:center;">
+          <div class="dep-node">parse_source_a</div>
+          <div class="dep-node">parse_source_b</div>
+        </div>
+        <div class="dep-arrow-v">↓</div>
+        <div class="dep-node">merge_data</div>
+        <div class="dep-arrow-v">↓</div>
+        <div class="dep-node green">calculate_kpi</div>
+        <div class="dep-arrow-v">↓</div>
+        <div class="dep-node green">notify</div>
+      </div>
+    </div>
+  </div>
+  <div class="case-box" style="margin-top:8px; font-size:0.72em;">
+    <strong>Ключевое свойство DAG:</strong> рёбра графа определяют <em>порядок</em> и <em>условия</em> запуска задач.
+    Airflow Scheduler читает граф и ставит задачи в очередь только тогда, когда все их upstream-задачи завершились успешно.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 4: СИНТАКСИС ЗАВИСИМОСТЕЙ                            -->
+<!-- ============================================================ -->
+<section>
+  <h2>Синтаксис зависимостей</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.78em; font-weight:bold; color:#4472C4;">Способ 1: операторы <code>&gt;&gt;</code> и <code>&lt;&lt;</code></p>
+      <pre><code class="language-python">from airflow import DAG
+from airflow.operators.python import PythonOperator
+
+# a запускается ПЕРЕД b
+task_a >> task_b
+
+# b запускается ПЕРЕД a (то же самое)
+task_b << task_a
+
+# Цепочка: a → b → c
+task_a >> task_b >> task_c
+
+# Параллельный fan-out: a → b и a → c
+task_a >> [task_b, task_c]
+
+# Fan-in: b и c должны завершиться → d
+[task_b, task_c] >> task_d</code></pre>
+    </div>
+    <div>
+      <p style="font-size:0.78em; font-weight:bold; color:#4472C4;">Способ 2: методы set_upstream / set_downstream</p>
+      <pre><code class="language-python"># set_downstream — то же что >>
+task_a.set_downstream(task_b)
+
+# set_upstream — то же что <<
+task_b.set_upstream(task_a)
+
+# Множественные зависимости
+task_a.set_downstream([task_b, task_c])
+[task_b, task_c].set_downstream(task_d)
+
+# cross_downstream — матрица зависимостей
+from airflow.models.baseoperator import cross_downstream
+
+cross_downstream(
+    from_tasks=[task_a, task_b],
+    to_tasks=[task_c, task_d]
+)</code></pre>
+    </div>
+  </div>
+  <div class="case-box" style="font-size:0.72em; margin-top:6px;">
+    <strong>Рекомендация:</strong> используйте оператор <code>&gt;&gt;</code> — он нагляднее отражает направление потока данных.
+    Методы <code>set_upstream/set_downstream</code> удобны при динамическом построении DAG в цикле.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 5: ПАТТЕРНЫ ЗАВИСИМОСТЕЙ                             -->
+<!-- ============================================================ -->
+<section>
+  <h2>Паттерны зависимостей</h2>
+  <div class="pattern-grid">
+    <!-- Линейный -->
+    <div class="pattern-card">
+      <div class="pattern-title">1. Линейный (Sequential)</div>
+      <div class="dep-flow">
+        <div class="dep-node" style="font-size:0.68em;">A</div>
+        <div class="dep-arrow">→</div>
+        <div class="dep-node" style="font-size:0.68em;">B</div>
+        <div class="dep-arrow">→</div>
+        <div class="dep-node" style="font-size:0.68em;">C</div>
+      </div>
+      <p style="font-size:0.7em; margin:4px 0 0 0;">Строго последовательно. Каждый шаг ждёт предыдущего.<br>
+      <em>Пример:</em> collect → validate → load</p>
+    </div>
+    <!-- Fan-out -->
+    <div class="pattern-card">
+      <div class="pattern-title">2. Fan-out (распараллеливание)</div>
+      <div style="text-align:center; font-size:0.7em;">
+        <div class="dep-node" style="display:inline-block;">Extract</div><br>
+        <span style="color:#ED7D31;">↙&nbsp;&nbsp;&nbsp;↘</span><br>
+        <div style="display:flex; justify-content:center; gap:20px;">
+          <div class="dep-node">Src A</div>
+          <div class="dep-node">Src B</div>
+        </div>
+      </div>
+      <p style="font-size:0.7em; margin:4px 0 0 0;">Одна задача порождает несколько параллельных.<br>
+      <em>Пример:</em> параллельная обработка нескольких источников</p>
+    </div>
+    <!-- Fan-in -->
+    <div class="pattern-card">
+      <div class="pattern-title">3. Fan-in (объединение)</div>
+      <div style="text-align:center; font-size:0.7em;">
+        <div style="display:flex; justify-content:center; gap:20px;">
+          <div class="dep-node">Src A</div>
+          <div class="dep-node">Src B</div>
+        </div>
+        <span style="color:#ED7D31;">↘&nbsp;&nbsp;&nbsp;↙</span><br>
+        <div class="dep-node green" style="display:inline-block;">Merge</div>
+      </div>
+      <p style="font-size:0.7em; margin:4px 0 0 0;">Несколько задач сходятся в одну.<br>
+      <em>Пример:</em> объединение данных из нескольких источников</p>
+    </div>
+    <!-- Diamond -->
+    <div class="pattern-card">
+      <div class="pattern-title">4. Diamond (ромб)</div>
+      <div style="text-align:center; font-size:0.7em;">
+        <div class="dep-node orange" style="display:inline-block;">Start</div><br>
+        <span style="color:#ED7D31;">↙&nbsp;&nbsp;&nbsp;↘</span><br>
+        <div style="display:flex; justify-content:center; gap:20px;">
+          <div class="dep-node">Branch A</div>
+          <div class="dep-node">Branch B</div>
+        </div>
+        <span style="color:#ED7D31;">↘&nbsp;&nbsp;&nbsp;↙</span><br>
+        <div class="dep-node green" style="display:inline-block;">Finish</div>
+      </div>
+      <p style="font-size:0.7em; margin:4px 0 0 0;">Fan-out + Fan-in. Наиболее типичен для ETL.<br>
+      <em>Пример:</em> полный пайплайн расчёта итогового KPI</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 6: СЕНСОРЫ — ЧТО ЭТО                                 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Сенсоры в Airflow</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Что такое сенсор?</strong><br><br>
+        Специальный тип оператора, который <span class="hi-orange">ждёт наступления внешнего условия</span>
+        прежде чем передать управление следующим задачам.
+      </div>
+      <div style="margin-top:10px; font-size:0.78em;">
+        <p><strong>Как работает:</strong></p>
+        <ol style="font-size:0.9em; text-align:left;">
+          <li>Сенсор запускается Scheduler-ом</li>
+          <li>Вызывает метод <code>poke()</code></li>
+          <li>Если условие <span class="hi-green">True</span> — завершается успешно</li>
+          <li>Если <span class="hi-orange">False</span> — ждёт <code>poke_interval</code> сек и повторяет</li>
+          <li>При превышении <code>timeout</code> — задача падает с ошибкой</li>
+        </ol>
+      </div>
+    </div>
+    <div>
+      <div class="concept-grid" style="grid-template-columns:1fr;">
+        <div class="concept-card">
+          <div class="icon">📁</div>
+          <div class="cname">FileSensor</div>
+          Ждёт появления файла
+        </div>
+        <div class="concept-card">
+          <div class="icon">⏰</div>
+          <div class="cname">TimeSensor</div>
+          Ждёт наступления времени
+        </div>
+        <div class="concept-card">
+          <div class="icon">🗄️</div>
+          <div class="cname">SqlSensor</div>
+          Ждёт результата SQL-запроса
+        </div>
+        <div class="concept-card">
+          <div class="icon">🔄</div>
+          <div class="cname">ExternalTaskSensor</div>
+          Ждёт завершения другого DAG
+        </div>
+        <div class="concept-card">
+          <div class="icon">🌐</div>
+          <div class="cname">HttpSensor</div>
+          Ждёт ответа HTTP-эндпоинта
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 7: FileSensor                                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>FileSensor — ожидание файла</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.78em;"><strong>Типовой сценарий:</strong> внешняя система выгружает файл
+      <code>data_YYYYMMDD.csv</code> в фиксированное время. Пайплайн должен дождаться его появления.</p>
+      <pre><code class="language-python">from airflow.sensors.filesystem import FileSensor
+
+wait_nav_file = FileSensor(
+    task_id="wait_navigation_file",
+    # Путь к файлу (поддерживает glob)
+    filepath="/data/navigation/navigation_{{ ds_nodash }}.csv",
+    # Соединение с файловой системой
+    fs_conn_id="fs_navigation",
+    # Интервал опроса (секунды)
+    poke_interval=60,
+    # Максимальное время ожидания (секунды)
+    timeout=7200,  # 2 часа
+    # Режим работы сенсора
+    mode="reschedule",
+    # Мягкий сбой (не FAILED, а SKIPPED при timeout)
+    soft_fail=False,
+    dag=dag,
+)</code></pre>
+    </div>
+    <div>
+      <p style="font-size:0.78em; font-weight:bold; color:#4472C4;">Параметры FileSensor</p>
+      <table class="op-table">
+        <tr><th>Параметр</th><th>Описание</th></tr>
+        <tr><td><code>filepath</code></td><td>Путь или glob-паттерн</td></tr>
+        <tr><td><code>fs_conn_id</code></td><td>Connection ID файловой системы</td></tr>
+        <tr><td><code>poke_interval</code></td><td>Интервал проверки (сек)</td></tr>
+        <tr><td><code>timeout</code></td><td>Максимальное ожидание (сек)</td></tr>
+        <tr><td><code>mode</code></td><td>poke / reschedule</td></tr>
+        <tr><td><code>soft_fail</code></td><td>SKIPPED вместо FAILED</td></tr>
+        <tr><td><code>exponential_backoff</code></td><td>Нарастающий интервал</td></tr>
+      </table>
+      <div class="arch-box green" style="margin-top:8px; font-size:0.72em;">
+        <strong>Совет:</strong> используйте шаблоны Jinja (<code>{{ ds_nodash }}</code>) для динамических путей — тогда каждый запуск DAG ждёт свой файл.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 8: TimeSensor и TimeDeltaSensor                        -->
+<!-- ============================================================ -->
+<section>
+  <h2>TimeSensor и TimeDeltaSensor</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.78em; font-weight:bold; color:#4472C4;">TimeSensor — ждать до определённого времени</p>
+      <pre><code class="language-python">from airflow.sensors.time_sensor import TimeSensor
+from datetime import time
+
+# Ждать до 06:30 — момента завершения
+# ночной смены на шахте «Руда+»
+wait_shift_end = TimeSensor(
+    task_id="wait_night_shift_end",
+    target_time=time(6, 30),  # 06:30 UTC
+    mode="reschedule",
+    dag=dag,
+)</code></pre>
+      <p style="font-size:0.78em; font-weight:bold; color:#4472C4; margin-top:12px;">TimeDeltaSensor — ждать N времени от execution_date</p>
+      <pre><code class="language-python">from airflow.sensors.time_delta import TimeDeltaSensor
+from datetime import timedelta
+
+# Ждать 30 минут после старта DAG,
+# чтобы данные телеметрии накопились
+wait_data_accumulate = TimeDeltaSensor(
+    task_id="wait_data_accumulate",
+    delta=timedelta(minutes=30),
+    mode="reschedule",
+    dag=dag,
+)</code></pre>
+    </div>
+    <div>
+      <div class="arch-box" style="font-size:0.78em;">
+        <strong style="color:#4472C4;">Когда использовать?</strong>
+        <ul style="margin:6px 0;">
+          <li><strong>TimeSensor</strong> — когда данные готовы в фиксированное время суток (смена закончилась, выгрузка завершена)</li>
+          <li><strong>TimeDeltaSensor</strong> — когда нужно дать системе "отстояться" после старта (накопить данные, дождаться репликации)</li>
+        </ul>
+      </div>
+      <div class="case-box" style="font-size:0.72em; margin-top:10px;">
+        <strong>Типовой сценарий:</strong><br>
+        Период учёта закрывается в 20:00. Расчёт KPI запускается в 20:00, но ждёт до 20:15 (TimeDeltaSensor),
+        чтобы все источники успели отправить финальные данные.
+      </div>
+      <div class="arch-box orange" style="font-size:0.72em; margin-top:8px;">
+        <strong>Важно:</strong> <code>TimeSensor</code> сравнивает со временем <em>текущего execution_date</em>,
+        а не с реальным временем суток. Для реального времени используйте <code>datetime.utcnow()</code> в Python-сенсоре.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 9: SqlSensor                                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>SqlSensor — ожидание данных в БД</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.78em;"><strong>Задача:</strong> пайплайн расчёта показателей должен запуститься
+      только после того, как в таблицу <code>raw_sensor_data</code> поступили данные за текущий период.</p>
+      <pre><code class="language-python">from airflow.sensors.sql import SqlSensor
+
+# Ждать появления записей за текущую смену
+wait_shift_data = SqlSensor(
+    task_id="wait_shift_data_in_db",
+    conn_id="postgres_mes",
+    sql="""
+        SELECT COUNT(*)
+        FROM raw_sensor_data
+        WHERE shift_date = '{{ ds }}'
+          AND shift_num  = {{ var.value.current_shift }}
+          AND record_count > 100
+    """,
+    # Сенсор считает условие выполненным,
+    # если запрос вернул ненулевое значение
+    success=lambda records: records[0][0] > 0,
+    poke_interval=120,   # каждые 2 минуты
+    timeout=3600,        # максимум 1 час
+    mode="reschedule",
+    dag=dag,
+)</code></pre>
+    </div>
+    <div>
+      <div class="arch-box" style="font-size:0.78em; margin-bottom:10px;">
+        <strong style="color:#4472C4;">Параметры SqlSensor</strong>
+        <ul style="margin:6px 0;">
+          <li><code>conn_id</code> — подключение к БД</li>
+          <li><code>sql</code> — SQL-запрос (поддерживает Jinja)</li>
+          <li><code>success</code> — лямбда для проверки результата</li>
+          <li><code>failure</code> — лямбда для определения сбоя</li>
+          <li><code>poke_interval</code> — интервал проверки</li>
+        </ul>
+      </div>
+      <div class="case-box" style="font-size:0.72em;">
+        <strong>Типовая схема использования:</strong><br><br>
+        <div class="dep-flow" style="flex-direction:column; gap:3px;">
+          <div class="dep-node sensor" style="font-size:0.85em;">wait_shift_data<br>(SqlSensor)</div>
+          <div class="dep-arrow-v">↓</div>
+          <div class="dep-node" style="font-size:0.85em;">calculate_oee</div>
+          <div class="dep-arrow-v">↓</div>
+          <div class="dep-node green" style="font-size:0.85em;">send_report</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 10: ExternalTaskSensor                                 -->
+<!-- ============================================================ -->
+<section>
+  <h2>ExternalTaskSensor — зависимость между DAG</h2>
+  <div class="two-col">
+    <div>
+      <pre><code class="language-python">from airflow.sensors.external_task import (
+    ExternalTaskSensor
+)
+
+# DAG 2: downtime_analysis_dag
+# Ждёт завершения DAG 1: sensor_collection_dag
+
+wait_collection_dag = ExternalTaskSensor(
+    task_id="wait_collection_complete",
+    # ID ожидаемого DAG
+    external_dag_id="sensor_collection_dag",
+    # Ждать конкретную задачу (None = весь DAG)
+    external_task_id="load_to_database",
+    # Разрешённые финальные статусы
+    allowed_states=["success"],
+    # Статусы, при которых упасть немедленно
+    failed_states=["failed", "skipped"],
+    # Смещение execution_date (если графики разные)
+    execution_delta=timedelta(minutes=0),
+    # Таймаут ожидания
+    timeout=3600,
+    mode="reschedule",
+    poke_interval=60,
+    dag=dag,
+)</code></pre>
+    </div>
+    <div>
+      <div class="arch-box" style="font-size:0.75em; margin-bottom:10px;">
+        <strong style="color:#4472C4;">Архитектура зависимости между DAG</strong><br><br>
+        <div class="dep-flow" style="flex-direction:column; gap:3px;">
+          <div style="font-size:0.85em; font-weight:bold; color:#ED7D31;">sensor_collection_dag</div>
+          <div class="dep-flow">
+            <div class="dep-node" style="font-size:0.75em;">collect</div>
+            <div class="dep-arrow">→</div>
+            <div class="dep-node" style="font-size:0.75em;">validate</div>
+            <div class="dep-arrow">→</div>
+            <div class="dep-node green" style="font-size:0.75em;">load_to_db ✓</div>
+          </div>
+        </div>
+        <div style="margin:6px 0; color:#ED7D31; text-align:center;">↓ ExternalTaskSensor</div>
+        <div class="dep-flow" style="flex-direction:column; gap:3px;">
+          <div style="font-size:0.85em; font-weight:bold; color:#4472C4;">downtime_analysis_dag</div>
+          <div class="dep-flow">
+            <div class="dep-node sensor" style="font-size:0.75em;">wait_collection</div>
+            <div class="dep-arrow">→</div>
+            <div class="dep-node" style="font-size:0.75em;">analyze</div>
+            <div class="dep-arrow">→</div>
+            <div class="dep-node green" style="font-size:0.75em;">report</div>
+          </div>
+        </div>
+      </div>
+      <div class="warning-box" style="font-size:0.72em;">
+        <strong>Внимание:</strong> <code>execution_date</code> обоих DAG должны совпадать.
+        Используйте <code>execution_delta</code> или <code>execution_date_fn</code> при разных расписаниях.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 11: TriggerDagRunOperator                              -->
+<!-- ============================================================ -->
+<section>
+  <h2>TriggerDagRunOperator — явный запуск DAG</h2>
+  <div class="two-col">
+    <div>
+      <pre><code class="language-python">from airflow.operators.trigger_dagrun import (
+    TriggerDagRunOperator
+)
+
+# После сбора данных — явно запустить
+# пайплайн анализа простоев
+trigger_downtime_analysis = TriggerDagRunOperator(
+    task_id="trigger_downtime_analysis",
+    # ID запускаемого DAG
+    trigger_dag_id="downtime_analysis_dag",
+    # Передать конфигурацию запуска
+    conf={
+        "shift_date": "{{ ds }}",
+        "shift_num": "{{ var.value.current_shift }}",
+        "mine_id": "MINE_01",
+    },
+    # Ждать завершения дочернего DAG
+    wait_for_completion=True,
+    # Переадресовывать логи дочернего DAG
+    poke_interval=30,
+    dag=dag,
+)</code></pre>
+    </div>
+    <div>
+      <div class="arch-box" style="font-size:0.78em; margin-bottom:10px;">
+        <strong style="color:#4472C4;">ExternalTaskSensor vs TriggerDagRunOperator</strong>
+        <table class="op-table" style="margin-top:8px; font-size:0.9em;">
+          <tr><th>Критерий</th><th>ExternalTask</th><th>TriggerDagRun</th></tr>
+          <tr><td>Инициатор</td><td>Ожидающий DAG</td><td>Родительский DAG</td></tr>
+          <tr><td>Связность</td><td>Слабая</td><td>Сильная</td></tr>
+          <tr><td>Конфигурация</td><td>Нет</td><td>Передаётся conf</td></tr>
+          <tr><td>Расписания</td><td>Независимые</td><td>По требованию</td></tr>
+        </table>
+      </div>
+      <div class="case-box" style="font-size:0.72em; margin-top:6px;">
+        <strong>Когда использовать TriggerDagRunOperator:</strong>
+        <ul style="margin:4px 0;">
+          <li>Дочерний DAG запускается только по требованию родителя</li>
+          <li>Нужно передать параметры запуска</li>
+          <li>Строгая master-slave архитектура</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 12: РЕЖИМЫ СЕНСОРА poke vs reschedule                 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Режимы сенсора: poke vs reschedule</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box orange" style="margin-bottom:12px;">
+        <strong style="color:#ED7D31;">Режим poke (по умолчанию)</strong>
+        <ul style="font-size:0.78em; margin:6px 0;">
+          <li>Задача <strong>занимает воркер</strong> всё время ожидания</li>
+          <li>Спит <code>poke_interval</code> секунд между проверками</li>
+          <li>Блокирует слот в пуле воркеров</li>
+          <li>Подходит для коротких ожиданий (&lt; 5 минут)</li>
+        </ul>
+        <pre style="font-size:0.75em; margin:6px 0;"><code class="language-python">sensor = FileSensor(
+    task_id="wait_file",
+    filepath="/data/file.csv",
+    mode="poke",          # держит воркер
+    poke_interval=30,     # проверка каждые 30с
+)</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Режим reschedule (рекомендуется)</strong>
+        <ul style="font-size:0.78em; margin:6px 0;">
+          <li>Задача <strong>освобождает воркер</strong> между проверками</li>
+          <li>Scheduler перезапускает сенсор через интервал</li>
+          <li>Экономит ресурсы кластера</li>
+          <li>Подходит для долгих ожиданий (&gt; 5 минут)</li>
+        </ul>
+        <pre style="font-size:0.75em; margin:6px 0;"><code class="language-python">sensor = FileSensor(
+    task_id="wait_file",
+    filepath="/data/file.csv",
+    mode="reschedule",    # освобождает воркер
+    poke_interval=300,    # проверка каждые 5 мин
+)</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="case-box" style="font-size:0.72em; margin-top:8px;">
+    <strong>Практическое правило:</strong> если ожидаемый файл появляется через десятки минут после старта,
+    используем <code>mode="reschedule"</code> с <code>poke_interval=300</code> (5 мин) — не тратим воркер попусту.
+    При быстрых HTTP-проверках состояния — <code>mode="poke"</code> с <code>poke_interval=10</code>.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 13: ПАТТЕРН DAG С СЕНСОРАМИ ДЛЯ РУДА+               -->
+<!-- ============================================================ -->
+<section>
+  <h2>Паттерн DAG с сенсорами — «Руда+»</h2>
+  <p style="font-size:0.78em; margin-bottom:10px;">
+    Полный пайплайн обработки данных смены: от ожидания данных до расчёта OEE и уведомлений.
+  </p>
+  <div class="dep-flow" style="flex-direction:column; gap:6px;">
+    <div style="display:flex; gap:30px; justify-content:center;">
+      <div class="dep-node sensor" style="font-size:0.72em; min-width:140px;">
+        <strong>wait_navigation_file</strong><br>
+        FileSensor<br>
+        <em>navigation_YYYYMMDD.csv</em>
+      </div>
+      <div class="dep-node sensor" style="font-size:0.72em; min-width:140px;">
+        <strong>wait_sensor_data</strong><br>
+        SqlSensor<br>
+        <em>raw_sensor_data &gt; 100 записей</em>
+      </div>
+    </div>
+    <div class="dep-arrow-v">↓ &nbsp; ↓</div>
+    <div class="dep-node orange" style="font-size:0.75em; min-width:200px;">
+      <strong>extract_and_merge</strong><br>
+      PythonOperator: объединение навигации и датчиков
+    </div>
+    <div class="dep-arrow-v">↓</div>
+    <div style="display:flex; gap:30px; justify-content:center;">
+      <div class="dep-node" style="font-size:0.72em; min-width:130px;">
+        <strong>calc_ore_quality</strong><br>
+        Fe%, влажность, серность
+      </div>
+      <div class="dep-node" style="font-size:0.72em; min-width:130px;">
+        <strong>calc_equipment_oee</strong><br>
+        Availability × Performance × Quality
+      </div>
+    </div>
+    <div class="dep-arrow-v">↓ &nbsp; ↓</div>
+    <div class="dep-node green" style="font-size:0.75em; min-width:200px;">
+      <strong>generate_shift_report</strong><br>
+      Итоговый отчёт смены
+    </div>
+    <div class="dep-arrow-v">↓</div>
+    <div class="dep-node green" style="font-size:0.75em; min-width:200px;">
+      <strong>notify_shift_manager</strong><br>
+      Telegram / Email уведомление
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 14: КОД — ПОЛНЫЙ ПАЙПЛАЙН РУДА+                      -->
+<!-- ============================================================ -->
+<section>
+  <h2>Код: пайплайн «Руда+» с зависимостями</h2>
+  <pre><code class="language-python">from datetime import datetime, timedelta
+from airflow import DAG
+from airflow.sensors.filesystem import FileSensor
+from airflow.sensors.sql import SqlSensor
+from airflow.operators.python import PythonOperator
+from airflow.operators.email import EmailOperator
+
+# ── Функции задач ────────────────────────────────────────────────
+
+def merge_nav_and_sensors(**ctx):
+    """Объединяет данные навигации и телеметрии датчиков."""
+    ds = ctx["ds_nodash"]
+    nav_path = f"/data/navigation/navigation_{ds}.csv"
+    print(f"[merge] Читаем навигацию: {nav_path}")
+    # здесь: pandas merge, запись в staging таблицу
+    return {"rows_merged": 15420}
+
+def calc_ore_quality(**ctx):
+    """Рассчитывает качественные показатели руды за смену."""
+    print("[ore_quality] Fe%=62.4, влажность=4.1%, сера=0.08%")
+    return {"fe_pct": 62.4, "moisture": 4.1, "sulfur": 0.08}
+
+def calc_equipment_oee(**ctx):
+    """Рассчитывает OEE для всего парка оборудования."""
+    availability   = 0.92   # 92% — плановое время работы
+    performance    = 0.87   # 87% — скорость vs норматив
+    quality        = 0.96   # 96% — годная продукция
+    oee = availability * performance * quality
+    print(f"[oee] OEE = {oee:.1%}")
+    return {"oee": round(oee, 4)}
+
+def generate_shift_report(**ctx):
+    """Формирует итоговый PDF-отчёт смены."""
+    ti = ctx["ti"]
+    ore = ti.xcom_pull(task_ids="calc_ore_quality")
+    oee = ti.xcom_pull(task_ids="calc_equipment_oee")
+    report = {
+        "shift_date": ctx["ds"],
+        "ore_quality": ore,
+        "equipment_oee": oee,
+    }
+    print(f"[report] Отчёт сформирован: {report}")
+    return report
+
+# ── Параметры DAG ────────────────────────────────────────────────
+
+default_args = {
+    "owner": "mes_team",
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "email_on_failure": True,
+    "email": ["mes-alerts@ruda-plus.ru"],
+}
+
+with DAG(
+    dag_id="ruda_plus_shift_pipeline",
+    description="MES пайплайн обработки данных смены «Руда+»",
+    schedule_interval="0 8,20 * * *",   # старт смены в 08:00 и 20:00
+    start_date=datetime(2024, 1, 1),
+    catchup=False,
+    default_args=default_args,
+    tags=["ruda_plus", "mes", "shift"],
+) as dag:
+
+    # ── ЗАДАЧА 1: Ждём навигационный файл ───────────────────────
+    wait_navigation_file = FileSensor(
+        task_id="wait_navigation_file",
+        filepath="/data/navigation/navigation_{{ ds_nodash }}.csv",
+        fs_conn_id="fs_navigation",
+        poke_interval=300,
+        timeout=7200,
+        mode="reschedule",
+    )
+
+    # ── ЗАДАЧА 2: Ждём данные телеметрии в БД ───────────────────
+    wait_sensor_data = SqlSensor(
+        task_id="wait_sensor_data",
+        conn_id="postgres_mes",
+        sql="""
+            SELECT COUNT(*)
+            FROM raw_sensor_data
+            WHERE record_date = '{{ ds }}'
+              AND record_count > 100
+        """,
+        success=lambda r: r[0][0] > 0,
+        poke_interval=120,
+        timeout=3600,
+        mode="reschedule",
+    )
+
+    # ── ЗАДАЧА 3: Объединение данных ─────────────────────────────
+    merge_data = PythonOperator(
+        task_id="merge_nav_and_sensors",
+        python_callable=merge_nav_and_sensors,
+    )
+
+    # ── ЗАДАЧА 4: Качество руды (параллельно с OEE) ──────────────
+    ore_quality = PythonOperator(
+        task_id="calc_ore_quality",
+        python_callable=calc_ore_quality,
+    )
+
+    # ── ЗАДАЧА 5: OEE оборудования ───────────────────────────────
+    equipment_oee = PythonOperator(
+        task_id="calc_equipment_oee",
+        python_callable=calc_equipment_oee,
+    )
+
+    # ── ЗАДАЧА 6: Формирование отчёта ────────────────────────────
+    shift_report = PythonOperator(
+        task_id="generate_shift_report",
+        python_callable=generate_shift_report,
+    )
+
+    # ── ЗАДАЧА 7: Уведомление руководителя смены ─────────────────
+    notify = EmailOperator(
+        task_id="notify_shift_manager",
+        to="shift-manager@ruda-plus.ru",
+        subject="[Руда+] Отчёт смены {{ ds }}",
+        html_content="Отчёт смены сформирован. OEE и качество руды — в приложении.",
+    )
+
+    # ── ГРАФ ЗАВИСИМОСТЕЙ ────────────────────────────────────────
+    # Fan-in: оба сенсора должны завершиться до merge
+    [wait_navigation_file, wait_sensor_data] >> merge_data
+
+    # Fan-out: параллельный расчёт качества и OEE
+    merge_data >> [ore_quality, equipment_oee]
+
+    # Fan-in: оба расчёта → отчёт → уведомление
+    [ore_quality, equipment_oee] >> shift_report >> notify</code></pre>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 15: КЕЙС ДЛЯ АНАЛИЗА                                 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Кейс для анализа: задержка навигационных данных</h2>
+  <div class="case-box">
+    <strong>Ситуация:</strong> На шахте «Руда+» подземная навигационная система (RFID/WiFi-маяки)
+    формирует файл координат оборудования каждые 30 минут. Однако из-за проблем с каналом связи
+    файл иногда поступает с задержкой до 3 часов.
+    <br><br>
+    Пайплайн расчёта OEE должен дождаться этого файла <strong>перед</strong> объединением
+    данных телеметрии, при этом не блокируя кластер.
+  </div>
+  <div class="two-col" style="margin-top:12px;">
+    <div>
+      <p style="font-size:0.78em; font-weight:bold; color:#4472C4;">Требования к решению:</p>
+      <ul style="font-size:0.75em; text-align:left;">
+        <li>Не блокировать воркер на 3 часа</li>
+        <li>Проверять появление файла каждые 10 минут</li>
+        <li>При отсутствии файла через 3 часа — уведомить диспетчера</li>
+        <li>Корректно обрабатывать несколько параллельных запусков</li>
+        <li>Поддерживать ретрай при ошибке чтения файла</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size:0.78em; font-weight:bold; color:#ED7D31;">Вопросы для анализа:</p>
+      <ol style="font-size:0.75em; text-align:left;">
+        <li>Какой сенсор использовать и в каком режиме?</li>
+        <li>Как уведомить диспетчера при таймауте?</li>
+        <li>Что делать с уже запущенными downstream-задачами?</li>
+        <li>Как настроить <code>soft_fail</code> и <code>on_failure_callback</code>?</li>
+        <li>Нужен ли отдельный DAG для мониторинга доставки файлов?</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 16: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Вопрос для обсуждения 1</h2>
+  <div class="discuss">
+    <strong style="font-size:1.1em; color:#ED7D31;">Что опаснее: слишком много зависимостей или слишком мало?</strong>
+    <br><br>
+    Рассмотрите оба сценария применительно к MES-системе «Руда+»:
+    <ul style="margin-top:8px;">
+      <li><strong>Сценарий А:</strong> каждая задача явно ждёт завершения предыдущей — даже там, где это не нужно</li>
+      <li><strong>Сценарий Б:</strong> задачи запускаются параллельно без явных зависимостей, полагаясь на "порядок вещей"</li>
+    </ul>
+  </div>
+  <div class="two-col" style="margin-top:12px; font-size:0.78em;">
+    <div class="arch-box orange">
+      <strong>Много зависимостей:</strong>
+      <ul>
+        <li>Пайплайн становится медленным</li>
+        <li>Узкие горлышки вместо параллелизма</li>
+        <li>Избыточное время ожидания для OEE</li>
+        <li><em>Пример:</em> расчёт Fe% ждёт OEE, хотя они независимы</li>
+      </ul>
+    </div>
+    <div class="arch-box green">
+      <strong>Мало зависимостей:</strong>
+      <ul>
+        <li>Расчёт по неполным данным</li>
+        <li>Некорректный OEE за смену</li>
+        <li>Трудно воспроизводимые ошибки</li>
+        <li><em>Пример:</em> OEE считается до загрузки всей телеметрии</li>
+      </ul>
+    </div>
+  </div>
+  <p style="font-size:0.72em; color:#888; margin-top:8px;">
+    Обсуждение: 5 минут в парах, затем общее обсуждение — 5 минут.
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 17: ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2                          -->
+<!-- ============================================================ -->
+<section>
+  <h2>Вопрос для обсуждения 2</h2>
+  <div class="discuss">
+    <strong style="font-size:1.1em; color:#ED7D31;">В чём разница между FileSensor и ExternalTaskSensor?<br>Когда каждый из них уместен?</strong>
+    <br><br>
+    В «Руда+» есть два сценария:
+    <ul style="margin-top:8px;">
+      <li><strong>Сценарий 1:</strong> навигационная система выгружает CSV-файл на сетевой диск — пайплайн ждёт его</li>
+      <li><strong>Сценарий 2:</strong> DAG сбора данных телеметрии завершил работу — DAG расчёта OEE должен начать</li>
+    </ul>
+  </div>
+  <div class="two-col" style="margin-top:10px; font-size:0.78em;">
+    <div>
+      <p style="font-weight:bold; color:#4472C4;">Обсудите:</p>
+      <ol style="text-align:left;">
+        <li>Как источник данных влияет на выбор сенсора?</li>
+        <li>Что происходит с FileSensor при ротации файлов?</li>
+        <li>Как ExternalTaskSensor обрабатывает повторный запуск?</li>
+        <li>Можно ли заменить ExternalTaskSensor на TriggerDagRunOperator?</li>
+      </ol>
+    </div>
+    <div>
+      <table class="op-table" style="font-size:0.85em;">
+        <tr><th>Критерий</th><th>FileSensor</th><th>ExternalTask</th></tr>
+        <tr><td>Источник</td><td>Файловая система</td><td>Airflow MetaDB</td></tr>
+        <tr><td>Связность DAG</td><td>Нет</td><td>Есть</td></tr>
+        <tr><td>Внешние системы</td><td>Да</td><td>Только Airflow</td></tr>
+        <tr><td>Идемпотентность</td><td>По имени файла</td><td>По execution_date</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 18: КВИЗ                                              -->
+<!-- ============================================================ -->
+<section>
+  <h2>Квиз — проверь себя</h2>
+
+  <div class="quiz-block">
+    <div class="quiz-q">Вопрос 1: Что означает запись <code>task_a >> [task_b, task_c]</code>?</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q1','wrong')">task_a запускается после task_b и task_c</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q1','correct')">task_b и task_c запускаются параллельно после task_a</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q1','wrong')">task_b и task_c ждут друг друга перед запуском</button>
+    <div id="quiz-result-1"></div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="quiz-q">Вопрос 2: В чём главное преимущество режима <code>reschedule</code> по сравнению с <code>poke</code>?</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q2','wrong')">Быстрее обнаруживает появление файла</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q2','correct')">Освобождает слот воркера между проверками</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q2','wrong')">Поддерживает большее число сенсоров одновременно</button>
+    <div id="quiz-result-2"></div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="quiz-q">Вопрос 3: ExternalTaskSensor в DAG-B ждёт завершения DAG-A. Что произойдёт, если DAG-A завершился со статусом <code>failed</code>?</div>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q3','wrong')">DAG-B продолжит выполнение</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q3','wrong')">DAG-B будет ждать следующего запуска DAG-A</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,'q3','correct')">ExternalTaskSensor упадёт с ошибкой (если failed_states=['failed'])</button>
+    <div id="quiz-result-3"></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 19: ЗАДАНИЕ ДЛЯ ГРУППЫ                               -->
+<!-- ============================================================ -->
+<section>
+  <h2>Задание для группы</h2>
+  <div class="task-box">
+    <strong style="font-size:1.05em;">Нарисуйте граф зависимостей полного MES-пайплайна «Руда+»</strong>
+    <br><br>
+    Время: <strong>15 минут</strong> | Группы по <strong>3–4 человека</strong>
+  </div>
+  <div class="two-col" style="margin-top:10px; font-size:0.78em;">
+    <div>
+      <p style="font-weight:bold; color:#4472C4;">Требования к графу (минимум 8 задач):</p>
+      <ul style="text-align:left;">
+        <li>Минимум 2 сенсора (FileSensor + SqlSensor или ExternalTaskSensor)</li>
+        <li>Паттерн fan-out для параллельной обработки</li>
+        <li>Паттерн fan-in перед финальным расчётом</li>
+        <li>Задача уведомления при ошибке (<code>on_failure_callback</code>)</li>
+        <li>Зависимость между двумя DAG</li>
+      </ul>
+      <p style="font-weight:bold; color:#4472C4; margin-top:10px;">Источники данных для учёта:</p>
+      <ul style="text-align:left;">
+        <li>Датчики ПДМ: температура, нагрузка, топливо</li>
+        <li>Навигация: координаты X/Y/Z, маршруты</li>
+        <li>Видеорегистраторы: события безопасности</li>
+        <li>Скиповые подъёмники: тоннаж, циклы</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-weight:bold; color:#ED7D31;">Вопросы для обсуждения в группе:</p>
+      <ol style="text-align:left;">
+        <li>Какие задачи можно выполнять параллельно?</li>
+        <li>Где расставить сенсоры?</li>
+        <li>Нужны ли промежуточные проверки качества данных?</li>
+        <li>Как обработать частичный сбой (одна ветка упала)?</li>
+        <li>Как разбить граф на несколько DAG?</li>
+      </ol>
+      <div class="arch-box orange" style="margin-top:10px; font-size:0.85em;">
+        <strong>Результат:</strong> нарисуйте граф на листе бумаги или доске и представьте классу (2 мин).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- СЛАЙД 20: ИТОГОВЫЙ СЛАЙД                                    -->
+<!-- ============================================================ -->
+<section>
+  <h2>Итоги модуля 5</h2>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="si-title">🔗 Зависимости задач</div>
+      Операторы <code>&gt;&gt;</code> / <code>&lt;&lt;</code>,
+      методы <code>set_upstream</code> / <code>set_downstream</code>.
+      Паттерны: линейный, fan-out, fan-in, diamond.
+    </div>
+    <div class="summary-item">
+      <div class="si-title">📡 Сенсоры</div>
+      FileSensor, TimeSensor, SqlSensor — ждут внешних условий.
+      Режимы: <code>poke</code> (держит воркер) и
+      <code>reschedule</code> (освобождает — рекомендуется для длинных ожиданий).
+    </div>
+    <div class="summary-item">
+      <div class="si-title">🔄 Зависимости между DAG</div>
+      ExternalTaskSensor — слабая связность, независимые расписания.
+      TriggerDagRunOperator — строгий запуск с передачей параметров (<code>conf</code>).
+    </div>
+    <div class="summary-item">
+      <div class="si-title">🏭 Практика на сквозном примере</div>
+      Полный пайплайн периода: FileSensor + SqlSensor → merge →
+      параллельный расчёт показателей → отчёт → уведомление.
+    </div>
+  </div>
+  <div style="margin-top:14px;">
+    <span class="next-badge">Следующий модуль</span>
+    <span style="font-size:0.85em; margin-left:8px;">Модуль 6 — XCom и передача данных между задачами</span>
+  </div>
+  <div style="margin-top:12px;">
+    <span class="tag">FileSensor</span>
+    <span class="tag">reschedule</span>
+    <span class="tag">ExternalTaskSensor</span>
+    <span class="tag">fan-out/fan-in</span>
+    <span class="tag">KPI</span>
+  </div>
+</section>
+
+</div></div><!-- /slides /reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+    width: 1200, height: 700, margin: 0.04, minScale: 0.2, maxScale: 2.0,
+  hash: true,
+  slideNumber: true,
+  transition: 'slide',
+  transitionSpeed: 'fast',
+  controls: true,
+  progress: true,
+  center: true,
+  plugins: [RevealHighlight, RevealNotes],
+  highlight: { highlightOnLoad: true }
+});
+
+/* ---- Квиз ---- */
+const results = {
+  q1: "Верно! >> с массивом создаёт fan-out: task_b и task_c запускаются параллельно.",
+  q2: "Верно! reschedule освобождает слот воркера — критично при долгих ожиданиях (часы).",
+  q3: "Верно! Параметр failed_states=['failed'] заставляет ExternalTaskSensor немедленно упасть."
+};
+const wrongs = {
+  q1: "Не совсем. Оператор >> указывает направление: левое выполняется ДО правого.",
+  q2: "Нет. Скорость обнаружения определяется poke_interval, а не режимом работы.",
+  q3: "Нет. ExternalTaskSensor отслеживает состояние через MetaDB и реагирует на failed_states."
+};
+
+function checkAnswer(btn, qId, verdict) {
+  const container = btn.parentElement;
+  container.querySelectorAll('.quiz-btn').forEach(b => {
+    b.classList.remove('correct', 'wrong');
+    b.disabled = true;
+  });
+  btn.classList.add(verdict);
+  const resEl = document.getElementById('quiz-result-' + qId.slice(1));
+  if (resEl) {
+    resEl.style.color = verdict === 'correct' ? '#70AD47' : '#e74c3c';
+    resEl.textContent = verdict === 'correct' ? '✓ ' + results[qId] : '✗ ' + wrongs[qId];
+  }
+}
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,1090 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Модуль 04 — Шаблоны заданий | Курс Apache Airflow</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reset.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/monokai.css" />
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; --r-main-font-size: 28px; }
+.reveal { font-size: 24px; }
+.reveal h1 { color: #4472C4; font-size: 1.8em; }
+.reveal h2 { color: #4472C4; font-size: 1.3em; }
+.reveal h3 { color: #4472C4; font-size: 1.1em; }
+.reveal ul, .reveal ol { font-size: 0.88em; line-height: 1.5; }
+.reveal p { font-size: 0.88em; line-height: 1.5; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green  { color: #70AD47; font-weight: bold; }
+.discuss  { background:#fff8e7; border-left:5px solid #ED7D31; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.82em; line-height:1.4; border-radius:0 6px 6px 0; }
+.case-box { background:#eef4fb; border-left:5px solid #4472C4; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.8em;  line-height:1.4; border-radius:0 6px 6px 0; }
+.task-box { background:#eafaf1; border-left:5px solid #70AD47; padding:12px 16px; margin:8px 0; text-align:left; font-size:0.8em;  line-height:1.4; border-radius:0 6px 6px 0; }
+.quiz-btn  { background:#4472C4; color:#fff; border:none; padding:7px 15px; margin:4px; cursor:pointer; border-radius:4px; font-size:0.72em; transition:background 0.2s; }
+.quiz-btn:hover  { background:#2d5699; }
+.quiz-btn.correct { background:#70AD47; }
+.quiz-btn.wrong   { background:#e74c3c; }
+.two-col   { display:grid; grid-template-columns:1fr 1fr;       gap:16px; align-items:start; }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr;   gap:12px; }
+.arch-box  { border:2px solid #4472C4; border-radius:6px; padding:10px; margin:4px; background:#f0f4fb; font-size:0.78em; line-height:1.4; }
+.reveal pre             { font-size:0.48em; width:100%; box-shadow:none; margin:8px 0; }
+.reveal pre code        { max-height:380px; }
+.reveal code            { background:#f6f8fa; padding:2px 4px; border-radius:3px; font-size:0.88em; }
+.reveal table           { font-size:0.78em; }
+.reveal table th        { background:#4472C4; color:#fff; }
+.reveal table tr:nth-child(even) { background:#f0f4fb; }
+.tag        { display:inline-block; background:#4472C4; color:#fff; padding:2px 8px;  border-radius:10px; font-size:0.68em; margin:2px; }
+.badge-ok   { display:inline-block; background:#70AD47; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.badge-warn { display:inline-block; background:#ED7D31; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.badge-err  { display:inline-block; background:#e74c3c; color:#fff; padding:3px 10px; border-radius:10px; font-size:0.72em; }
+.metric     { background:#4472C4; color:#fff; padding:12px; border-radius:8px; text-align:center; }
+.metric .val { font-size:1.8em; font-weight:bold; color:#ED7D31; display:block; }
+.note-box   { background:#f9f9f9; border:1px solid #ccc; border-radius:6px; padding:10px 14px; font-size:0.78em; color:#555; margin-top:8px; }
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 1 — Титульный
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h1>Модуль 04</h1>
+  <h2>Шаблоны заданий в Apache Airflow</h2>
+  <p style="margin-top:14px; font-size:0.78em; color:#888;">
+    Курс: Практикум по анализу и моделированию данных &nbsp;|&nbsp; 2 часа
+  </p>
+  <div class="three-col" style="margin-top:20px;">
+    <div class="arch-box" style="text-align:center;">
+      <div style="font-size:1.4em;">&#128336;</div>
+      <strong>Jinja2 &amp; макросы</strong>
+    </div>
+    <div class="arch-box" style="text-align:center;">
+      <div style="font-size:1.4em;">&#128295;</div>
+      <strong>Variables &amp; XCom</strong>
+    </div>
+    <div class="arch-box" style="text-align:center;">
+      <div style="font-size:1.4em;">&#9889;</div>
+      <strong>TaskFlow API</strong>
+    </div>
+  </div>
+  <aside class="notes">
+    Представьтесь, обозначьте цель модуля. Спросите у аудитории: кто уже работал
+    с шаблонизаторами (Jinja2, Mustache, Go templates)? Кто запускал Airflow вручную
+    и хотел передать дату без изменения кода?
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 2 — Повестка
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div class="two-col">
+    <div>
+      <h3>Теория (1 ч.)</h3>
+      <ol>
+        <li>Jinja2 в Airflow — зачем и как</li>
+        <li>Макросы: <code>ds</code>, <code>ts</code>, <code>prev_ds</code>, <code>next_ds</code></li>
+        <li>Airflow Variables — конфигурация без кода</li>
+        <li><code>dag_run.conf</code> — параметры при ручном запуске</li>
+        <li>XCom — передача данных между задачами</li>
+        <li>TaskFlow API: <code>@dag</code> / <code>@task</code></li>
+      </ol>
+    </div>
+    <div>
+      <h3>Практика (1 ч.)</h3>
+      <ul>
+        <li>Параметризованные запросы по периодам</li>
+        <li>Инкрементальная обработка данных через <code>&#123;&#123;&nbsp;ds&nbsp;&#125;&#125;</code></li>
+        <li>Динамические отчёты через Variables</li>
+        <li>Запуск анализа за произвольный период через <code>dag_run.conf</code></li>
+      </ul>
+      <div style="margin-top:10px;">
+        <span class="badge-ok">Практическая работа</span>&nbsp;
+        <span class="badge-warn">Лабораторная работа</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Пройдитесь по повестке. Отметьте, что все примеры кода — из реальной аналитики ТЧЭ-15:
+    локомотивы серий ВЛ80С, 2ТЭ116, ЭП2К, МВПС Ласточка.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 3 — Что такое Jinja2 в Airflow
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Jinja2 в Apache Airflow</h2>
+  <div class="two-col">
+    <div>
+      <p>
+        <strong>Jinja2</strong> — движок шаблонов, встроенный в Airflow.
+        Позволяет вставлять динамические значения в параметры операторов.
+      </p>
+      <ul>
+        <li>Шаблон вычисляется <span class="hi-orange">в момент выполнения</span> задачи, а не при разборе DAG</li>
+        <li>Работает в полях: <code>sql</code>, <code>bash_command</code>, <code>op_kwargs</code> и др.</li>
+        <li>Синтаксис: <code>&#123;&#123;&nbsp;переменная&nbsp;&#125;&#125;</code> и <code>&#123;%&nbsp;if ... %&#125;</code></li>
+      </ul>
+      <div class="discuss">
+        <strong>Вопрос:</strong> Почему важно, что шаблон вычисляется при <em>выполнении</em>,
+        а не при <em>загрузке</em> DAG?
+      </div>
+    </div>
+    <div>
+      <h3>Пример</h3>
+      <pre><code class="language-sql">-- Без шаблона (жёсткая дата — проблема!)
+SELECT *
+FROM rzd_analytics.fuel_consumption
+WHERE shift_date = '2024-03-15';
+
+-- С Jinja2 (дата подставляется автоматически)
+SELECT
+    loco_id,
+    SUM(fuel_liters) AS liters,
+    SUM(distance_km) AS km
+FROM rzd_analytics.fuel_consumption
+WHERE shift_date = '{{ ds }}'
+GROUP BY loco_id;</code></pre>
+      <p><span class="hi-green">Результат:</span> DAG всегда анализирует свою дату выполнения.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Покажите разницу на доске: статичная дата vs шаблон. Ключевой момент: при catchup=True
+    Airflow «догоняет» пропущенные даты — без шаблона все запросы читали бы одну и ту же дату.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 4 — Макросы дат (таблица)
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Макросы дат в Airflow</h2>
+  <p>Для <code>execution_date = 2024-03-15 08:00:00 UTC</code>:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Макрос</th>
+        <th>Значение</th>
+        <th>Применение</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>&#123;&#123;&nbsp;ds&nbsp;&#125;&#125;</code></td>
+          <td><code>2024-03-15</code></td>
+          <td>Дата обрабатываемого интервала</td></tr>
+      <tr><td><code>&#123;&#123;&nbsp;ts&nbsp;&#125;&#125;</code></td>
+          <td><code>2024-03-15T08:00:00+00:00</code></td>
+          <td>Временная метка события</td></tr>
+      <tr><td><code>&#123;&#123;&nbsp;prev_ds&nbsp;&#125;&#125;</code></td>
+          <td><code>2024-03-14</code></td>
+          <td>Сравнение показателей день-к-дню</td></tr>
+      <tr><td><code>&#123;&#123;&nbsp;next_ds&nbsp;&#125;&#125;</code></td>
+          <td><code>2024-03-16</code></td>
+          <td>Расчёт на следующий период</td></tr>
+      <tr><td><code>&#123;&#123;&nbsp;ds_nodash&nbsp;&#125;&#125;</code></td>
+          <td><code>20240315</code></td>
+          <td>Имя файла: <code>report_20240315.csv</code></td></tr>
+      <tr><td><code>&#123;&#123;&nbsp;execution_date&nbsp;&#125;&#125;</code></td>
+          <td>объект <code>pendulum.DateTime</code></td>
+          <td>Доступ к компонентам даты (<code>.hour</code>)</td></tr>
+    </tbody>
+  </table>
+  <div class="note-box">
+    В Airflow 2.2+ <code>execution_date</code> устарел.
+    Рекомендуется <code>data_interval_start</code> / <code>data_interval_end</code>
+    или параметры <code>ds</code> / <code>ts</code> в функциях задач.
+  </div>
+  <aside class="notes">
+    Попросите аудиторию назвать ещё пример, где prev_ds пригодится.
+    Ответ: сравнение задержек поездов вчера и сегодня; расход топлива за предыдущую смену.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 5 — Макросы на практике: SQL-запросы ТЧЭ-15
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Макросы дат: SQL для ТЧЭ-15</h2>
+  <div class="two-col">
+    <div>
+      <h3>Расход электроэнергии за смену</h3>
+      <pre><code class="language-sql">SELECT
+    l.series,
+    l.number,
+    SUM(ec.energy_kwh)   AS total_kwh,
+    SUM(ec.distance_km)  AS total_km,
+    ROUND(
+        SUM(ec.energy_kwh)
+        / NULLIF(SUM(ec.distance_km), 0),
+        2
+    ) AS kwh_per_km
+FROM rzd_analytics.energy_consumption ec
+JOIN rzd_analytics.locomotives l
+    ON l.loco_id = ec.loco_id
+WHERE ec.shift_date = '{{ ds }}'
+  AND l.traction_type = 'electric'
+GROUP BY l.series, l.number
+ORDER BY kwh_per_km DESC;</code></pre>
+    </div>
+    <div>
+      <h3>Сравнение топлива: день к дню</h3>
+      <pre><code class="language-sql">SELECT
+    loco_id,
+    SUM(CASE WHEN shift_date = '{{ ds }}'
+             THEN fuel_liters ELSE 0 END)
+        AS today_liters,
+    SUM(CASE WHEN shift_date = '{{ prev_ds }}'
+             THEN fuel_liters ELSE 0 END)
+        AS yesterday_liters,
+    SUM(CASE WHEN shift_date = '{{ ds }}'
+             THEN fuel_liters ELSE 0 END)
+    - SUM(CASE WHEN shift_date = '{{ prev_ds }}'
+               THEN fuel_liters ELSE 0 END)
+        AS delta_liters
+FROM rzd_analytics.fuel_consumption
+WHERE shift_date IN ('{{ ds }}', '{{ prev_ds }}')
+GROUP BY loco_id;</code></pre>
+    </div>
+  </div>
+  <aside class="notes">
+    Спросите: «Как изменится запрос, если нужно сравнить не день, а смену?»
+    Направьте к использованию execution_date.hour для вычисления номера смены (1, 2, 3).
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 6 — Airflow Variables
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Airflow Variables — конфигурация без деплоя</h2>
+  <div class="two-col">
+    <div>
+      <h3>Что такое Variables?</h3>
+      <ul>
+        <li>Хранилище пар ключ-значение в базе Airflow</li>
+        <li>Управляются через UI, CLI или REST API</li>
+        <li>Не требуют деплоя при изменении значений</li>
+        <li>Могут хранить JSON-объекты</li>
+        <li>Значения шифруются в Fernet при <code>AIRFLOW__CORE__FERNET_KEY</code></li>
+      </ul>
+      <h3>Variables: пример конфигурации</h3>
+      <table>
+        <thead><tr><th>Ключ</th><th>Значение</th></tr></thead>
+        <tbody>
+          <tr><td><code>depot_code</code></td>       <td><code>TCH-15</code></td></tr>
+          <tr><td><code>axle_temp_critical</code></td><td><code>80</code></td></tr>
+          <tr><td><code>fuel_norm_lh</code></td>     <td><code>45.0</code></td></tr>
+          <tr><td><code>otd_threshold_pct</code></td><td><code>95</code></td></tr>
+          <tr><td><code>active_locos</code></td>
+              <td><code>["VL80S-1234","2TE116-567"]</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Использование в Python</h3>
+      <pre><code class="language-python">from airflow.models import Variable
+import json
+
+# Простое строковое значение
+depot = Variable.get(
+    "depot_code",
+    default_var="TCH-15"
+)
+
+# Числовое значение (тип — всегда str, нужно преобразовать)
+crit_temp = float(Variable.get(
+    "axle_temp_critical",
+    default_var=80
+))
+
+# JSON-значение
+locos = json.loads(Variable.get(
+    "active_locos",
+    default_var="[]"
+))
+# -> ["VL80S-1234", "2TE116-567"]
+
+# В шаблоне Jinja2 (в параметрах оператора):
+# {{ var.value.depot_code }}
+# {{ var.json.active_locos }}</code></pre>
+    </div>
+  </div>
+  <aside class="notes">
+    Объясните: Variables — «конфигурационный файл» для DAG.
+    Покажите в UI Airflow (Admin → Variables), как создать переменную вручную.
+    Важно: каждый Variable.get() — это запрос к БД; кешируйте значения в переменные Python.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 7 — dag_run.conf
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>dag_run.conf — запуск DAG с параметрами</h2>
+  <div class="two-col">
+    <div>
+      <h3>Назначение</h3>
+      <ul>
+        <li>Передача произвольных параметров <span class="hi-orange">при ручном запуске</span> DAG</li>
+        <li>Доступны через <code>&#123;&#123;&nbsp;dag_run.conf&nbsp;&#125;&#125;</code> в шаблонах</li>
+        <li>Или через <code>context["dag_run"].conf</code> в Python</li>
+        <li>Полезны для разовых аналитических запросов</li>
+      </ul>
+      <h3>Запуск через Airflow UI</h3>
+      <div class="arch-box">
+        <strong>Trigger DAG &rarr; Configuration JSON:</strong>
+        <pre style="font-size:1em; background:#fff; padding:6px; margin:4px 0; border-radius:4px;">{
+  "start_date":  "2024-01-01",
+  "end_date":    "2024-03-31",
+  "depot_code":  "TCH-15",
+  "loco_series": "VL80S"
+}</pre>
+      </div>
+    </div>
+    <div>
+      <h3>Использование в DAG (TaskFlow)</h3>
+      <pre><code class="language-python">@task
+def extract_period_data(**context):
+    conf  = context["dag_run"].conf or {}
+
+    start  = conf.get("start_date", context["ds"])
+    end    = conf.get("end_date",   context["ds"])
+    depot  = conf.get(
+        "depot_code",
+        Variable.get("depot_code", "TCH-15")
+    )
+    series = conf.get("loco_series", "%")
+
+    sql = f"""
+        SELECT
+            loco_id,
+            SUM(fuel_liters) AS total_fuel
+        FROM rzd_analytics.fuel_consumption
+        WHERE shift_date
+              BETWEEN '{start}' AND '{end}'
+          AND depot_code  = '{depot}'
+          AND loco_series LIKE '{series}'
+        GROUP BY loco_id
+    """
+    return {"sql": sql, "start": start, "end": end}</code></pre>
+    </div>
+  </div>
+  <aside class="notes">
+    Покажите диалог «Trigger DAG w/ config» в Airflow UI.
+    Спросите: «Для каких задач аналитики это удобнее, чем жёсткое расписание?»
+    Ответ: квартальные отчёты, расследование инцидентов, внеплановые проверки.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 8 — XCom: принцип работы
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>XCom — обмен данными между задачами</h2>
+  <div class="two-col">
+    <div>
+      <h3>Принцип работы</h3>
+      <ul>
+        <li><strong>XCom</strong> (Cross-Communication) — механизм передачи небольших значений между задачами одного DAG Run</li>
+        <li>Хранится в метаданных Airflow (таблица <code>xcom</code> в PostgreSQL)</li>
+        <li><span class="hi-orange">Ограничение:</span> только малые объёмы (&lt; нескольких МБ)</li>
+        <li>Для больших данных — передавайте путь к файлу / имя таблицы</li>
+      </ul>
+      <div class="discuss">
+        <strong>Обсудите:</strong> Что лучше передать через XCom — 10&thinsp;000 строк телеметрии букс
+        или имя таблицы PostgreSQL с этими данными?
+      </div>
+    </div>
+    <div>
+      <h3>Классический push / pull</h3>
+      <pre><code class="language-python">def push_loco_stats(**context):
+    stats = {
+        "vl80s_active":          12,
+        "avg_delay_min":         7.4,
+        "critical_temp_events":  3
+    }
+    # push: сохранить в XCom
+    context["ti"].xcom_push(
+        key="loco_stats",
+        value=stats
+    )
+
+def pull_and_report(**context):
+    # pull: прочитать из XCom
+    stats = context["ti"].xcom_pull(
+        task_ids="push_loco_stats",
+        key="loco_stats"
+    )
+    print(f"ВЛ80С активных: {stats['vl80s_active']}")
+    print(
+        f"Среднее опоздание: "
+        f"{stats['avg_delay_min']} мин"
+    )
+    print(
+        f"Перегревов букс: "
+        f"{stats['critical_temp_events']}"
+    )</code></pre>
+    </div>
+  </div>
+  <aside class="notes">
+    Покажите в Airflow UI вкладку XCom для конкретного Task Instance.
+    Подчеркните ограничение по размеру — это частая ошибка у новичков.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 9 — TaskFlow API: @dag и @task
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>TaskFlow API: <code>@dag</code> и <code>@task</code></h2>
+  <div class="two-col">
+    <div>
+      <h3>Зачем нужен TaskFlow?</h3>
+      <ul>
+        <li>Чище и короче классического подхода с операторами</li>
+        <li>XCom работает <span class="hi-green">автоматически</span> через return / аргументы</li>
+        <li>Зависимости задач определяются по вызовам функций</li>
+        <li>Поддерживается с Airflow 2.0+</li>
+      </ul>
+      <div class="arch-box">
+        <strong>Классический:</strong><br/>
+        PythonOperator + xcom_push/pull + set_downstream()<br/><br/>
+        <strong>TaskFlow:</strong><br/>
+        Обычные Python-функции с декораторами
+      </div>
+    </div>
+    <div>
+      <h3>Структура TaskFlow DAG</h3>
+      <pre><code class="language-python">from airflow.decorators import dag, task
+from datetime import datetime
+
+@dag(
+    schedule="0 6,14,22 * * *",  # 3 смены в сутки
+    start_date=datetime(2024, 1, 1),
+    catchup=False,
+    tags=["rzd", "tch-15"]
+)
+def loco_shift_report():
+
+    @task
+    def get_shift_data(ds=None):
+        # ds — автоматически из контекста Airflow
+        return {"date": ds, "depot": "TCH-15"}
+
+    @task
+    def calculate_kpi(shift_info: dict):
+        # shift_info — XCom из предыдущей задачи
+        return {"otd": 94.2, "fuel_norm": 98.1}
+
+    @task
+    def send_report(kpi: dict):
+        print(f"OTD смены: {kpi['otd']}%")
+        print(f"Норма топлива: {kpi['fuel_norm']}%")
+
+    # Цепочка — через обычные вызовы функций
+    info = get_shift_data()
+    kpi  = calculate_kpi(info)
+    send_report(kpi)
+
+dag_instance = loco_shift_report()</code></pre>
+    </div>
+  </div>
+  <aside class="notes">
+    Напишите на доске: «PythonOperator + xcom_push» vs «@task + return» — попросите
+    сравнить количество строк. TaskFlow сокращает код в 2-3 раза.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 10 — XCom в TaskFlow: автоматически
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>XCom в TaskFlow: всё работает само</h2>
+  <div class="two-col">
+    <div>
+      <h3>Классический XCom</h3>
+      <pre><code class="language-python">def check_axle_temp(**context):
+    events = [
+        {"loco": "VL80S-1234", "temp_c": 87},
+        {"loco": "2TE116-567", "temp_c": 74},
+    ]
+    context["ti"].xcom_push(
+        key="hot_events",
+        value=events
+    )
+
+def alert_dispatcher(**context):
+    events = context["ti"].xcom_pull(
+        task_ids="check_axle_temp",
+        key="hot_events"
+    )
+    for e in events:
+        if e["temp_c"] > 80:
+            print(
+                f"ПЕРЕГРЕВ БУКС: "
+                f"{e['loco']} — {e['temp_c']}°C"
+            )
+# + ручное создание операторов и зависимостей</code></pre>
+    </div>
+    <div>
+      <h3>TaskFlow (автоматический XCom)</h3>
+      <pre><code class="language-python">@task
+def check_axle_temp(ds=None) -> list:
+    # return -> автоматически xcom_push
+    return [
+        {"loco": "VL80S-1234", "temp_c": 87},
+        {"loco": "2TE116-567", "temp_c": 74},
+    ]
+
+@task
+def alert_dispatcher(events: list):
+    # аргумент -> автоматически xcom_pull
+    crit = Variable.get(
+        "axle_temp_critical",
+        default_var=80
+    )
+    for e in events:
+        if e["temp_c"] > int(crit):
+            print(
+                f"ПЕРЕГРЕВ: {e['loco']} "
+                f"{e['temp_c']}°C !!!"
+            )
+
+# В теле DAG — просто вызов:
+evts = check_axle_temp()
+alert_dispatcher(evts)</code></pre>
+      <p><span class="hi-green">Результат:</span> Меньше кода, нет ручного push/pull</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Акцентируйте: TaskFlow не убирает XCom, он автоматизирует его.
+    Данные всё равно хранятся в метаданных Airflow — ограничение по размеру сохраняется.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 11 — Применение в ТЧЭ-15
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Применение в ТЧЭ-15: реальные сценарии</h2>
+  <div class="three-col">
+    <div class="arch-box">
+      <h3 style="color:#4472C4; font-size:1em; margin-top:0;">Анализ расхода по сменам</h3>
+      <p>DAG запускается 3 раза в сутки (6:00, 14:00, 22:00).
+         Параметр <code>&#123;&#123;&nbsp;ds&nbsp;&#125;&#125;</code> — дата смены.</p>
+      <p>Результат: расход топлива / электроэнергии на поездо-км
+         по каждому локомотиву.</p>
+      <span class="badge-ok">Jinja2 + ds</span>
+    </div>
+    <div class="arch-box">
+      <h3 style="color:#4472C4; font-size:1em; margin-top:0;">Динамические пороги</h3>
+      <p>Норма расхода топлива (л/км), критическая температура букс,
+         порог OTD — хранятся в <strong>Variables</strong>.</p>
+      <p>Аналитик меняет значение в UI без деплоя кода.</p>
+      <span class="badge-warn">Variables</span>
+    </div>
+    <div class="arch-box">
+      <h3 style="color:#4472C4; font-size:1em; margin-top:0;">Отчёт за произвольный период</h3>
+      <p>Начальник депо нажимает «Trigger DAG» и указывает
+         <code>start_date</code>, <code>end_date</code>, серию локомотива.</p>
+      <p>DAG строит сводный отчёт по заданному диапазону.</p>
+      <span class="badge-warn">dag_run.conf</span>
+    </div>
+  </div>
+  <div class="discuss" style="margin-top:16px;">
+    <strong>Обсудите:</strong> Какой из трёх сценариев кажется вам наиболее
+    полезным для вашего подразделения? Почему?
+  </div>
+  <aside class="notes">
+    Дайте 2 минуты на обсуждение в парах. Затем соберите ответы — это поможет
+    понять практическое применение для конкретного депо.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 12 — Полный код DAG
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>DAG анализа задержек смены — полный код</h2>
+  <pre><code class="language-python">from airflow.decorators import dag, task
+from airflow.models import Variable
+from datetime import datetime
+
+# Airflow Variables: depot_code=TCH-15, delay_threshold_min=15
+
+@dag(
+    schedule="0 */8 * * *",
+    start_date=datetime(2024, 3, 1),
+    catchup=False,
+    tags=["rzd", "schedule-analysis"],
+)
+def shift_delay_analysis():
+
+    @task
+    def extract_delays(ds=None):
+        depot     = Variable.get("depot_code",         default_var="TCH-15")
+        threshold = int(Variable.get("delay_threshold_min", default_var=15))
+        # SQL с шаблоном даты
+        sql = f"""
+            SELECT train_number, delay_min, route_from, route_to
+            FROM rzd_analytics.schedule_adherence
+            WHERE date = '{ds}'
+              AND delay_min > {threshold}
+        """
+        return {"depot": depot, "date": ds, "sql": sql}
+
+    @task
+    def calculate_otd(data: dict):
+        print(f"Calculating OTD for {data['depot']} on {data['date']}...")
+        # XCom автоматически передаёт возврат @task
+        return {"otd_pct": 94.2, "total_trains": 48, "delayed": 3}
+
+    @task
+    def create_report(kpi: dict, ds=None):
+        print(f"OTD на {ds}: {kpi['otd_pct']}%")
+        print(f"Рейсов: {kpi['total_trains']}, опоздавших: {kpi['delayed']}")
+
+    data = extract_delays()
+    kpi  = calculate_otd(data)
+    create_report(kpi)
+
+dag_instance = shift_delay_analysis()</code></pre>
+  <aside class="notes">
+    Разберите код построчно. Обратите внимание на:
+    1) ds как аргумент функции — из контекста Airflow;
+    2) Variable.get с default_var — защита от отсутствующей переменной;
+    3) автоматический XCom через return / аргументы @task.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 13 — Вопрос: Variables vs жёсткий код
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Обсудите в группе (5 мин.):</strong><br/><br/>
+    В чём риск хранения пороговых значений (например, критическая температура букс
+    <span class="hi-orange">80&deg;C</span>) прямо в коде DAG, а не в Airflow Variables?<br/><br/>
+    <ul style="margin-top:8px;">
+      <li>Что произойдёт, если норматив изменится — потребуется ли новый деплой?</li>
+      <li>Кто должен управлять пороговыми значениями: разработчик или инженер депо?</li>
+      <li>Как Variables помогают разделить ответственность?</li>
+    </ul>
+  </div>
+  <div class="three-col" style="margin-top:16px;">
+    <div class="metric">
+      <span class="val">80&deg;C</span>
+      <small>Критич. температура букс</small>
+    </div>
+    <div class="metric">
+      <span class="val">45 л/ч</span>
+      <small>Норма расхода топлива</small>
+    </div>
+    <div class="metric">
+      <span class="val">95%</span>
+      <small>Целевой OTD</small>
+    </div>
+  </div>
+  <aside class="notes">
+    Правильный ответ: при изменении норматива нужен деплой кода →
+    риск ошибки и простоя → Variables позволяют изменять значения без деплоя
+    и дают инженерам депо контроль над параметрами без доступа к репозиторию.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 14 — Кейс: dag_run.conf для квартального отчёта
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Кейс: Квартальный отчёт за произвольный период</h2>
+  <div class="case-box">
+    <strong>Ситуация:</strong> Начальник ТЧЭ-15 хочет ежемесячно запускать специальный
+    сводный отчёт за произвольный период (например, за I квартал или за конкретный месяц)
+    через веб-интерфейс Airflow — без участия разработчика и без изменения кода DAG.<br/><br/>
+    <strong>Требования:</strong>
+    <ul>
+      <li>Диапазон дат задаётся при каждом запуске</li>
+      <li>Можно выбрать серию локомотива или все (<code>loco_series: "%"</code>)</li>
+      <li>Результат — CSV-отчёт в Яндекс Object Storage</li>
+    </ul>
+  </div>
+  <div class="two-col" style="margin-top:8px;">
+    <div>
+      <h3>Параметры запуска (dag_run.conf)</h3>
+      <pre><code class="language-json">{
+  "start_date":  "2024-01-01",
+  "end_date":    "2024-03-31",
+  "depot_code":  "TCH-15",
+  "loco_series": "VL80S",
+  "report_type": "fuel_summary"
+}</code></pre>
+    </div>
+    <div>
+      <h3>Вопросы для анализа</h3>
+      <ol style="font-size:0.82em;">
+        <li>Как DAG должен обработать отсутствующий параметр <code>loco_series</code>?</li>
+        <li>Нужна ли валидация дат внутри DAG (start &lt; end)?</li>
+        <li>Как организовать хранение результатов в Object Storage?</li>
+      </ol>
+    </div>
+  </div>
+  <aside class="notes">
+    Разберите кейс в группах по 3-4 человека. Каждая группа предлагает решение
+    для одного из трёх вопросов. Затем каждая группа презентует 1-2 минуты.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 15 — Вопрос: несколько депо
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    <strong>Обсудите в группе (7 мин.):</strong><br/><br/>
+    Аналитическая платформа Западно-Сибирской дирекции тяги должна охватывать
+    <span class="hi-orange">три депо</span>: ТЧЭ-15 (Новосибирск),
+    ТЧЭ-16 (Барнаул), ТЧЭ-17 (Омск).<br/><br/>
+    <strong>Как организовать параметризованные отчёты без дублирования кода DAG?</strong><br/>
+    <ul style="margin-top:8px;">
+      <li><strong>Вариант А:</strong> Три отдельных DAG-файла с разными Variables</li>
+      <li><strong>Вариант Б:</strong> Один DAG, депо передаётся через <code>dag_run.conf</code></li>
+      <li><strong>Вариант В:</strong> DAG Factory — генерация DAG-ов из конфигурации</li>
+    </ul>
+  </div>
+  <div class="note-box">
+    Подсказка: оцените каждый вариант по критериям — сложность поддержки, гибкость, риски.
+  </div>
+  <aside class="notes">
+    После обсуждения соберите голоса за каждый вариант. Правильного ответа нет —
+    важно понять trade-offs. В реальных проектах часто используют Вариант В (DAG Factory)
+    или Вариант Б. Вариант А — самый простой, но не масштабируется.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 16 — Квиз
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Проверка знаний — Квиз</h2>
+
+  <div style="margin-bottom:14px;">
+    <p style="margin-bottom:4px;"><strong>Вопрос 1.</strong>
+      Как получить дату выполнения DAG Run в SQL через шаблон Jinja2?</p>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">&#123;&#123; run_date &#125;&#125;</button>
+    <button class="quiz-btn" data-correct="true" onclick="checkAnswer(this,true)">&#123;&#123; ds &#125;&#125;</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">&#123;&#123; today &#125;&#125;</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">&#123;&#123; execution &#125;&#125;</button>
+  </div>
+
+  <div style="margin-bottom:14px;">
+    <p style="margin-bottom:4px;"><strong>Вопрос 2.</strong> XCom предназначен для:</p>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Хранения больших датасетов телеметрии</button>
+    <button class="quiz-btn" data-correct="true" onclick="checkAnswer(this,true)">Передачи малых значений между задачами</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Соединений с базами данных</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Планирования запуска задач</button>
+  </div>
+
+  <div>
+    <p style="margin-bottom:4px;"><strong>Вопрос 3.</strong>
+      <code>dag_run.conf</code> позволяет:</p>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Изменить расписание DAG</button>
+    <button class="quiz-btn" data-correct="true" onclick="checkAnswer(this,true)">Передать параметры при ручном запуске</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Отключить catchup для старых дат</button>
+    <button class="quiz-btn" onclick="checkAnswer(this,false)">Настроить количество повторных попыток</button>
+  </div>
+  <aside class="notes">
+    Дайте 3 минуты. После каждого вопроса коротко объясните правильный ответ.
+    Вопрос 1: ds — стандартный макрос, остальные не существуют.
+    Вопрос 2: XCom — для малых значений, не для датасетов.
+    Вопрос 3: dag_run.conf — только для ручного запуска (Trigger DAG).
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 17 — Задание для группы
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Задание для работы в группах</h2>
+  <div class="task-box">
+    <strong>Задание (20 мин., группы по 3-4 человека):</strong><br/><br/>
+    <strong>Шаг 1.</strong> Напишите SQL-запрос с Jinja2-шаблонами для расчёта
+    среднего опоздания по каждому маршруту за смену <code>&#123;&#123;&nbsp;ds&nbsp;&#125;&#125;</code>.
+    Включите сравнение с предыдущим днём через <code>&#123;&#123;&nbsp;prev_ds&nbsp;&#125;&#125;</code>.<br/><br/>
+    <strong>Шаг 2.</strong> Составьте список Airflow Variables для конфигурации DAG
+    анализа задержек ТЧЭ-15. Для каждой: ключ, тип, пример значения, кто управляет.<br/><br/>
+    <strong>Шаг 3 (бонус).</strong> Нарисуйте схему TaskFlow DAG с тремя задачами:
+    <code>extract</code> &rarr; <code>calculate</code> &rarr; <code>report</code>.
+    Покажите, что передаётся через XCom на каждом шаге.
+  </div>
+  <div class="note-box">
+    Таблицы: <code>rzd_analytics.schedule_adherence</code>
+    (train_number, route_id, delay_min, date) &nbsp;|&nbsp;
+    <code>rzd_analytics.routes</code> (route_id, route_name, distance_km)
+  </div>
+  <aside class="notes">
+    Обходите группы, помогайте с синтаксисом Jinja2. В конце попросите одну группу
+    показать SQL на экране — разберите вместе. Обратите внимание на NULL-безопасность.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 18 — Обзор практической работы
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Практическая работа — обзор</h2>
+  <div class="two-col">
+    <div>
+      <h3>Тема</h3>
+      <p>Создание параметризованного DAG для анализа расхода
+         топлива / электроэнергии по сменам ТЧЭ-15</p>
+      <h3>Что вы сделаете</h3>
+      <ol>
+        <li>Создадите Variables в Airflow UI</li>
+        <li>Напишете DAG с Jinja2-шаблонами в SQL</li>
+        <li>Настроите <code>dag_run.conf</code> для произвольного периода</li>
+        <li>Проверите XCom в интерфейсе Airflow</li>
+        <li>Запустите DAG вручную с разными параметрами</li>
+        <li>Проанализируете отчёт об отклонениях</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Тестовые данные</h3>
+      <ul>
+        <li><code>locomotives.csv</code> — реестр локомотивов ТЧЭ-15</li>
+        <li><code>fuel_consumption.csv</code> — расход топлива по сменам</li>
+        <li><code>energy_consumption.csv</code> — расход электроэнергии</li>
+        <li><code>schedule_adherence.csv</code> — соблюдение графика</li>
+      </ul>
+      <div style="margin-top:12px;">
+        <span class="badge-ok">Файл: practice/README.md</span>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        Платформа: Яндекс Облако<br/>
+        Managed Airflow или VM Ubuntu 22.04
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Расскажите, что practice/README.md содержит пошаговую инструкцию с готовым кодом
+    и тестовыми данными. Студенты могут скопировать код целиком и запустить.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 19 — Обзор лабораторной работы
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Лабораторная работа — обзор</h2>
+  <div class="two-col">
+    <div>
+      <h3>Тема</h3>
+      <p>DAG анализа расхода топлива по сменам с XCom
+         и шаблонами дат — полная реализация на TaskFlow API</p>
+      <h3>Что вы сделаете (8 шагов)</h3>
+      <ol>
+        <li>Развернёте схему <code>rzd_analytics</code> в PostgreSQL</li>
+        <li>Загрузите тестовые данные из CSV</li>
+        <li>Напишете полный TaskFlow DAG</li>
+        <li>Добавите обработку ошибок и алерты</li>
+        <li>Настроите динамические пороги через Variables</li>
+        <li>Запустите DAG за несколько исторических дат</li>
+        <li>Проанализируете результаты в Airflow UI</li>
+        <li>Выполните задания повышенной сложности</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Ожидаемые результаты</h3>
+      <ul>
+        <li>Работающий DAG с полной параметризацией</li>
+        <li>Отчёт об отклонениях от норм расхода топлива</li>
+        <li>Алерты при превышении температуры букс 80&deg;C</li>
+        <li>Метрики OTD за анализируемый период</li>
+      </ul>
+      <div style="margin-top:12px;">
+        <span class="badge-ok">Файл: lab/README.md</span>
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <strong>3 задания повышенной сложности</strong><br/>
+        для студентов, завершивших основную работу досрочно
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Объясните, что лабораторная работа строится на тех же данных, что и практическая,
+    но глубже погружается в реализацию: полный DAG 80+ строк, обработка ошибок, алерты.
+  </aside>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     СЛАЙД 20 — Итоги
+     ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Итоги модуля 04</h2>
+  <div class="two-col">
+    <div>
+      <h3>Ключевые понятия</h3>
+      <ul>
+        <li><span class="hi-orange">Jinja2</span> — динамические значения в параметрах задач</li>
+        <li><span class="hi-orange">ds / prev_ds / next_ds</span> — макросы дат для инкрементальной загрузки</li>
+        <li><span class="hi-orange">Variables</span> — конфигурация без изменения кода и деплоя</li>
+        <li><span class="hi-orange">dag_run.conf</span> — параметры при ручном запуске</li>
+        <li><span class="hi-orange">XCom</span> — передача малых значений между задачами</li>
+        <li><span class="hi-orange">@dag / @task</span> — чистый Python без шаблонного кода</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Что дальше — Модуль 05</h3>
+      <div class="arch-box">
+        <strong>Операторы и провайдеры</strong><br/>
+        PostgresOperator, S3Hook, HttpSensor<br/>
+        Подключения к внешним системам<br/>
+        Интеграция с Яндекс DataSphere
+      </div>
+      <div class="arch-box" style="margin-top:8px;">
+        <strong>Самостоятельно до следующего модуля:</strong>
+        <ul style="font-size:0.88em;">
+          <li>Завершить лабораторную работу</li>
+          <li>Выполнить хотя бы одно задание повышенной сложности</li>
+          <li>Изучить документацию:
+            <a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/xcoms.html"
+               target="_blank">XComs</a>,
+            <a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/variables.html"
+               target="_blank">Variables</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="three-col" style="margin-top:14px;">
+    <div class="metric"><span class="val">6</span><small>тем модуля</small></div>
+    <div class="metric"><span class="val">2 ч.</span><small>продолжительность</small></div>
+    <div class="metric"><span class="val">6+</span><small>примеров кода</small></div>
+  </div>
+  <aside class="notes">
+    Подведите итоги. Попросите каждого участника назвать одно понятие,
+    которое он применит в своей работе на следующей неделе.
+  </aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 700,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: true,
+    slideNumber: 'c/t',
+    plugins: [RevealHighlight, RevealNotes],
+    transition: 'slide',
+    controls: true,
+    progress: true
+});
+
+function checkAnswer(btn, correct) {
+    var p = btn.parentElement;
+    p.querySelectorAll('.quiz-btn').forEach(function(b) { b.disabled = true; });
+    if (correct) {
+        btn.classList.add('correct');
+        btn.textContent += ' ✓';
+    } else {
+        btn.classList.add('wrong');
+        btn.textContent += ' ✗';
+        p.querySelectorAll('[data-correct="true"]').forEach(function(b) {
+            b.classList.add('correct');
+        });
+    }
+}
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,1361 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Модуль 07: Разработка пользовательских компонент | Курс Apache Airflow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; }
+.reveal { font-size: 24px; }
+.reveal h1, .reveal h2, .reveal h3 { color: #4472C4; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green  { color: #70AD47; font-weight: bold; }
+
+.discuss {
+  background: #fff8e7; border-left: 5px solid #ED7D31;
+  padding: 12px 16px; margin: 8px 0; text-align: left;
+  font-size: 0.82em; border-radius: 0 8px 8px 0;
+}
+.case-box {
+  background: #eef4fb; border-left: 5px solid #4472C4;
+  padding: 12px 16px; margin: 8px 0; text-align: left;
+  font-size: 0.8em; border-radius: 0 8px 8px 0;
+}
+.task-box {
+  background: #eafaf1; border-left: 5px solid #70AD47;
+  padding: 12px 16px; margin: 8px 0; text-align: left;
+  font-size: 0.8em; border-radius: 0 8px 8px 0;
+}
+.warning-box {
+  background: #fff3e0; border-left: 5px solid #ED7D31;
+  padding: 10px 15px; border-radius: 0 8px 8px 0;
+  font-size: 0.78em; margin: 6px 0;
+}
+.info-box {
+  background: #eef4fb; border-left: 5px solid #4472C4;
+  padding: 10px 15px; border-radius: 0 8px 8px 0;
+  font-size: 0.78em; margin: 6px 0;
+}
+.two-col {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; align-items: start;
+}
+.three-col {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px; align-items: start;
+}
+.arch-box {
+  border: 2px solid #4472C4; border-radius: 6px;
+  padding: 10px; background: #f0f4fb; font-size: 0.78em;
+}
+.arch-box.orange { border-color: #ED7D31; background: #fff8e7; }
+.arch-box.green  { border-color: #70AD47; background: #eafaf1; }
+.arch-box.red    { border-color: #e74c3c; background: #fdf2f2; }
+
+.tag {
+  display: inline-block; background: #4472C4; color: #fff;
+  padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin: 2px;
+}
+
+.title-logo { font-size: 3em; margin-bottom: 10px; }
+.subtitle    { color: #ED7D31; font-size: 1.1em; font-weight: bold; }
+.company-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #4472C4, #2d5699);
+  color: #fff; padding: 8px 20px; border-radius: 20px;
+  font-size: 0.9em; margin-top: 10px;
+}
+
+.agenda-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; font-size: 0.82em; border-bottom: 1px solid #eee;
+}
+.agenda-num {
+  background: #4472C4; color: #fff; width: 26px; height: 26px;
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 0.8em; font-weight: bold; flex-shrink: 0;
+}
+
+.dep-flow {
+  display: flex; align-items: center;
+  justify-content: center; gap: 6px; flex-wrap: wrap; margin: 10px 0;
+}
+.dep-node {
+  border: 2px solid #4472C4; border-radius: 8px;
+  padding: 8px 14px; background: #f0f4fb;
+  font-size: 0.72em; text-align: center; min-width: 80px;
+}
+.dep-node.orange { border-color: #ED7D31; background: #fff8e7; font-weight: bold; }
+.dep-node.green  { border-color: #70AD47; background: #eafaf1; }
+.dep-node.gray   { border-color: #95a5a6; background: #f8f9fa; color: #7f8c8d; }
+.dep-arrow { color: #ED7D31; font-size: 1.3em; font-weight: bold; }
+
+.quiz-btn {
+  background: #4472C4; color: #fff; border: none;
+  padding: 7px 15px; margin: 4px; cursor: pointer;
+  border-radius: 4px; font-size: 0.72em;
+}
+.quiz-btn:hover  { background: #2d5699; }
+.quiz-btn.correct { background: #70AD47; }
+.quiz-btn.wrong   { background: #e74c3c; }
+.quiz-block {
+  background: #eef4fb; border-radius: 10px;
+  padding: 12px; margin: 8px 0; text-align: left;
+}
+.quiz-q {
+  font-weight: bold; color: #4472C4;
+  margin-bottom: 8px; font-size: 0.82em;
+}
+
+.summary-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin: 10px 0;
+}
+.summary-item {
+  background: #f0f4fb; border-left: 4px solid #4472C4;
+  padding: 10px; border-radius: 0 8px 8px 0; font-size: 0.78em;
+}
+.summary-item .si-title { font-weight: bold; color: #4472C4; margin-bottom: 4px; }
+.next-badge {
+  display: inline-block; background: #70AD47; color: #fff;
+  padding: 5px 15px; border-radius: 15px; font-size: 0.8em; margin: 3px;
+}
+
+.reveal pre { font-size: 0.48em; width: 100%; box-shadow: none; }
+.reveal pre code { max-height: 360px; }
+.reveal code { background: #f6f8fa; padding: 2px 5px; border-radius: 3px; }
+.reveal table { font-size: 0.78em; }
+.reveal table th { background: #4472C4; color: #fff; }
+
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+.badge {
+  display: inline-block; padding: 4px 12px;
+  border-radius: 12px; font-size: 0.7em; font-weight: bold;
+}
+.badge-blue   { background: #4472C4; color: #fff; }
+.badge-orange { background: #ED7D31; color: #fff; }
+.badge-green  { background: #70AD47; color: #fff; }
+.badge-red    { background: #e74c3c; color: #fff; }
+.badge-gray   { background: #7f8c8d; color: #fff; }
+
+.op-table { width: 100%; border-collapse: collapse; font-size: 0.72em; }
+.op-table th { background: #4472C4; color: #fff; padding: 7px 10px; text-align: left; }
+.op-table td { padding: 6px 10px; border-bottom: 1px solid #e0e0e0; }
+.op-table tr:nth-child(even) td { background: #f6f9ff; }
+
+.comp-layer {
+  border: 2px solid #4472C4; border-radius: 8px;
+  padding: 10px 16px; margin: 6px 0; background: #f0f4fb; font-size: 0.78em;
+}
+.comp-layer.orange { border-color: #ED7D31; background: #fff8e7; }
+.comp-layer.green  { border-color: #70AD47; background: #eafaf1; }
+.comp-layer-title  { font-weight: bold; color: #4472C4; margin-bottom: 4px; }
+.comp-layer.orange .comp-layer-title { color: #ED7D31; }
+.comp-layer.green  .comp-layer-title { color: #70AD47; }
+
+.plugin-tree {
+  font-family: monospace; background: #f6f8fa; border-radius: 8px;
+  padding: 14px 18px; font-size: 0.78em; text-align: left;
+  border: 1px solid #d0dae8; line-height: 1.7;
+}
+.plugin-tree .dir     { color: #4472C4; font-weight: bold; }
+.plugin-tree .file    { color: #2c3e50; }
+.plugin-tree .comment { color: #95a5a6; font-style: italic; }
+/* ===== CODE BLOCK FIX: dark theme, full contrast ===== */
+.reveal pre {
+    background: #1e1e2e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+.reveal pre code {
+    background: #1e1e2e !important;
+    padding: 18px 20px !important;
+    display: block !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    line-height: 1.55 !important;
+}
+.reveal pre code.hljs {
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    padding: 18px 20px !important;
+}
+/* Inline code — тёмный текст на сером фоне */
+.reveal code:not(pre code) {
+    background: #e8ecf0 !important;
+    color: #c0392b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.85em !important;
+}
+/* hljs токены (atom-one-dark / catppuccin) */
+.hljs-keyword, .hljs-selector-tag { color: #cba6f7 !important; }
+.hljs-string, .hljs-attr         { color: #a6e3a1 !important; }
+.hljs-comment                    { color: #6c7086 !important; font-style: italic; }
+.hljs-number, .hljs-literal      { color: #fab387 !important; }
+.hljs-built_in, .hljs-type       { color: #89b4fa !important; }
+.hljs-function, .hljs-title      { color: #89dceb !important; }
+.hljs-variable, .hljs-name       { color: #cdd6f4 !important; }
+.hljs-params                     { color: #f9e2af !important; }
+/* ===== END CODE BLOCK FIX ===== */
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 1 — ТИТУЛЬНЫЙ
+══════════════════════════════════════════════════════ -->
+<section>
+  <div class="title-logo">🚂</div>
+  <h1 style="font-size:1.6em;">Модуль 07</h1>
+  <p class="subtitle">Разработка пользовательских компонент</p>
+  <p style="font-size:0.82em; color:#666; margin-top:10px;">
+    Apache Airflow
+  </p>
+  <p style="font-size:0.68em; color:#888; margin-top:16px;">
+    Продолжительность: 2 часа &nbsp;|&nbsp; Практика: 50% &nbsp;|&nbsp;
+    Уровень: продвинутый
+  </p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 2 — ПОВЕСТКА
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Повестка модуля</h2>
+  <div class="agenda-item"><div class="agenda-num">1</div><span>Зачем нужны кастомные компоненты: стандартные провайдеры vs проприетарные системы</span></div>
+  <div class="agenda-item"><div class="agenda-num">2</div><span>Структура <code>BaseOperator</code> — обязательные методы, <code>template_fields</code></span></div>
+  <div class="agenda-item"><div class="agenda-num">3</div><span>Создание кастомного оператора — наследование, конструктор, <code>execute()</code></span></div>
+  <div class="agenda-item"><div class="agenda-num">4</div><span>Хуки (Hooks) — связь с Connections, инкапсуляция доступа к внешним системам</span></div>
+  <div class="agenda-item"><div class="agenda-num">5</div><span>Кастомные сенсоры — ожидание готовности данных через метод <code>poke()</code></span></div>
+  <div class="agenda-item"><div class="agenda-num">6</div><span>Airflow Plugins — регистрация компонентов, структура пакета</span></div>
+  <div class="agenda-item"><div class="agenda-num">7</div><span>Архитектура кастомных компонентов на сквозном примере</span></div>
+  <div class="agenda-item"><div class="agenda-num">8</div><span>Кейс, обсуждения, квиз, групповые задания</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 3 — ЗАЧЕМ КАСТОМНЫЕ КОМПОНЕНТЫ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Зачем создавать кастомные компоненты?</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Стандартные провайдеры Airflow</strong>
+        <ul style="font-size:0.85em; margin-top:8px;">
+          <li>PostgresOperator, S3Hook</li>
+          <li>HttpOperator, SparkSubmitOperator</li>
+          <li>SlackWebhookOperator …</li>
+        </ul>
+        <div class="hi-green" style="margin-top:8px; font-size:0.8em;">✔ Готовые решения для популярных систем</div>
+      </div>
+      <div class="arch-box orange" style="margin-top:10px;">
+        <strong style="color:#ED7D31;">Ограничения провайдеров</strong>
+        <ul style="font-size:0.85em; margin-top:8px;">
+          <li>Нет поддержки внутренних/отраслевых систем</li>
+          <li>Нет интеграции с проприетарными API</li>
+          <li>Нет специфической логики обработки доменных данных</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Кастомные компоненты решают:</strong>
+        <ul style="font-size:0.82em; margin-top:8px;">
+          <li>Чтение данных из проприетарных источников по REST/SDK</li>
+          <li>Интеграцию с внутренними бизнес-системами</li>
+          <li>Ожидание готовности данных от внешнего источника</li>
+          <li>Инкапсуляцию доменной бизнес-логики и расчётов</li>
+        </ul>
+      </div>
+      <div class="info-box" style="margin-top:10px;">
+        <strong>Принцип:</strong> создавай кастомный компонент, когда стандартные
+        средства требуют более 30 строк «обёртки» в каждом DAG.
+      </div>
+    </div>
+  </div>
+  <div class="badge-row" style="justify-content:center; margin-top:8px;">
+    <span class="badge badge-blue">Operator</span>
+    <span class="badge badge-orange">Hook</span>
+    <span class="badge badge-green">Sensor</span>
+    <span class="badge badge-gray">Plugin</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 4 — СТРУКТУРА BASEOPERATOR
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Структура <code>BaseOperator</code></h2>
+  <div class="two-col">
+    <div>
+      <table class="op-table">
+        <thead><tr><th>Элемент</th><th>Обязательный?</th><th>Назначение</th></tr></thead>
+        <tbody>
+          <tr><td><code>execute(context)</code></td><td><span class="hi-orange">Да</span></td><td>Основная логика задачи</td></tr>
+          <tr><td><code>template_fields</code></td><td>Нет</td><td>Поля с Jinja-шаблонами</td></tr>
+          <tr><td><code>template_ext</code></td><td>Нет</td><td>Расширения файлов-шаблонов</td></tr>
+          <tr><td><code>ui_color</code></td><td>Нет</td><td>Цвет в UI Airflow</td></tr>
+          <tr><td><code>ui_fgcolor</code></td><td>Нет</td><td>Цвет текста в UI</td></tr>
+          <tr><td><code>__init__()</code></td><td><span class="hi-orange">Да</span></td><td>Параметры оператора</td></tr>
+          <tr><td><code>pre_execute()</code></td><td>Нет</td><td>Хук до выполнения</td></tr>
+          <tr><td><code>post_execute()</code></td><td>Нет</td><td>Хук после выполнения</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <pre><code class="language-python">from airflow.models import BaseOperator
+from airflow.utils.decorators import apply_defaults
+
+class MyOperator(BaseOperator):
+
+    # Jinja будет рендерить эти поля
+    template_fields = ('loco_id', 'target_date')
+
+    # Цвет задачи в Airflow UI
+    ui_color = '#4472C4'
+
+    @apply_defaults
+    def __init__(
+        self,
+        loco_id: str,
+        target_date: str = '{{ ds }}',
+        *args,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.loco_id = loco_id
+        self.target_date = target_date
+
+    def execute(self, context: dict):
+        # context — словарь выполнения:
+        # ds, execution_date, task_instance…
+        self.log.info(
+            "Обрабатываю локомотив: %s",
+            self.loco_id
+        )
+        return result</code></pre>
+      <div class="warning-box">
+        <strong>Важно:</strong> всегда вызывай <code>super().__init__(**kwargs)</code>
+        для передачи базовых параметров (task_id, dag, retries…)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 5 — СОЗДАНИЕ CUSTOM OPERATOR — ШАГИ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Создание кастомного оператора — шаги</h2>
+  <div class="three-col">
+    <div class="comp-layer">
+      <div class="comp-layer-title">1. Наследование</div>
+      <p>Наследуй от <code>BaseOperator</code> (или более специализированного класса)</p>
+      <div class="tag">from airflow.models</div>
+    </div>
+    <div class="comp-layer orange">
+      <div class="comp-layer-title">2. Конструктор</div>
+      <p>Объяви специфические параметры в <code>__init__</code>, вызови <code>super()</code></p>
+      <div class="tag" style="background:#ED7D31;">template_fields</div>
+    </div>
+    <div class="comp-layer green">
+      <div class="comp-layer-title">3. Метод execute</div>
+      <p>Реализуй бизнес-логику, используй <code>self.log</code> для логирования</p>
+      <div class="tag" style="background:#70AD47;">XCom Push</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <div class="info-box">
+      <strong>Контекст выполнения</strong> (<code>context</code>) содержит:
+      <code>ds</code> (дата), <code>execution_date</code>, <code>task_instance</code>,
+      <code>dag</code>, <code>conf</code> и другие переменные окружения DAG.
+    </div>
+  </div>
+  <div class="dep-flow" style="margin-top:14px;">
+    <div class="dep-node orange">BaseOperator</div>
+    <div class="dep-arrow">→</div>
+    <div class="dep-node">MyCustomOperator</div>
+    <div class="dep-arrow">→</div>
+    <div class="dep-node green">execute(context)</div>
+    <div class="dep-arrow">→</div>
+    <div class="dep-node">XCom / PostgreSQL</div>
+  </div>
+  <div class="warning-box" style="margin-top:8px;">
+    <strong>Логирование:</strong> используй <code>self.log.info()</code>, <code>self.log.warning()</code>,
+    <code>self.log.error()</code> — они автоматически пишутся в логи задачи Airflow.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 6 — ХУКИ (HOOKS)
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Хуки (Hooks) — интерфейс к внешним системам</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Hook = библиотека соединения</strong>
+        <ul style="font-size:0.82em; margin-top:8px;">
+          <li>Управляет соединением (открытие / закрытие)</li>
+          <li>Хранит учётные данные в <strong>Airflow Connections</strong></li>
+          <li>Предоставляет методы для работы с API</li>
+          <li>Переиспользуется несколькими операторами</li>
+        </ul>
+      </div>
+      <div class="dep-flow" style="margin-top:14px; flex-direction:column; align-items:flex-start;">
+        <div class="dep-node orange" style="width:100%; text-align:center; min-width:0;">Airflow Connections (UI)</div>
+        <div style="text-align:center; width:100%; color:#ED7D31; font-size:1.3em;">↓</div>
+        <div class="dep-node" style="width:100%; text-align:center; min-width:0;">BaseHook.get_connection(conn_id)</div>
+        <div style="text-align:center; width:100%; color:#ED7D31; font-size:1.3em;">↓</div>
+        <div class="dep-node green" style="width:100%; text-align:center; min-width:0;">Кастомный Hook (наследник BaseHook)</div>
+        <div style="text-align:center; width:100%; color:#ED7D31; font-size:1.3em;">↓</div>
+        <div class="dep-node" style="width:100%; text-align:center; min-width:0;">Оператор / Sensor</div>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box orange">
+        <strong style="color:#ED7D31;">Operator vs Hook — разница</strong>
+        <table class="op-table" style="margin-top:8px;">
+          <thead><tr><th>Operator</th><th>Hook</th></tr></thead>
+          <tbody>
+            <tr><td>Задача в DAG</td><td>Библиотека соединения</td></tr>
+            <tr><td>Один запуск</td><td>Много вызовов</td></tr>
+            <tr><td>execute()</td><td>get_conn(), методы</td></tr>
+            <tr><td>Виден в UI</td><td>Скрытый слой</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <strong>Правило:</strong> выноси код работы с внешней системой
+        в Hook — операторы становятся тонкими и переиспользуемыми.
+      </div>
+      <div class="badge-row" style="margin-top:8px;">
+        <span class="badge badge-blue">HttpHook</span>
+        <span class="badge badge-orange">Кастомный Hook</span>
+        <span class="badge badge-green">PostgresHook</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 7 — КАСТОМНЫЕ SENSORS
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Кастомные Sensors — <code>BaseSensorOperator</code></h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Sensor = оператор-ожидатель</strong>
+        <ul style="font-size:0.82em; margin-top:8px;">
+          <li>Наследует <code>BaseSensorOperator</code></li>
+          <li>Реализует метод <code>poke(context) → bool</code></li>
+          <li>Вызывается периодически до получения <code>True</code></li>
+          <li>При <code>False</code> — ждёт и повторяет (<code>poke_interval</code>)</li>
+          <li>При таймауте — поднимает исключение</li>
+        </ul>
+      </div>
+      <div class="arch-box orange" style="margin-top:10px;">
+        <strong style="color:#ED7D31;">Режимы работы сенсора:</strong>
+        <ul style="font-size:0.82em; margin-top:6px;">
+          <li><code>mode='poke'</code> — занимает worker-слот</li>
+          <li><code>mode='reschedule'</code> — освобождает слот между проверками</li>
+        </ul>
+        <div style="margin-top:6px; font-size:0.85em;">
+          <span class="hi-orange">Типовой сценарий:</span> внешний источник публикует данные
+          с задержкой — сенсор ждёт появления записей перед запуском обработки.
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Параметры BaseSensorOperator:</strong>
+        <table class="op-table" style="margin-top:8px;">
+          <thead><tr><th>Параметр</th><th>Значение по умолч.</th></tr></thead>
+          <tbody>
+            <tr><td><code>poke_interval</code></td><td>60 сек</td></tr>
+            <tr><td><code>timeout</code></td><td>7 дней</td></tr>
+            <tr><td><code>mode</code></td><td>'poke'</td></tr>
+            <tr><td><code>soft_fail</code></td><td>False</td></tr>
+            <tr><td><code>exponential_backoff</code></td><td>False</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dep-flow" style="margin-top:10px;">
+        <div class="dep-node">poke() → False</div>
+        <div class="dep-arrow">→</div>
+        <div class="dep-node orange">Ждать poke_interval</div>
+        <div class="dep-arrow">→</div>
+        <div class="dep-node green">poke() → True</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 8 — AIRFLOW PLUGINS
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Airflow Plugins — менеджер компонентов</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Plugin Manager автоматически</strong>
+        <ul style="font-size:0.82em; margin-top:8px;">
+          <li>Сканирует директорию <code>$AIRFLOW_HOME/plugins/</code></li>
+          <li>Импортирует классы операторов, хуков, сенсоров</li>
+          <li>Регистрирует их в Airflow при старте</li>
+          <li>Делает доступными в DAG-файлах</li>
+        </ul>
+      </div>
+      <div class="arch-box orange" style="margin-top:10px;">
+        <strong style="color:#ED7D31;">Что регистрируется через Plugin:</strong>
+        <ul style="font-size:0.82em; margin-top:6px;">
+          <li>Операторы (operators)</li>
+          <li>Хуки (hooks)</li>
+          <li>Сенсоры (sensors)</li>
+          <li>Представления для UI (views, blueprints)</li>
+          <li>Макросы Jinja (macros)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Базовый класс плагина:</strong>
+      </div>
+      <pre><code class="language-python"># plugins/rzd_tche15_plugin.py
+from airflow.plugins_manager import AirflowPlugin
+
+from operators.loco_telemetry_operator import (
+    LocomotiveTelemetryOperator,
+)
+from hooks.glonass_hook import GLONASSHook
+from hooks.asup_hook import ASUPHook
+from sensors.loco_data_ready_sensor import (
+    LocoDataReadySensor,
+)
+
+
+class RzdTche15Plugin(AirflowPlugin):
+    """Плагин аналитики ТЧЭ-15 Новосибирск."""
+
+    name = 'rzd_tche15_plugin'
+
+    operators = [LocomotiveTelemetryOperator]
+    hooks     = [GLONASSHook, ASUPHook]
+    sensors   = [LocoDataReadySensor]
+    macros    = []
+    flask_blueprints = []
+    appbuilder_views = []</code></pre>
+      <div class="info-box" style="margin-top:8px;">
+        После добавления плагина перезапусти <code>airflow scheduler</code>
+        и <code>airflow webserver</code>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 9 — СТРУКТУРА ПЛАГИНА
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Структура плагина: файлы и каталоги</h2>
+  <div class="two-col">
+    <div>
+      <div class="plugin-tree">
+<span class="dir">$AIRFLOW_HOME/plugins/</span><br>
+<span class="dir">├── my_plugin.py</span>  <span class="comment"># регистрация</span><br>
+<span class="dir">├── operators/</span><br>
+<span class="file">│   ├── __init__.py</span><br>
+<span class="file">│   ├── my_operator.py</span><br>
+<span class="file">│   ├── second_operator.py</span><br>
+<span class="file">│   └── third_operator.py</span><br>
+<span class="dir">├── hooks/</span><br>
+<span class="file">│   ├── __init__.py</span><br>
+<span class="file">│   ├── source_hook.py</span><br>
+<span class="file">│   └── api_hook.py</span><br>
+<span class="dir">├── sensors/</span><br>
+<span class="file">│   ├── __init__.py</span><br>
+<span class="file">│   └── data_ready_sensor.py</span><br>
+<span class="dir">└── utils/</span><br>
+<span class="file">    ├── __init__.py</span><br>
+<span class="file">    └── calc.py</span>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box orange">
+        <strong style="color:#ED7D31;">Файл <code>__init__.py</code> в operators/</strong>
+      </div>
+      <pre><code class="language-python"># plugins/operators/__init__.py
+# Удобные импорты для DAG-файлов
+
+from operators.loco_telemetry_operator import (
+    LocomotiveTelemetryOperator,
+)
+from operators.schedule_adherence_operator import (
+    ScheduleAdherenceOperator,
+)
+from operators.maintenance_operator import (
+    MaintenancePlanOperator,
+)</code></pre>
+      <div class="info-box" style="margin-top:8px;">
+        Явные импорты упрощают автодополнение в IDE
+        и делают зависимости прозрачными.
+      </div>
+      <div class="warning-box" style="margin-top:6px;">
+        <strong>Яндекс Облако:</strong> в Managed Airflow плагины
+        загружаются через S3-бакет (<code>plugins.zip</code>).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 10 — PACKAGING И РАСПРОСТРАНЕНИЕ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Packaging и распространение плагинов</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Способы распространения:</strong>
+        <table class="op-table" style="margin-top:8px;">
+          <thead><tr><th>Способ</th><th>Когда применять</th></tr></thead>
+          <tbody>
+            <tr><td>Каталог plugins/</td><td>Разработка и тестирование</td></tr>
+            <tr><td>Python package (PyPI)</td><td>Корпоративный реестр пакетов</td></tr>
+            <tr><td>Provider package</td><td>Официальные Apache интеграции</td></tr>
+            <tr><td>Docker layer</td><td>Контейнерный деплой</td></tr>
+            <tr><td>S3/GCS zip</td><td>Managed Airflow (Яндекс Облако)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-python"># setup.py для корпоративного пакета РЖД
+from setuptools import setup, find_packages
+
+setup(
+    name='airflow-rzd-tche15',
+    version='1.0.0',
+    description='Airflow operators for RZD ТЧЭ-15',
+    author='DataTeam ТЧЭ-15',
+    packages=find_packages(
+        where='src',
+        include=['rzd_tche15_operators*'],
+    ),
+    package_dir={'': 'src'},
+    install_requires=[
+        'apache-airflow>=2.6.0',
+        'requests>=2.28.0',
+    ],
+    entry_points={
+        'airflow.plugins': [
+            'rzd_tche15 = rzd_tche15_operators'
+            '.plugin:RzdTche15Plugin',
+        ],
+    },
+)
+
+# Установка:
+# pip install dist/airflow-rzd-tche15-1.0.0.tar.gz</code></pre>
+    </div>
+  </div>
+  <div class="warning-box">
+    <strong>Яндекс Облако (Managed Airflow):</strong>
+    упакуй плагины в <code>plugins.zip</code> и загрузи в S3-бакет окружения.
+    Зависимости добавь в <code>requirements.txt</code> того же бакета.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 11 — ПРИМЕНЕНИЕ В РЖД
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Применение кастомных компонентов в ТЧЭ-15</h2>
+  <div class="three-col" style="font-size:0.78em;">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4; display:block; margin-bottom:6px;">Sensors (ожидание)</strong>
+        <div class="dep-node" style="margin:4px 0; font-size:0.85em;">LocoDataReadySensor</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ ждёт пакет с локомотива</div>
+        <div class="dep-node" style="margin:4px 0; font-size:0.85em;">ScheduleFileSensor</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ ждёт файл графика</div>
+        <div class="dep-node" style="margin:4px 0; font-size:0.85em;">ASUPReportSensor</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ ждёт отчёт АСУП</div>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box orange">
+        <strong style="color:#ED7D31; display:block; margin-bottom:6px;">Operators (действия)</strong>
+        <div class="dep-node orange" style="margin:4px 0; font-size:0.85em;">LocomotiveTelemetryOperator</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ сбор телеметрии ГЛОНАСС</div>
+        <div class="dep-node orange" style="margin:4px 0; font-size:0.85em;">ScheduleAdherenceOperator</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ план/факт движения</div>
+        <div class="dep-node orange" style="margin:4px 0; font-size:0.85em;">MaintenancePlanOperator</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ планирование ТО/ТР</div>
+        <div class="dep-node orange" style="margin:4px 0; font-size:0.85em;">FuelConsumptionOperator</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ расход дизтоплива</div>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47; display:block; margin-bottom:6px;">Hooks (соединения)</strong>
+        <div class="dep-node green" style="margin:4px 0; font-size:0.85em;">GLONASSHook</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ ГЛОНАСС-сервер ТЧЭ-15</div>
+        <div class="dep-node green" style="margin:4px 0; font-size:0.85em;">ASUPHook</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ АСУП РЖД (проприетарный)</div>
+        <div class="dep-node green" style="margin:4px 0; font-size:0.85em;">TSKBMHook</div>
+        <div style="color:#888; font-size:0.78em; margin:2px 6px;">↓ ТСКБМ (бодрствование)</div>
+      </div>
+    </div>
+  </div>
+  <div class="info-box" style="margin-top:10px;">
+    <strong>Принцип разделения:</strong> Sensors — ждут данных от локомотива;
+    Operators — выполняют аналитику; Hooks — абстрагируют доступ к системам РЖД.
+    Операторы используют хуки, не обращаясь к API напрямую.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 12 — КОД: GLONASSHook + LocomotiveTelemetryOperator
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Код: <code>GLONASSHook</code> и <code>LocomotiveTelemetryOperator</code></h2>
+  <p style="font-size:0.75em; color:#666;">Читает телеметрию локомотива из ГЛОНАСС-сервера ТЧЭ-15 и сохраняет в PostgreSQL</p>
+  <pre><code class="language-python">from airflow.models import BaseOperator
+from airflow.hooks.base import BaseHook
+from airflow.sensors.base import BaseSensorOperator
+import requests
+
+class GLONASSHook(BaseHook):
+    """Hook для подключения к ГЛОНАСС-серверу РЖД."""
+    conn_name_attr = "glonass_conn_id"
+    default_conn_name = "glonass_default"
+
+    def get_conn(self):
+        conn = self.get_connection(self.glonass_conn_id)
+        return requests.Session()
+
+    def get_telemetry(self, loco_id: str, date: str):
+        session = self.get_conn()
+        response = session.get(
+            f"{self.conn.host}/api/telemetry",
+            params={"loco_id": loco_id, "date": date},
+            headers={"Authorization": f"Bearer {self.conn.password}"}
+        )
+        return response.json()
+
+class LocomotiveTelemetryOperator(BaseOperator):
+    """Загружает телеметрию локомотива из ГЛОНАСС в PostgreSQL."""
+    template_fields = ["loco_id", "target_date"]
+
+    def __init__(self, loco_id, target_date="{{ ds }}", **kwargs):
+        super().__init__(**kwargs)
+        self.loco_id = loco_id
+        self.target_date = target_date
+
+    def execute(self, context):
+        hook = GLONASSHook(glonass_conn_id="rzd_glonass")
+        data = hook.get_telemetry(self.loco_id, self.target_date)
+        self.log.info(f"Got {len(data)} records for {self.loco_id}")
+        return data</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 13 — ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 1
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения</h2>
+  <div class="discuss">
+    Когда лучше создать кастомный оператор, чем использовать PythonOperator с функцией?
+    Дайте пример для интеграции с системой ГЛОНАСС РЖД.
+  </div>
+  <div class="two-col" style="margin-top:14px; font-size:0.82em;">
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Аргументы ЗА кастомный оператор:</strong>
+        <ul style="margin-top:6px;">
+          <li>Логика используется в 3+ DAG-файлах депо</li>
+          <li>Нужен наглядный отображаемый тип в UI</li>
+          <li>Есть <code>template_fields</code> для Jinja-шаблонов</li>
+          <li>Оператор распространяется по парку дирекции тяги</li>
+          <li>Требуется специфическое управление ошибками ГЛОНАСС</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box orange">
+        <strong style="color:#ED7D31;">Когда PythonOperator достаточен:</strong>
+        <ul style="margin-top:6px;">
+          <li>Логика уникальна для одного DAG</li>
+          <li>Нет необходимости в повторном использовании</li>
+          <li>Простая задача (&lt;20 строк кода)</li>
+          <li>Прототип или быстрый эксперимент</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="info-box" style="margin-top:10px;">
+    <strong>Практическое правило ТЧЭ-15:</strong>
+    если один и тот же <code>callable</code> вставляется в PythonOperator
+    более двух раз — оформляй как отдельный оператор с говорящим именем.
+  </div>
+  <p style="font-size:0.75em; color:#888; margin-top:8px;">
+    Обсуждение: 5 минут в парах, затем краткие ответы группы (2–3 мин)
+  </p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 14 — КЕЙС ДЛЯ АНАЛИЗА
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Кейс для анализа</h2>
+  <div class="case-box">
+    <strong>Ситуация:</strong> ГЛОНАСС-сервер РЖД обновился до API v2, изменились эндпоинты.
+    15 DAG в ТЧЭ-15 используют <code>GLONASSHook</code> v1 с путём <code>/api/v1/telemetry</code>.
+    Новый эндпоинт: <code>/api/v2/loco/telemetry</code>, структура ответа изменилась.
+    Как безболезненно мигрировать без остановки пайплайнов?
+  </div>
+  <div class="two-col" style="margin-top:12px;">
+    <div class="arch-box">
+      <strong style="color:#4472C4;">Подходы к миграции:</strong>
+      <ul style="font-size:0.8em; margin-top:6px;">
+        <li>Параметр <code>api_version='v1'</code> с backward-совместимым default</li>
+        <li><code>DeprecationWarning</code> для старых параметров</li>
+        <li>Версионирование самого хука (v1/v2)</li>
+        <li>Feature flag через Airflow Variables</li>
+      </ul>
+    </div>
+    <div class="arch-box orange">
+      <strong style="color:#ED7D31;">Главное преимущество Hook:</strong>
+      <ul style="font-size:0.8em; margin-top:6px;">
+        <li>Меняем только <strong>один файл</strong> — <code>glonass_hook.py</code></li>
+        <li>Все 15 DAG автоматически получают исправление</li>
+        <li>Если бы логика была в PythonOperator — пришлось бы менять 15 DAG</li>
+      </ul>
+    </div>
+  </div>
+  <p style="font-size:0.75em; color:#888; margin-top:8px;">
+    Обсуждение: как гарантировать, что все DAG пройдут тесты после миграции? (5 мин)
+  </p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 15 — ВОПРОС ДЛЯ ОБСУЖДЕНИЯ 2
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Вопрос для обсуждения 2</h2>
+  <div class="discuss">
+    Как обеспечить обратную совместимость кастомного оператора при обновлении
+    API АСУП РЖД до новой версии? Какие инструменты Python и Airflow помогут
+    плавно перевести все DAG без риска поломки пайплайнов?
+  </div>
+  <div class="two-col" style="margin-top:12px; font-size:0.8em;">
+    <div>
+      <pre><code class="language-python">class LocomotiveTelemetryOperator(BaseOperator):
+    @apply_defaults
+    def __init__(
+        self,
+        loco_id: str,
+        # Новый параметр с backward-
+        # совместимым default:
+        api_version: str = 'v1',
+        # Устаревший параметр:
+        endpoint: str = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if endpoint is not None:
+            import warnings
+            warnings.warn(
+                "Параметр 'endpoint' устарел."
+                " Используй 'api_version'.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        self.api_version = api_version
+        self.loco_id = loco_id
+
+    def execute(self, context):
+        url = (
+            f"/api/{self.api_version}"
+            f"/loco/telemetry"
+        )
+        # ...</code></pre>
+    </div>
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Стратегия перехода:</strong>
+        <ol style="font-size:0.82em; margin-top:6px;">
+          <li>Добавляем параметр <code>api_version</code> со старым default</li>
+          <li>Старые DAG продолжают работать без изменений</li>
+          <li>Новые DAG сразу пишутся с <code>api_version='v2'</code></li>
+          <li>Постепенно переводим существующие DAG</li>
+          <li>Убираем <code>api_version='v1'</code> в следующем мажоре</li>
+        </ol>
+      </div>
+      <div class="warning-box" style="margin-top:8px;">
+        <strong>Всегда</strong> документируй устаревшие параметры
+        и дату их удаления в docstring класса.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 16 — КВИЗ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Квиз — проверка знаний</h2>
+
+  <div class="quiz-block">
+    <div class="quiz-q">Вопрос 1. Метод <code>execute(self, context)</code> в кастомном операторе:</div>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Опциональный — можно не реализовывать</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Обязательный — содержит основную логику задачи</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Используется только для логирования</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Вызывается при импорте модуля</button>
+  </div>
+
+  <div class="quiz-block">
+    <div class="quiz-q">Вопрос 2. <code>template_fields</code> в BaseOperator нужен для:</div>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Описания полей таблицы PostgreSQL</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Указания атрибутов, в которых Airflow раскрывает Jinja-шаблоны</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Валидации типов входных параметров</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Документирования публичного API оператора</button>
+  </div>
+
+  <div class="quiz-block">
+    <div class="quiz-q">Вопрос 3. Хук (Hook) в Airflow — это:</div>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Тип сенсора с методом poke()</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Обёртка над PythonOperator</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, true)" data-correct="true">Интерфейс к внешней системе, не являющийся задачей DAG</button>
+    <button class="quiz-btn" onclick="checkAnswer(this, false)">Специальный тип DAG для повторяющихся задач</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 17 — ЗАДАНИЕ ДЛЯ ГРУППЫ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Задание для группы</h2>
+  <div class="task-box">
+    Спроектируйте набор кастомных компонентов для интеграции Airflow
+    с системой ГЛОНАСС РЖД (ТЧЭ-15): перечислите операторы, хуки, сенсоры
+    и их интерфейсы. <strong>Время: 25 минут.</strong>
+  </div>
+  <div class="two-col" style="margin-top:10px; font-size:0.8em;">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Что нужно спроектировать:</strong>
+        <ol style="margin-top:8px;">
+          <li>Какие <strong>Hooks</strong> нужны? Какие методы в каждом?</li>
+          <li>Какие <strong>Operators</strong> нужны? Что делает каждый?</li>
+          <li>Какие <strong>Sensors</strong> нужны? Что они ожидают?</li>
+          <li>Как компоненты взаимодействуют в DAG?</li>
+        </ol>
+      </div>
+      <div class="arch-box orange" style="margin-top:8px;">
+        <strong style="color:#ED7D31;">Данные ГЛОНАСС-сервера ТЧЭ-15:</strong>
+        <ul style="margin-top:6px;">
+          <li>Координаты, скорость (км/ч) по ГЛОНАСС/GPS</li>
+          <li>Температура букс (перегрев > 80°C — критический)</li>
+          <li>Тяговый ток (А), напряжение КС (В) — электровозы</li>
+          <li>Расход дизтоплива (л/ч) — тепловозы</li>
+          <li>Моточасы, показания ТСКБМ, САУТ</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Целевые задачи аналитики:</strong>
+        <ul style="margin-top:8px;">
+          <li>Соблюдение графика движения (план/факт, опоздания)</li>
+          <li>Расход топлива/электроэнергии на поездо-км</li>
+          <li>Анализ технического состояния локомотивов</li>
+          <li>Планирование ТО (ТО-1, ТО-2, ТР-1, ТР-2, КР)</li>
+          <li>OTD грузовых перевозок</li>
+        </ul>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <strong>Формат ответа:</strong>
+        список компонентов с типами, основные методы/параметры,
+        схема взаимодействия в DAG.
+        Каждая группа презентует результат за 3 минуты.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 18 — ОБЗОР ПРАКТИКИ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Практическая работа: <code>GLONASSOperator</code> и <code>ASUPHook</code></h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Что будем разрабатывать:</strong>
+        <ul style="font-size:0.82em; margin-top:8px;">
+          <li><code>GLONASSHook</code> — подключение к ГЛОНАСС-серверу ТЧЭ-15</li>
+          <li><code>LocomotiveTelemetryOperator</code> — чтение телеметрии локомотивов</li>
+          <li><code>ASUPHook</code> — интеграция с АСУП РЖД</li>
+          <li><code>LocoDataReadySensor</code> — ожидание передачи данных</li>
+          <li>Регистрация как Airflow Plugin</li>
+        </ul>
+      </div>
+      <div class="arch-box orange" style="margin-top:10px;">
+        <strong style="color:#ED7D31;">Тестовые данные:</strong>
+        <ul style="font-size:0.82em; margin-top:6px;">
+          <li><code>locomotives.csv</code> — реестр локомотивного парка</li>
+          <li><code>sensor_readings.csv</code> — телеметрия датчиков</li>
+          <li><code>trips.csv</code> — данные о поездках</li>
+          <li><code>schedule_adherence.csv</code> — соблюдение графика</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Схема rzd_analytics:</strong>
+        <ul style="font-size:0.82em; margin-top:6px;">
+          <li><code>locomotives</code> — реестр ТПС</li>
+          <li><code>sensor_readings</code> — телеметрия</li>
+          <li><code>trips</code> — рейсы (план/факт)</li>
+          <li><code>schedule_adherence</code> — точность расписания</li>
+          <li><code>maintenance_log</code> — журнал ТО</li>
+        </ul>
+      </div>
+      <div class="dep-flow" style="margin-top:10px;">
+        <div class="dep-node orange">ГЛОНАСС-сервер</div>
+        <div class="dep-arrow">→</div>
+        <div class="dep-node">GLONASSHook</div>
+        <div class="dep-arrow">→</div>
+        <div class="dep-node green">rzd_analytics</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 19 — ОБЗОР ЛАБОРАТОРНОЙ РАБОТЫ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Лабораторная работа: полный пайплайн на кастомных компонентах</h2>
+  <div class="two-col">
+    <div>
+      <div class="arch-box">
+        <strong style="color:#4472C4;">Цель лаб. работы:</strong>
+        <p style="font-size:0.82em; margin-top:6px;">
+          Разработать полноценный пайплайн <code>loco_telemetry_pipeline</code>
+          на кастомных компонентах — от ожидания данных локомотива
+          до записи аналитики в PostgreSQL схемы <code>rzd_analytics</code>.
+        </p>
+      </div>
+      <div class="arch-box orange" style="margin-top:10px;">
+        <strong style="color:#ED7D31;">Компоненты пайплайна:</strong>
+        <div class="dep-flow" style="flex-direction:column; align-items:flex-start; margin-top:6px;">
+          <div class="dep-node" style="width:100%; text-align:center; font-size:0.8em; margin:3px 0;">LocoDataReadySensor</div>
+          <div style="text-align:center; width:100%; color:#ED7D31;">↓</div>
+          <div class="dep-node orange" style="width:100%; text-align:center; font-size:0.8em; margin:3px 0;">LocomotiveTelemetryOperator</div>
+          <div style="text-align:center; width:100%; color:#ED7D31;">↓</div>
+          <div class="dep-node orange" style="width:100%; text-align:center; font-size:0.8em; margin:3px 0;">ScheduleAdherenceOperator</div>
+          <div style="text-align:center; width:100%; color:#ED7D31;">↓</div>
+          <div class="dep-node green" style="width:100%; text-align:center; font-size:0.8em; margin:3px 0;">PostgreSQL rzd_analytics</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="arch-box green">
+        <strong style="color:#70AD47;">Задания повышенной сложности:</strong>
+        <ol style="font-size:0.82em; margin-top:6px;">
+          <li>Реализовать <code>HotBoxAlertOperator</code> — алерт при перегреве буксы &gt; 80°C</li>
+          <li>Версионирование <code>GLONASSHook</code> для поддержки API v1 и v2</li>
+          <li>Параллельная обработка парка локомотивов через <code>ThreadPoolExecutor</code></li>
+        </ol>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <strong>Платформа:</strong> Яндекс Облако, Managed Airflow или VM Ubuntu 22.04.
+        PostgreSQL — схема <code>rzd_analytics</code>.
+        Деплой плагина — через <code>plugins.zip</code> в S3-бакет.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 20 — ИТОГИ МОДУЛЯ
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Итоги модуля 07</h2>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="si-title">BaseOperator</div>
+      Наследование, метод <code>execute()</code>, <code>template_fields</code>,
+      логирование через <code>self.log</code>
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Кастомный Operator</div>
+      Наследование от BaseOperator, инкапсуляция доменной логики
+      в <code>execute()</code> с обработкой ошибок
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Hooks</div>
+      Кастомные хуки: управление сессией,
+      централизованные credentials в Connections
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Кастомный Sensor</div>
+      Метод <code>poke()</code>, режимы poke/reschedule,
+      ожидание готовности данных перед запуском обработки
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Plugins</div>
+      Структура плагина, <code>AirflowPlugin</code>,
+      регистрация компонентов, деплой в Яндекс Облако через S3
+    </div>
+    <div class="summary-item">
+      <div class="si-title">Архитектура компонентов</div>
+      Полный стек: Sensors → Operators → Hooks →
+      внешние системы → целевое хранилище
+    </div>
+  </div>
+  <div style="margin-top:14px; text-align:center;">
+    <span class="next-badge">Модуль 08 →</span>
+    <span style="font-size:0.85em; color:#666;">
+      &nbsp;Мониторинг и алертинг в Airflow: метрики, логи, уведомления
+    </span>
+  </div>
+  <div class="badge-row" style="justify-content:center; margin-top:10px;">
+    <span class="badge badge-blue">BaseOperator</span>
+    <span class="badge badge-orange">BaseHook</span>
+    <span class="badge badge-green">BaseSensorOperator</span>
+    <span class="badge badge-gray">AirflowPlugin</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 21 — ДОПОЛНИТЕЛЬНО: ПОЛНЫЙ GLONASSHOOK
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Полный <code>GLONASSHook</code> для ТЧЭ-15</h2>
+  <p style="font-size:0.75em; color:#666;">Реализация с retry-логикой, кэшированием сессии и поддержкой всех типов ТПС</p>
+  <pre><code class="language-python">"""plugins/hooks/glonass_hook.py
+Хук для подключения к ГЛОНАСС-серверу ТЧЭ-15 (проприетарный REST API).
+Conn Type: HTTP | Conn Id: rzd_glonass
+Host: glonass.tche15.rzd | Port: 8443 | Password: <Bearer Token>
+"""
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from typing import Any, Dict, List, Optional
+
+from airflow.hooks.base import BaseHook
+from airflow.exceptions import AirflowException
+
+
+class GLONASSHook(BaseHook):
+    """Hook для работы с ГЛОНАСС-сервером ТЧЭ-15."""
+
+    conn_name_attr    = 'glonass_conn_id'
+    default_conn_name = 'rzd_glonass'
+    conn_type         = 'http'
+    hook_name         = 'ГЛОНАСС ТЧЭ-15'
+
+    def __init__(self, glonass_conn_id: str = default_conn_name) -> None:
+        super().__init__()
+        self.glonass_conn_id = glonass_conn_id
+        self._session: Optional[requests.Session] = None
+        self._base_url: Optional[str] = None
+
+    def get_conn(self) -> requests.Session:
+        """Создаёт HTTP-сессию с Bearer-аутентификацией."""
+        if self._session is not None:
+            return self._session
+        conn = self.get_connection(self.glonass_conn_id)
+        self._base_url = f"https://{conn.host}:{conn.port or 8443}"
+        session = requests.Session()
+        session.headers.update({
+            'Authorization': f"Bearer {conn.password}",
+            'Content-Type':  'application/json',
+        })
+        retry = Retry(total=3, backoff_factor=2,
+                      status_forcelist=[500, 502, 503, 504])
+        session.mount('https://', HTTPAdapter(max_retries=retry))
+        self._session = session
+        self.log.info("GLONASSHook: подключение к %s", self._base_url)
+        return self._session
+
+    def get_telemetry(self, loco_id: str, date: str) -> List[Dict[str, Any]]:
+        """Возвращает телеметрию локомотива за дату.
+        Поля: timestamp, lat, lon, speed_kmh, buxa_temp_c,
+              traction_current_a, voltage_kv, fuel_lph, engine_hours
+        """
+        session = self.get_conn()
+        url = f"{self._base_url}/api/v1/telemetry"
+        resp = session.get(url, params={"loco_id": loco_id, "date": date},
+                           timeout=30)
+        try:
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError as exc:
+            raise AirflowException(
+                f"GLONASSHook HTTP {resp.status_code}: {resp.text[:200]}"
+            ) from exc
+        return resp.json().get('records', [])
+
+    def close(self) -> None:
+        if self._session:
+            self._session.close()
+            self._session = None</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     СЛАЙД 22 — LocoDataReadySensor
+══════════════════════════════════════════════════════ -->
+<section>
+  <h2>Код: <code>LocoDataReadySensor</code></h2>
+  <p style="font-size:0.75em; color:#666;">Ожидает передачи телеметрии от локомотива на ГЛОНАСС-сервер ТЧЭ-15 после прихода в депо</p>
+  <pre><code class="language-python">"""plugins/sensors/loco_data_ready_sensor.py
+Сенсор ожидания появления телеметрии локомотива
+в ГЛОНАСС-сервере ТЧЭ-15 за указанную дату.
+Локомотив передаёт данные при входе в зону Wi-Fi депо.
+"""
+from airflow.sensors.base import BaseSensorOperator
+from airflow.utils.decorators import apply_defaults
+from hooks.glonass_hook import GLONASSHook
+
+
+class LocoDataReadySensor(BaseSensorOperator):
+    """
+    Ожидает, когда на ГЛОНАСС-сервере появятся данные локомотива.
+
+    :param loco_id:           номер локомотива (напр. 'ВЛ80С-1234')
+    :param min_records:       минимальное кол-во записей телеметрии
+    :param glonass_conn_id:   ID соединения с ГЛОНАСС-сервером
+    """
+
+    template_fields = ('loco_id',)
+    ui_color = '#70AD47'
+
+    @apply_defaults
+    def __init__(
+        self,
+        loco_id: str,
+        min_records: int = 10,
+        glonass_conn_id: str = GLONASSHook.default_conn_name,
+        *args,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.loco_id         = loco_id
+        self.min_records     = min_records
+        self.glonass_conn_id = glonass_conn_id
+
+    def poke(self, context: dict) -> bool:
+        """Возвращает True, когда данных достаточно для обработки."""
+        date = context['ds']
+        self.log.info(
+            "[LocoDataReadySensor] Проверка: loco=%s date=%s",
+            self.loco_id, date,
+        )
+        try:
+            hook    = GLONASSHook(glonass_conn_id=self.glonass_conn_id)
+            records = hook.get_telemetry(self.loco_id, date)
+            count   = len(records)
+            self.log.info("  найдено записей: %d (мин: %d)", count, self.min_records)
+            if count >= self.min_records:
+                self.log.info("  данные готовы!")
+                return True
+            self.log.info("  недостаточно записей, ждём...")
+            return False
+        except Exception as exc:
+            self.log.warning("  ошибка проверки: %s", exc)
+            return False</code></pre>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script>
+function checkAnswer(btn, correct) {
+  var p = btn.parentElement;
+  p.querySelectorAll(".quiz-btn").forEach(function(b) {
+    b.disabled = true;
+  });
+  if (correct) {
+    btn.classList.add("correct");
+    btn.textContent += " ✓";
+  } else {
+    btn.classList.add("wrong");
+    btn.textContent += " ✗";
+    p.querySelectorAll("[data-correct=true]").forEach(function(b) {
+      b.classList.add("correct");
+    });
+  }
+}
+
+Reveal.initialize({
+  hash: true,
+  width: 1200,
+  height: 700,
+  margin: 0.04,
+  minScale: 0.2,
+  maxScale: 2.0,
+  center: true,
+  slideNumber: 'c/t',
+  transition: 'slide',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  plugins: [RevealHighlight, RevealNotes],
+});
+</script>
+<script>
+/* === AUTO-FIT: автоматически ужимает слайды, не помещающиеся по высоте === */
+(function () {
+  function fitAll() {
+    var H = (window.Reveal && Reveal.getConfig && Reveal.getConfig().height) || 700;
+    var sections = document.querySelectorAll('.reveal .slides section');
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.querySelector(':scope > section')) continue; // контейнер вертикального стека
+      // сброс прошлого масштабирования перед измерением
+      sec.style.transform = '';
+      sec.style.transformOrigin = '';
+      if (sec.offsetParent === null) continue;             // скрытый слайд
+      var h = sec.scrollHeight;
+      if (h > H + 2) {
+        var s = H / h;
+        sec.style.transformOrigin = 'top center';
+        sec.style.transform = 'scale(' + s.toFixed(4) + ')';
+        sec.style.top = '0px';
+      }
+    }
+  }
+  function hook() {
+    if (!(window.Reveal && Reveal.on)) { setTimeout(hook, 100); return; }
+    Reveal.on('ready', function () { setTimeout(fitAll, 0); });
+    Reveal.on('slidechanged', fitAll);
+    Reveal.on('fragmentshown', fitAll);
+    Reveal.on('fragmenthidden', fitAll);
+    Reveal.on('resize', function () { setTimeout(fitAll, 60); });
+  }
+  hook();
+  window.addEventListener('load', function () { setTimeout(fitAll, 300); });
+})();
+</script>
+</body>
+</html>
+
+
