@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Краткое содержание курса: основные моменты | Apache Airflow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+<style>
+:root { --r-heading-color: #4472C4; --r-link-color: #4472C4; --r-main-font-size: 28px; }
+.reveal { font-size: 24px; }
+.reveal h1 { color: #4472C4; font-size: 1.8em; }
+.reveal h2 { color: #4472C4; font-size: 1.25em; }
+.reveal h3 { color: #4472C4; font-size: 1.05em; }
+.reveal ul, .reveal ol { font-size: 0.9em; line-height: 1.5; }
+.reveal p { font-size: 0.9em; line-height: 1.5; }
+.hi-orange { color: #ED7D31; font-weight: bold; }
+.hi-green { color: #70AD47; font-weight: bold; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+.reveal table { font-size: 0.7em; }
+.reveal table th { background: #4472C4; color: #fff; }
+.reveal table tr:nth-child(even) { background: #f0f4fb; }
+.loco-badge { display:inline-block; background:#1a3a6b; color:#fff; padding:4px 10px; border-radius:4px; font-size:0.62em; margin:2px; font-family:monospace; }
+.reveal code { background:#e8ecf0; color:#c0392b; padding:2px 6px; border-radius:4px; font-size:0.85em; }
+/* Шапка модуля */
+.mod-head { display:flex; align-items:center; gap:16px; border-bottom:3px solid #4472C4; padding-bottom:10px; margin-bottom:14px; text-align:left; }
+.mod-num { background:#4472C4; color:#fff; font-weight:bold; font-size:1.4em; min-width:74px; height:74px; display:flex; align-items:center; justify-content:center; border-radius:10px; flex-direction:column; line-height:1; }
+.mod-num small { font-size:0.4em; font-weight:normal; opacity:0.85; margin-top:3px; }
+.mod-title { text-align:left; }
+.mod-title h2 { margin:0; font-size:1.15em; }
+.mod-title .dur { color:#ED7D31; font-weight:bold; font-size:0.8em; }
+/* Основные моменты */
+.points { text-align:left; list-style:none; padding-left:0; }
+.points li { margin-bottom:12px; padding-left:30px; position:relative; font-size:0.92em; line-height:1.45; }
+.points li:before { content:"▸"; color:#4472C4; font-weight:bold; position:absolute; left:6px; font-size:1.1em; }
+.keep { text-align:left; background:#eafaf1; border-left:5px solid #70AD47; padding:10px 16px; border-radius:0 6px 6px 0; font-size:0.82em; margin-top:6px; }
+.keep b { color:#70AD47; }
+.reveal section { text-align:left; }
+.center { text-align:center; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================== ТИТУЛЬНЫЙ ===================== -->
+<section class="center" style="text-align:center;">
+  <h1>Apache Airflow</h1>
+  <h2 style="color:#ED7D31;">Краткое содержание курса — основные моменты</h2>
+  <hr style="border-color:#4472C4; width:60%; margin:20px auto;">
+  <p style="font-size:0.8em;">Главные идеи каждого модуля одним взглядом.<br>
+    Сквозной пример — мониторинг локомотивов депо <span class="hi-orange">ТЧЭ-15</span>.</p>
+  <div style="margin-top:14px;">
+    <span class="loco-badge">ВЛ80С</span><span class="loco-badge">ЭП2К</span><span class="loco-badge">2ТЭ116</span><span class="loco-badge">ЧМЭ3</span><span class="loco-badge">МВПС</span>
+  </div>
+  <p style="font-size:0.68em; color:#888; margin-top:18px;">12 модулей · платформа Yandex Managed Service for Apache Airflow™</p>
+  <aside class="notes">Это выжимка курса: на каждом слайде — 3–4 ключевые мысли модуля, которые слушатель должен унести с собой. Не план занятий, а суть.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 01 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">01</div>
+    <div class="mod-title"><h2>Введение в Airflow</h2><span class="dur">Что это и зачем</span></div>
+  </div>
+  <ul class="points">
+    <li>Airflow — это <span class="hi-orange">оркестратор</span>: запускает задачи в нужном порядке, следит за сбоями и перезапусками. Заменяет хаос из cron-скриптов.</li>
+    <li>Пайплайн описывается <span class="hi-orange">кодом на Python</span> (DAG), а не настройками в UI — это версионируется и тестируется.</li>
+    <li>Четыре кита архитектуры: <code>Scheduler</code> (планирует), <code>Executor</code>/Workers (выполняют), <code>Webserver</code> (UI), <code>MetaDB</code> (состояние).</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> Airflow управляет потоком задач, но сам данные «руками» не обрабатывает — он их дирижирует.</div>
+  <aside class="notes">Главный сдвиг мышления: «расписание как код». Airflow не ETL-инструмент, а планировщик-дирижёр.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 02 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">02</div>
+    <div class="mod-title"><h2>Устройство DAG</h2><span class="dur">Из чего состоит пайплайн</span></div>
+  </div>
+  <ul class="points">
+    <li><span class="hi-orange">DAG</span> — направленный граф без циклов: вершины это задачи (Task), рёбра — порядок их выполнения.</li>
+    <li><span class="hi-orange">Operator</span> — шаблон задачи (Bash, Python, Empty…); <span class="hi-orange">Task</span> — его конкретный экземпляр в DAG.</li>
+    <li>Различайте <code>DAG Run</code> (один запуск всего графа за дату) и <code>Task Instance</code> (одна задача в этом запуске) — на этом строится весь UI.</li>
+    <li>Состояния задачи (<code>success</code>, <code>failed</code>, <code>up_for_retry</code>…) видны в Grid/Graph View — это главный инструмент диагностики.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> один DAG-файл = один пайплайн; одна задача должна делать одну понятную вещь.</div>
+  <aside class="notes">Терминология DAG / Task / Operator / DAG Run / Task Instance — фундамент, на который опираются все следующие модули.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 03 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">03</div>
+    <div class="mod-title"><h2>Календарное планирование</h2><span class="dur">Когда срабатывает DAG</span></div>
+  </div>
+  <ul class="points">
+    <li>Расписание задаётся через <code>schedule</code> (cron или пресет <code>@daily</code>) и точку отсчёта <code>start_date</code>.</li>
+    <li>DAG запускается <span class="hi-orange">в конце интервала</span>, а не в его начале — частый источник путаницы с датами.</li>
+    <li><code>catchup=True</code> заставляет Airflow «догнать» все пропущенные интервалы; <code>backfill</code> — пересчитать историю вручную.</li>
+    <li>Время — всегда в явной таймзоне (<code>pendulum</code>); <code>max_active_runs</code> ограничивает число параллельных запусков.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> дата запуска (<code>data_interval</code>) — это период, за который считаются данные, а не «сейчас».</div>
+  <aside class="notes">Ключевая ловушка новичков: DAG за 1 июня фактически стартует в начале 2 июня. catchup может неожиданно запустить сотни прогонов.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 04 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">04</div>
+    <div class="mod-title"><h2>Шаблоны заданий</h2><span class="dur">Гибкость без правки кода</span></div>
+  </div>
+  <ul class="points">
+    <li><span class="hi-orange">Jinja2</span> подставляет в задачи макросы (<code>&#123;&#123; ds &#125;&#125;</code> — дата интервала) — основа инкрементальной обработки «только новые данные».</li>
+    <li><span class="hi-orange">Variables</span> хранят конфигурацию отдельно от кода; <code>dag_run.conf</code> передаёт параметры при ручном запуске.</li>
+    <li><span class="hi-orange">XCom</span> — механизм передачи небольших значений между задачами (не для больших данных!).</li>
+    <li><span class="hi-orange">TaskFlow API</span> (<code>@dag</code>/<code>@task</code>) делает XCom и зависимости автоматическими — код выглядит как обычные функции.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> через XCom гоняем ссылки и метаданные, сами данные — в Object Storage / БД.</div>
+  <aside class="notes">Переход от захардкоженных дат к {{ ds }} — момент, когда DAG становится переиспользуемым.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 05 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">05</div>
+    <div class="mod-title"><h2>Зависимости задач</h2><span class="dur">Порядок и ожидание</span></div>
+  </div>
+  <ul class="points">
+    <li>Порядок задаётся оператором <code>&gt;&gt;</code> (<code>a &gt;&gt; b</code> = «b после a»); из этого Airflow строит граф.</li>
+    <li>Типовые формы: линейная цепочка, <span class="hi-orange">fan-out</span> (один → многие), <span class="hi-orange">fan-in</span> (многие → один), diamond.</li>
+    <li><span class="hi-orange">Сенсоры</span> ждут наступления события (появился файл, прошло время, готова строка в БД) перед стартом следующих задач.</li>
+    <li>Режим <code>reschedule</code> освобождает воркер на время ожидания — на длинных ожиданиях экономит ресурсы против <code>poke</code>.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> в Managed Airflow нет ФС — вместо <code>FileSensor</code> используем <code>S3KeySensor</code> (Yandex Object Storage).</div>
+  <aside class="notes">Сенсоры — способ «дождаться» внешних данных. Важно про reschedule vs poke: poke держит слот воркера занятым.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 06 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">06</div>
+    <div class="mod-title"><h2>Потоки обработки</h2><span class="dur">Ветвление и динамика</span></div>
+  </div>
+  <ul class="points">
+    <li><code>BranchPythonOperator</code> выбирает, какую ветку графа выполнять, по условию в данных.</li>
+    <li><code>ShortCircuitOperator</code> останавливает пайплайн ниже по течению, если условие не выполнено.</li>
+    <li><span class="hi-orange">TaskGroup</span> визуально и логически группирует задачи — граф остаётся читаемым при росте.</li>
+    <li><span class="hi-orange">Dynamic Task Mapping</span> (<code>.expand()</code>) разворачивает одну задачу в N параллельных по числу элементов на входе — число известно только в рантайме.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> ветвление управляет тем, <i>что</i> выполнять; mapping — тем, <i>сколько раз</i> параллельно.</div>
+  <aside class="notes">Dynamic Task Mapping — мощный приём: например, по одной задаче на каждую серию локомотивов, не зная их число заранее.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 07 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">07</div>
+    <div class="mod-title"><h2>Пользовательские компоненты</h2><span class="dur">Расширяем Airflow</span></div>
+  </div>
+  <ul class="points">
+    <li>Когда готового провайдера нет (ведомственные системы РЖД) — пишут <span class="hi-orange">свой оператор</span>, наследуя <code>BaseOperator</code> и реализуя <code>execute()</code>.</li>
+    <li><span class="hi-orange">Hook</span> инкапсулирует подключение к внешней системе и берёт логин/пароль из <code>Connections</code> — переиспользуется в разных операторах.</li>
+    <li>Кастомный <span class="hi-orange">сенсор</span> — это метод <code>poke()</code>, возвращающий True, когда данные готовы.</li>
+    <li><code>Plugins</code> регистрируют все эти компоненты, чтобы их видел весь Airflow.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> оператор = «что сделать», хук = «как подключиться». Не дублируйте — выносите доступ в хук.</div>
+  <aside class="notes">Главное разделение ответственности: бизнес-логика в операторе, доступ к системе — в хуке через Connection.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 08 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">08</div>
+    <div class="mod-title"><h2>Тестирование</h2><span class="dur">Качество до прода</span></div>
+  </div>
+  <ul class="points">
+    <li>DAG — это код, и его надо тестировать: минимум — проверка, что <span class="hi-orange">DagBag</span> загружается без ошибок импорта.</li>
+    <li><span class="hi-orange">pytest</span> + <code>unittest.mock</code> позволяют проверять логику задач, не дёргая реальные БД и API.</li>
+    <li><code>airflow tasks test</code> прогоняет одну задачу за дату локально, без записи в метабазу.</li>
+    <li>Тесты встраиваются в <span class="hi-orange">CI/CD</span> (GitHub Actions) — битый DAG не доедет до production-бакета.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> ошибка импорта в DAG ломает Scheduler — тест на загрузку DagBag обязателен.</div>
+  <aside class="notes">Мокирование внешних систем — ключ к быстрым и надёжным тестам. Тест на парсинг DAG ловит большинство опечаток.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 09 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">09</div>
+    <div class="mod-title"><h2>Задачи в контейнерах</h2><span class="dur">Docker, Kubernetes, ML</span></div>
+  </div>
+  <ul class="points">
+    <li>Контейнер изолирует зависимости задачи от Airflow — у ML-задачи свои версии библиотек, не конфликтующие с окружением.</li>
+    <li><code>DockerOperator</code> / <code>KubernetesPodOperator</code> запускают готовый образ; данные передаются через <code>volumes</code> и переменные окружения.</li>
+    <li>Образы хранятся в <span class="hi-orange">Yandex Container Registry</span>; для задач задаются лимиты CPU/памяти.</li>
+    <li>Airflow только <span class="hi-orange">оркестрирует</span> контейнер — тяжёлые вычисления идут внутри пода, не на воркере.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> контейнеры — способ запускать «чужой» или ресурсоёмкий код (ML-прогноз перегрева букс) безопасно.</div>
+  <aside class="notes">Пример модуля: ML-модель в контейнере предсказывает критическую температуру букс >80°C за 2 часа до события.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 10 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">10</div>
+    <div class="mod-title"><h2>Практика использования</h2><span class="dur">Что отличает прод-DAG</span></div>
+  </div>
+  <ul class="points">
+    <li><span class="hi-orange">Идемпотентность</span>: повторный запуск задачи даёт тот же результат и не дублирует данные (перезаписывайте партицию, а не добавляйте).</li>
+    <li><span class="hi-orange">Атомарность</span>: одна задача — одна ответственность; упала — понятно, где и что перезапускать.</li>
+    <li>Надёжность задаётся <code>retries</code>, callbacks и <code>SLA</code>; доступы — только через <code>Connections</code>, без паролей в коде.</li>
+    <li>Топ-антипаттернов: тяжёлый код на верхнем уровне DAG, большие данные в XCom, неидемпотентные вставки.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> хороший DAG можно перезапустить за любую дату в любой момент — и ничего не сломается.</div>
+  <aside class="notes">Идемпотентность — главный критерий зрелости пайплайна. Это то, что отличает учебный DAG от production.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 11 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">11</div>
+    <div class="mod-title"><h2>Эксплуатация</h2><span class="dur">Airflow под нагрузкой</span></div>
+  </div>
+  <ul class="points">
+    <li>Тип <span class="hi-orange">Executor</span> определяет масштаб: Local (одна машина) → Celery/Kubernetes (много воркеров).</li>
+    <li><code>Pools</code> и приоритеты не дают «прожорливым» задачам забить все слоты воркеров.</li>
+    <li>Метрики уходят в <span class="hi-orange">Prometheus</span> (StatsD), визуализация — в <span class="hi-orange">Grafana</span>, проблемы — в алерты (email/Telegram).</li>
+    <li>Метабазу и логи надо регулярно чистить — иначе они растут и тормозят систему.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> в проде важно не «как написать DAG», а «как поддержать сотни DAG стабильными».</div>
+  <aside class="notes">Самый инженерный модуль: масштабирование воркеров, наблюдаемость, обслуживание метабазы.</aside>
+</section>
+
+<!-- ===================== МОДУЛЬ 12 ===================== -->
+<section>
+  <div class="mod-head">
+    <div class="mod-num">12</div>
+    <div class="mod-title"><h2>Безопасность</h2><span class="dur">Доступ и секреты</span></div>
+  </div>
+  <ul class="points">
+    <li><span class="hi-orange">RBAC</span>: каждому — своя роль (DataEngineer, DataAnalyst, DutyOperator) и доступ только к нужным DAG.</li>
+    <li>Пароли и токены — не в Connections и не в коде, а в <span class="hi-orange">Secrets Backend</span> (Yandex Lockbox).</li>
+    <li><span class="hi-orange">Fernet Key</span> шифрует чувствительные данные в метабазе (at-rest); доступ к UI — только по HTTPS.</li>
+    <li><span class="hi-orange">Аудит-лог</span> фиксирует, кто и что запускал — критично для ведомственной ж/д-инфраструктуры.</li>
+  </ul>
+  <div class="keep"><b>Запомнить:</b> аутентификация (кто ты) + RBAC (что тебе можно) + секреты (где пароли) — три опоры безопасности.</div>
+  <aside class="notes">Безопасность для инфраструктуры РЖД — не опция: разграничение доступа, защита секретов, прослеживаемость действий.</aside>
+</section>
+
+<!-- ===================== ИТОГ ===================== -->
+<section class="center" style="text-align:center;">
+  <h2>Главное за весь курс</h2>
+  <div class="two-col" style="max-width:880px; margin:14px auto; font-size:0.82em;">
+    <div class="keep" style="margin:0;"><b>Пайплайн как код.</b> DAG на Python — версионируется, тестируется, переиспользуется.</div>
+    <div class="keep" style="margin:0;"><b>Идемпотентность.</b> Любой запуск за любую дату безопасен и повторяем.</div>
+    <div class="keep" style="margin:0;"><b>Разделение ролей.</b> Оператор / хук / сенсор, бизнес-логика отдельно от доступа.</div>
+    <div class="keep" style="margin:0;"><b>Production-зрелость.</b> Тесты, мониторинг, безопасность — не «потом», а часть DAG.</div>
+  </div>
+  <p style="font-size:0.78em; margin-top:14px;">Один сквозной пример — <span class="hi-orange">мониторинг локомотивов ТЧЭ-15</span> — прошёл путь<br>от первого DAG до защищённого production-пайплайна.</p>
+  <div style="margin-top:8px;">
+    <span class="loco-badge">ВЛ80</span><span class="loco-badge">ЭП2К</span><span class="loco-badge">2ТЭ116</span><span class="loco-badge">ЧМЭ3</span><span class="loco-badge">МВПС</span>
+  </div>
+  <aside class="notes">Финальный слайд — четыре сквозные идеи курса. Их слушатель должен унести, даже если забудет детали API.</aside>
+</section>
+
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script>
+Reveal.initialize({ hash: true, slideNumber: 'c/t', transition: 'slide', width: 1280, height: 720, margin: 0.05 });
+</script>
+</body>
+</html>
